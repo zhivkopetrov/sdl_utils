@@ -1,0 +1,9 @@
+[submodule "cmake_helpers"]
+	path = cmake_helpers
+	url = https://github.com/zhivkopetrov/cmake_helpers
+[submodule "utils"]
+	path = utils
+	url = https://github.com/zhivkopetrov/utils.git
+[submodule "resource_utils"]
+	path = resource_utils
+	url = https://github.com/zhivkopetrov/resource_utils
