@@ -43,19 +43,19 @@
 
 /* Values:
  *
- * USE_FAST_QUALITY_TEXT 0
+ * USE_ANTI_ALIASING_ON_TEXT 1
  * Text quality is better, because Anti-Aliasing is applied. What this means is
  * that alpha blending to dither the font with the given color is applied.
  * This created a way smoother text, but is around 20% - 40% slower that the
  * fast low quality version.
  *
  *
- * USE_FAST_QUALITY_TEXT 1
+ * USE_ANTI_ALIASING_ON_TEXT 0
  * The quality is poor, because the text is pixel drawn resulting in a "edge"
  * shaped text. While the text is not so good looking it is way more faster
  * than it's Anti-Aliasing counterpart.
  * */
-#define USE_FAST_QUALITY_TEXT 0
+#define USE_ANTI_ALIASING_ON_TEXT 1
 
 /* Values:
  *

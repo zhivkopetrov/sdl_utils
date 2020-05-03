@@ -12,7 +12,7 @@
 
 // Own components headers
 #if USE_SOFTWARE_RENDERER
-#include "Camera.h"
+#include "sdl_utils/drawing/Camera.h"
 #endif /* USE_SOFTWARE_RENDERER */
 
 #include "sdl_utils/drawing/DrawParams.h"
@@ -113,14 +113,13 @@ int32_t Texture::loadFromText(const char *text,
   freeTexture(outTexture);
 #endif /* USE_SOFTWARE_RENDERER */
 
-#if USE_FAST_QUALITY_TEXT
+#if USE_ANTI_ALIASING_ON_TEXT
+  SDL_Surface *loadedSurface = TTF_RenderText_Blended(font, text,
+      *(reinterpret_cast<const SDL_Color *>(&color.rgba)));
+#else
   SDL_Surface *loadedSurface = TTF_RenderText_Solid(
       font, text, *(reinterpret_cast<const SDL_Color *>(&color.rgba)));
-#else
-  SDL_Surface *loadedSurface =
-      TTF_RenderText_Blended(font, text,
-          *(reinterpret_cast<const SDL_Color *>(&color.rgba)));
-#endif
+#endif /* USE_ANTI_ALIASING_ON_TEXT */
   if (loadedSurface == nullptr) {
     LOGERR("Unable to load image! SDL_image Error: %s", IMG_GetError());
     return EXIT_FAILURE;
@@ -129,53 +128,55 @@ int32_t Texture::loadFromText(const char *text,
   *outTextWidth = loadedSurface->w;
   *outTextHeight = loadedSurface->h;
 
+#if USE_SOFTWARE_RENDERER
+  outTexture = loadedSurface;
+#else
   //create hardware accelerated texture
   if (EXIT_SUCCESS
       != Texture::loadTextureFromSurface(loadedSurface, outTexture)) {
     LOGERR("Unable to create text texture");
     return EXIT_FAILURE;
   }
+#endif
 
   return EXIT_SUCCESS;
 }
 
 int32_t Texture::loadTextureFromSurface(SDL_Surface *&surface,
                                         SDL_Texture *&outTexture) {
+#if !USE_SOFTWARE_RENDERER
   if (nullptr == surface) {
     LOGERR("Nullptr surface detected. Unable to loadFromSurface()");
     return EXIT_FAILURE;
   }
 
-#if USE_SOFTWARE_RENDERER
+  // Check for memory leaks and get rid of preexisting texture
+  if (outTexture) {
     LOGERR(
-        "Error, loadTextureFromSurface is designed to be used by"
-        "hardware accelerated Texture. "
-        "You can not them with software renderer");
-    err = EXIT_FAILURE;
+        "Warning, Memory leak detected! Trying to load a new "
+        "texture before calling delete on the old one");
 
-    // dummy check to get rid of the -Wunused-variable gcc warning
-    if (outTexture) {
-    }
+    freeTexture(outTexture);
+  }
+
+  // Create texture from surface pixels
+  outTexture = SDL_CreateTextureFromSurface(_renderer, surface);
+
+  if (nullptr == outTexture) {
+    LOGERR("Unable to create texture! SDL Error: %s", SDL_GetError());
+    return EXIT_FAILURE;
+  }
+
+  // Get rid of old loaded surface
+  freeSurface(surface);
 #else
-    // Check for memory leaks and get rid of preexisting texture
-    if (outTexture) {
-      LOGERR(
-          "Warning, Memory leak detected! Trying to load a new "
-          "texture before calling delete on the old one");
-
-      freeTexture(outTexture);
-    }
-
-    // Create texture from surface pixels
-    outTexture = SDL_CreateTextureFromSurface(_renderer, surface);
-
-    if (nullptr == outTexture) {
-      LOGERR("Unable to create texture! SDL Error: %s", SDL_GetError());
-      return EXIT_FAILURE;
-    }
-
-    // Get rid of old loaded surface
-    freeSurface(surface);
+  //dummy check to satisfy Wunused-variable gcc warning
+  if(surface || outTexture) {}
+  LOGERR(
+       "Error, loadTextureFromSurface is designed to be used by"
+       "hardware accelerated Texture. "
+       "You can not them with software renderer");
+  return EXIT_FAILURE;
 #endif /* USE_SOFTWARE_RENDERER */
 
   return EXIT_SUCCESS;
