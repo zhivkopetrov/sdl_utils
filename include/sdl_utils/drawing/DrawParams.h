@@ -12,6 +12,8 @@
 #include "utils/drawing/Point.h"
 #include "utils/drawing/Rectangle.h"
 
+// Forward declarations
+
 enum class WidgetType : uint8_t {
   IMAGE,
   TEXT,

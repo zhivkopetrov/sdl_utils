@@ -26,6 +26,7 @@ add_library(
         "${_SRC_DIR}/containers/TextContainer.cpp"
         "${_SRC_DIR}/drawing/Camera.cpp"
         "${_SRC_DIR}/drawing/DrawParams.cpp"
+        "${_SRC_DIR}/drawing/GeometryUtils.cpp"
         "${_SRC_DIR}/drawing/LoadingScreen.cpp"
         "${_SRC_DIR}/drawing/MonitorWindow.cpp"
         "${_SRC_DIR}/drawing/Renderer.cpp"
