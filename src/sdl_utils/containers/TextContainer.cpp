@@ -14,6 +14,7 @@
 #include "sdl_utils/drawing/Texture.h"
 #include "utils/drawing/Color.h"
 #include "utils/LimitValues.hpp"
+#include "utils/Unused.h"
 #include "utils/Log.h"
 
 // basically anything different than nullptr
@@ -200,9 +201,7 @@ void TextContainer::attachText(const int32_t containerId,
   _texts[containerId] = createdTexture;
 
 #if USE_SOFTWARE_RENDERER
-  // dummy checks to satisfy -Wunused-variable gcc warning
-  if (createdWidth || createdHeight) {
-  }
+  UNUSED(createdWidth, createdHeight);
 #else
   // calculate how much GPU VRAM will be used
   _textMemoryUsage[containerId] =
