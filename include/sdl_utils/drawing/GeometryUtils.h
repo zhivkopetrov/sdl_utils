@@ -16,9 +16,9 @@ class GeometryUtils {
 public:
   GeometryUtils() = delete;
 
-  bool findRectIntersection(const Rectangle &srcA,
-                            const Rectangle &srcB,
-                            Rectangle &intersectionResult);
+  static bool findRectIntersection(const Rectangle &srcA,
+                                   const Rectangle &srcB,
+                                   Rectangle &intersectionResult);
 };
 
 #endif /* SDL_UTILS_GEOMETRYUTILS_H_ */
