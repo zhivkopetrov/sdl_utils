@@ -29,4 +29,8 @@ constexpr inline double FULL_ROTATION_ANGLE = 360.0;
 constexpr inline double MIN_SCALE_FACTOR = 0.0;
 constexpr inline double MAX_SCALE_FACTOR = 1.0;
 
+constexpr inline int32_t BLENDMODE_NONE = 0;  // value for SDL_BLENDMODE_NONE
+constexpr inline int32_t BLENDMODE_BLEND = 1; // value for SDL_BLENDMODE_BLEND
+constexpr inline int32_t BLENDMODE_ADD = 2;   // value for SDL_BLENDMODE_ADD
+
 #endif /* SDL_UTILS_DRAWCONSTANTS_H_ */
