@@ -9,21 +9,12 @@
 // Other libraries headers
 
 // Own components headers
+#include "sdl_utils/drawing/defines/DrawConstants.h"
 #include "utils/drawing/Point.h"
 #include "utils/drawing/Rectangle.h"
 
 // Forward declarations
 
-enum class WidgetType : uint8_t {
-  IMAGE,
-  TEXT,
-  SPRITE_BUFFER,
-
-  UNKNOWN = 255
-};
-
-constexpr inline int32_t ZERO_OPACITY = 0;
-constexpr inline int32_t FULL_OPACITY = 255;
 
 struct DrawParams {
   DrawParams();
