@@ -6,10 +6,11 @@ if(TARGET sdl_utils)
   return()
 endif()
 
-include(${CMAKE_CURRENT_SOURCE_DIR}/cmake_helpers/helpers.cmake)
-
-set(CMAKE_MODULE_PATH 
+if(NOT CMAKE_HELPERS_INCLUDED)
+    include(${CMAKE_CURRENT_SOURCE_DIR}/cmake_helpers/helpers.cmake)
+    set(CMAKE_MODULE_PATH 
     ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake_helpers/find_modules")
+endif()
 
 project(sdl_utils)
             
@@ -64,7 +65,9 @@ target_include_directories(
         ${SDL2_MIXER_INCLUDE_DIR}
 )
 
-add_subdirectory(resource_utils)
+if(NOT TARGET resource_utils)
+    add_subdirectory(resource_utils)
+endif()
 
 target_link_libraries(
     ${PROJECT_NAME}
