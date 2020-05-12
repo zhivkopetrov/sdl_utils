@@ -13,12 +13,35 @@ if(NOT CMAKE_HELPERS_INCLUDED)
 endif()
 
 project(sdl_utils)
-            
+  
+set(_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include/sdl_utils")         
 set(_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src/sdl_utils")
 
 add_library(
     ${PROJECT_NAME} 
     STATIC
+        "${_INCLUDE_DIR}/containers/FontContainer.h"
+        "${_INCLUDE_DIR}/containers/ResourceContainer.h"
+        "${_INCLUDE_DIR}/containers/SDLContainers.h"
+        "${_INCLUDE_DIR}/containers/SoundContainer.h"
+        "${_INCLUDE_DIR}/containers/SpriteBufferContainer.h"
+        "${_INCLUDE_DIR}/containers/TextContainer.h"
+        "${_INCLUDE_DIR}/drawing/defines/DrawConstants.h"
+        "${_INCLUDE_DIR}/drawing/Camera.h"
+        "${_INCLUDE_DIR}/drawing/DrawParams.h"
+        "${_INCLUDE_DIR}/drawing/GeometryUtils.h"
+        "${_INCLUDE_DIR}/drawing/LoadingScreen.h"
+        "${_INCLUDE_DIR}/drawing/MonitorWindow.h"
+        "${_INCLUDE_DIR}/drawing/Renderer.h"
+        "${_INCLUDE_DIR}/drawing/Texture.h"
+        "${_INCLUDE_DIR}/input/defines/EventDefines.h"
+        "${_INCLUDE_DIR}/input/InputEvent.h"
+        "${_INCLUDE_DIR}/input/MouseUtils.h"
+        "${_INCLUDE_DIR}/input/TouchEntity.h"
+        "${_INCLUDE_DIR}/sound/defines/SoundMixerDefines.h"
+        "${_INCLUDE_DIR}/sound/SoundMixer.h"
+        "${_INCLUDE_DIR}/SDLLoader.h"
+        
         "${_SRC_DIR}/containers/FontContainer.cpp"
         "${_SRC_DIR}/containers/ResourceContainer.cpp"
         "${_SRC_DIR}/containers/SDLContainers.cpp"

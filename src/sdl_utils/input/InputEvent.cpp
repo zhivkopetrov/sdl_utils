@@ -18,7 +18,7 @@
 #endif /* USE_SOFTWARE_RENDERER */
 
 #include "utils/Log.h"
-#include "utils/datatype/EnumClassUtils.hpp"
+#include "utils/data_type/EnumClassUtils.hpp"
 #include "utils/drawing/Rectangle.h"
 
 InputEvent::InputEvent()

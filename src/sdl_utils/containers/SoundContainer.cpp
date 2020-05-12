@@ -11,7 +11,7 @@
 // Own components headers
 #include "sdl_utils/drawing/LoadingScreen.h"
 #include "sdl_utils/sound/SoundMixer.h"
-#include "utils/datatype/EnumClassUtils.hpp"
+#include "utils/data_type/EnumClassUtils.hpp"
 #include "utils/Log.h"
 
 typedef std::unordered_map<uint64_t, Mix_Music *>::iterator _musicMapIt;

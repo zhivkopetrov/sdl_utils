@@ -10,7 +10,7 @@
 #include <SDL_mixer.h>
 
 // Own components headers
-#include "sdl_utils/sound/SoundMixerDefines.h"
+#include "sdl_utils/sound/defines/SoundMixerDefines.h"
 #include "utils/Log.h"
 
 int32_t SoundMixer::allocateSoundChannels(const int32_t requestedChannels) {

@@ -18,7 +18,7 @@
 #include <SDL_video.h>
 
 // Own components headers
-#include "sdl_utils/sound/SoundMixerDefines.h"
+#include "sdl_utils/sound/defines/SoundMixerDefines.h"
 
 #include "utils/debug/FunctionTracer.hpp"
 #include "utils/Log.h"

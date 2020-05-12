@@ -15,7 +15,7 @@
 #include "sdl_utils/drawing/LoadingScreen.h"
 #include "sdl_utils/drawing/Texture.h"
 #include "utils/concurrency/ThreadSafeQueue.hpp"
-#include "utils/datatype/EnumClassUtils.hpp"
+#include "utils/data_type/EnumClassUtils.hpp"
 #include "utils/drawing/Color.h"
 #include "utils/Log.h"
 
