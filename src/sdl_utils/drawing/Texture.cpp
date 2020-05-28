@@ -13,7 +13,6 @@
 // Own components headers
 #if USE_SOFTWARE_RENDERER
 #include "sdl_utils/drawing/Camera.h"
-#include "utils/Unused.h"
 #endif /* USE_SOFTWARE_RENDERER */
 
 #include "sdl_utils/drawing/DrawParams.h"
@@ -44,9 +43,8 @@ void Texture::freeTexture(SDL_Texture *&texture) {
   }
 }
 
-void Texture::setMonitorRect(Rectangle &monitorRect) {
+void Texture::setMonitorRect([[maybe_unused]]Rectangle &monitorRect) {
 #if USE_SOFTWARE_RENDERER
-  UNUSED(monitorRect);
   LOGERR("Warning, setMonitorRect is not supported for Software renderer.");
   return;
 #else
@@ -139,8 +137,9 @@ int32_t Texture::loadFromText(const char *text,
   return EXIT_SUCCESS;
 }
 
-int32_t Texture::loadTextureFromSurface(SDL_Surface *&surface,
-                                        SDL_Texture *&outTexture) {
+int32_t Texture::loadTextureFromSurface(
+    [[maybe_unused]]SDL_Surface *&surface,
+    [[maybe_unused]]SDL_Texture *&outTexture) {
 #if !USE_SOFTWARE_RENDERER
   if (nullptr == surface) {
     LOGERR("Nullptr surface detected. Unable to loadFromSurface()");
@@ -167,7 +166,6 @@ int32_t Texture::loadTextureFromSurface(SDL_Surface *&surface,
   // Get rid of old loaded surface
   freeSurface(surface);
 #else
-  UNUSED(surface, outTexture);
   LOGERR(
        "Error, loadTextureFromSurface is designed to be used by"
        "hardware accelerated Texture. "
@@ -364,7 +362,7 @@ void Texture::draw(SDL_Texture *texture, const DrawParams &drawParams)
 
   SDL_Rect renderQuad = { 0, 0, 0, 0 };
 
-  bool rendererClipped = false;
+  [[maybe_unused]] bool rendererClipped = false;
 
   if (drawParams.hasCrop)  // has crop and no scaling
   {
@@ -410,7 +408,6 @@ void Texture::draw(SDL_Texture *texture, const DrawParams &drawParams)
         renderQuad.h = drawParams.scaledHeight;
       }
 #else
-      UNUSED(rendererClipped);
       LOGERR(
           "Crop + scaling is not supported for software renderer."
           "Scaling will be ignored. Problem came from widget "
@@ -499,8 +496,8 @@ void Texture::setRenderer(SDL_Renderer *renderer)
 }
 
 #if USE_SOFTWARE_RENDERER
-void Texture::setAlpha(SDL_Surface *texture, const int32_t alpha) {
-  UNUSED(texture, alpha);
+void Texture::setAlpha([[maybe_unused]]SDL_Surface *texture,
+                       [[maybe_unused]]const int32_t alpha) {
   LOGERR(
       "Warning, alpha channel (widget transparency) is not supported "
       "for Software renderer. Alpha will not be changed.");
@@ -529,8 +526,8 @@ void Texture::setAlpha(SDL_Texture *texture, const int32_t alpha) {
 #endif /* USE_SOFTWARE_RENDERER */
 
 #if USE_SOFTWARE_RENDERER
-int32_t Texture::setBlendMode(SDL_Surface *texture, const int32_t blendMode) {
-  UNUSED(texture, blendMode);
+int32_t Texture::setBlendMode([[maybe_unused]]SDL_Surface *texture,
+                              [[maybe_unused]]const int32_t blendMode) {
   LOGR(
       "Warning, .setBlendMode() is not supported for Software renderer. "
       "Blend mode will not be changed.");

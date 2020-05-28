@@ -14,7 +14,6 @@
 #include "sdl_utils/drawing/Texture.h"
 #include "utils/LimitValues.hpp"
 #include "utils/drawing/Color.h"
-#include "utils/Unused.h"
 #include "utils/Log.h"
 
 // basically anything different than nullptr
@@ -133,10 +132,11 @@ void SpriteBufferContainer::destroySpriteBuffer(
       sizeof(uniqueContainerId));
 }
 #if USE_SOFTWARE_RENDERER
-void SpriteBufferContainer::attachSpriteBuffer(const int32_t containerId,
-                                               const int32_t createdWidth,
-                                               const int32_t createdHeight,
-                                               SDL_Surface *createdTexture)
+void SpriteBufferContainer::attachSpriteBuffer(
+    const int32_t containerId,
+    [[maybe_unused]]const int32_t createdWidth,
+    [[maybe_unused]]const int32_t createdHeight,
+    SDL_Surface *createdTexture)
 #else
 void SpriteBufferContainer::attachSpriteBuffer(const int32_t containerId,
                                                const int32_t createdWidth,
@@ -146,16 +146,14 @@ void SpriteBufferContainer::attachSpriteBuffer(const int32_t containerId,
 {
   _spriteBuffers[containerId] = createdTexture;
 
-#if USE_SOFTWARE_RENDERER
-  UNUSED(createdWidth, createdHeight);
-#else
+#if !USE_SOFTWARE_RENDERER
   // calculate how much GPU VRAM will be used
   _sbMemoryUsage[containerId] =
       static_cast<uint64_t>((createdWidth * createdHeight * RGBA_BYTE_SIZE));
 
   // increase the occupied GPU memory usage counter for the new texture
   _gpuMemoryUsage += _sbMemoryUsage[containerId];
-#endif /* USE_SOFTWARE_RENDERER */
+#endif /* !USE_SOFTWARE_RENDERER */
 }
 
 #if USE_SOFTWARE_RENDERER

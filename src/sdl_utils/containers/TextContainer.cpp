@@ -14,7 +14,6 @@
 #include "sdl_utils/drawing/Texture.h"
 #include "utils/drawing/Color.h"
 #include "utils/LimitValues.hpp"
-#include "utils/Unused.h"
 #include "utils/Log.h"
 
 // basically anything different than nullptr
@@ -188,8 +187,8 @@ void TextContainer::unloadText(const int32_t textUniqueId) {
 
 #if USE_SOFTWARE_RENDERER
 void TextContainer::attachText(const int32_t containerId,
-                               const int32_t createdWidth,
-                               const int32_t createdHeight,
+                               [[maybe_unused]]const int32_t createdWidth,
+                               [[maybe_unused]]const int32_t createdHeight,
                                SDL_Surface *createdTexture)
 #else
 void TextContainer::attachText(const int32_t containerId,
@@ -200,16 +199,14 @@ void TextContainer::attachText(const int32_t containerId,
 {
   _texts[containerId] = createdTexture;
 
-#if USE_SOFTWARE_RENDERER
-  UNUSED(createdWidth, createdHeight);
-#else
+#if !USE_SOFTWARE_RENDERER
   // calculate how much GPU VRAM will be used
   _textMemoryUsage[containerId] =
       static_cast<uint64_t>((createdWidth * createdHeight * RGBA_BYTE_SIZE));
 
   // increase the occupied GPU memory usage counter for the new texture
   _gpuMemoryUsage += _textMemoryUsage[containerId];
-#endif /* !USE_SOFTWARE_RENDERER */
+#endif /* !!USE_SOFTWARE_RENDERER */
 }
 
 #if USE_SOFTWARE_RENDERER
