@@ -5,7 +5,6 @@
 
 // C++ system headers
 #include <cstdint>
-#include <string>
 
 // Other libraries headers
 
@@ -58,8 +57,7 @@ class MonitorWindow {
    *
    *  @returns int32_t     - error code
    * */
-  int32_t init(const std::string &projectFolderName,
-               const int32_t displayMode);
+  int32_t init(const int32_t displayMode);
 
   /** @brief used to deinitialize the created window
    * */
@@ -68,6 +66,14 @@ class MonitorWindow {
   /** @brief used to get access to the the actual created window
    * */
   inline SDL_Window* getWindow() const { return _window; }
+
+  /** @brief loads window icon (on the dash bar) for the application window
+   *
+   *  @param const char * - path to image
+   *
+   *  @return int32_t     - error code
+   * */
+  int32_t loadWindowIcon(const char *iconPath);
 
  private:
   // The actual window

@@ -37,7 +37,6 @@ class Renderer {
    *                                          renderer(secondary) thread.
    *
    *  @param SDL_Window *  - window created by the OS (handled by SDL)
-   *  @param const int32_t - number of supported monitors (one by default)
    *
    *  @return int32_t - error code
    *
@@ -79,7 +78,7 @@ class Renderer {
    *   NOTE2: ::init() is executed before the secondary thread is still
    *          spawned (it is being executed on the main thread)
    * */
-  int32_t init(SDL_Window* window, const int32_t enabledMonitorsCount);
+  int32_t init(SDL_Window* window);
 
   /** @brief used to destroy renderer and window
    *

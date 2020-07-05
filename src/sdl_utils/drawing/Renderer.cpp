@@ -54,14 +54,8 @@ Renderer::Renderer()
       _isRendererBusy(false),
       _isMultithreadTextureLoadingEnabled(false) {}
 
-int32_t Renderer::init(SDL_Window *window, const int32_t enabledMonitorsCount) {
-  int32_t err = EXIT_SUCCESS;
-
+int32_t Renderer::init(SDL_Window *window) {
   _window = window;
-
-  for (int32_t i = 0; i < SUPPORTED_BACK_BUFFERS; ++i) {
-    _rendererState[i].enabledMonitorsCount = enabledMonitorsCount;
-  }
 
   /** Set texture filtering to linear
    *                     (used for image scaling /pixel interpolation/ )
@@ -71,76 +65,65 @@ int32_t Renderer::init(SDL_Window *window, const int32_t enabledMonitorsCount) {
         "Warning: Linear texture filtering not enabled! "
         "SDL_SetHint() failed. SDL Error: %s",
         SDL_GetError());
-
-    err = EXIT_FAILURE;
+    return EXIT_FAILURE;
   }
 
-  if (EXIT_SUCCESS == err) {
 #if USE_SOFTWARE_RENDERER
-    _sdlRenderer = SDL_GetWindowSurface(_window);
+  _sdlRenderer = SDL_GetWindowSurface(_window);
 
-    if (nullptr == _sdlRenderer) {
-      LOGERR(
-          "Software Renderer could not be created! "
-          "SDL_GetWindowSurface() failed. SDL Error: %s",
-          SDL_GetError());
-
-      err = EXIT_FAILURE;
-    }
+  if (nullptr == _sdlRenderer) {
+    LOGERR(
+        "Software Renderer could not be created! "
+        "SDL_GetWindowSurface() failed. SDL Error: %s",
+        SDL_GetError());
+    return EXIT_FAILURE;
+  }
 #else
-    // Create the actual hardware renderer for window
-    _sdlRenderer =
-        SDL_CreateRenderer(_window, -1,
-                           SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE
+  // Create the actual hardware renderer for window
+  _sdlRenderer =
+      SDL_CreateRenderer(_window, -1,
+                         SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE
 #if ENABLE_VSYNC
-                               | SDL_RENDERER_PRESENTVSYNC
+                             | SDL_RENDERER_PRESENTVSYNC
 #endif /* ENABLE_VSYNC */
-        );
-    if (nullptr == _sdlRenderer) {
-      LOGERR("Renderer could not be created! SDL Error: %s", SDL_GetError());
+      );
+  if (nullptr == _sdlRenderer) {
+    LOGERR("Renderer could not be created! SDL Error: %s", SDL_GetError());
+    return EXIT_FAILURE;
+  }
 
-      err = EXIT_FAILURE;
-    } else {
-      // Initialize renderer color
-      if (EXIT_SUCCESS !=
-          SDL_SetRenderDrawColor(_sdlRenderer, Colors::BLACK.rgba.r,
-                                 Colors::BLACK.rgba.g, Colors::BLACK.rgba.b,
-                                 Colors::BLACK.rgba.a)) {
-        LOGERR("Error in, SDL_SetRenderDrawColor(), SDL Error: %s",
-               SDL_GetError());
-
-        err = EXIT_FAILURE;
-      }
-    }
+  // Initialize renderer color
+  if (EXIT_SUCCESS !=
+      SDL_SetRenderDrawColor(_sdlRenderer, Colors::BLACK.rgba.r,
+                             Colors::BLACK.rgba.g, Colors::BLACK.rgba.b,
+                             Colors::BLACK.rgba.a)) {
+    LOGERR("Error in, SDL_SetRenderDrawColor(), SDL Error: %s",
+           SDL_GetError());
+    return EXIT_FAILURE;
+  }
 
 #if ENABLE_VSYNC && DISABLE_DOUBLE_BUFFERING_SWAP_INTERVAL
-    if (EXIT_SUCCESS == err) {
-      if (EXIT_SUCCESS != SDL_GL_SetSwapInterval(0)) {
-        LOGERR("SDL_GL_SetSwapInterval(0) failed, SDL Error: %s",
-               SDL_GetError());
-
-        err = EXIT_FAILURE;
-      }
-    }
+  if (EXIT_SUCCESS != SDL_GL_SetSwapInterval(0)) {
+    LOGERR("SDL_GL_SetSwapInterval(0) failed, SDL Error: %s",
+           SDL_GetError());
+    return EXIT_FAILURE;
+  }
 #endif /* ENABLE_VSYNC && DISABLE_DOUBLE_BUFFERING_SWAP_INTERVAL */
 #endif /* USE_SOFTWARE_RENDERER */
-  }    /* end of else for if(EXIT_SUCCESS == err) */
 
-  if (EXIT_SUCCESS == err) {
-    Texture::setRenderer(_sdlRenderer);
+  Texture::setRenderer(_sdlRenderer);
 
 #if !USE_SOFTWARE_RENDERER
-    LoadingScreen::setRenderer(_sdlRenderer);
+  LoadingScreen::setRenderer(_sdlRenderer);
 
-    if (!SDL_RenderTargetSupported(_sdlRenderer)) {
-      LOGERR(
-          "Warning, Render Target change is not supported on this "
-          "platform. This will result in non-working SpriteBuffers.");
-    }
-#endif /* !USE_SOFTWARE_RENDERER */
+  if (!SDL_RenderTargetSupported(_sdlRenderer)) {
+    LOGERR(
+        "Warning, Render Target change is not supported on this "
+        "platform. This will result in non-working SpriteBuffers.");
   }
+#endif /* !USE_SOFTWARE_RENDERER */
 
-  return err;
+  return EXIT_SUCCESS;
 }
 
 void Renderer::deinit() {

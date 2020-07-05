@@ -39,7 +39,6 @@ struct RendererState {
     lastTotalWidgetCounter = 0;
     globalOffsetX = 0;
     globalOffsetY = 0;
-    enabledMonitorsCount = 0;
     isLocked = true;
 
     for (int32_t i = 0; i < RendererDefines::RENDERER_MAX_COMMANDS; ++i) {
@@ -63,9 +62,6 @@ struct RendererState {
   /* Holds global moves offsets (by default they are not used) */
   int32_t globalOffsetX;
   int32_t globalOffsetY;
-
-  // Holds the number of enabled monitors
-  int32_t enabledMonitorsCount;
 
   /* A container for all draw specific widget data.
    * Since rendering will be the most heavy operation we need to prepare

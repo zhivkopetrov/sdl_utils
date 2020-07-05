@@ -50,6 +50,8 @@ int32_t LoadingScreen::init(const std::string & projectFolderName,
 
   SDL_Surface* surface = nullptr;
 
+  LOGR("Fix the Loading screen __FILE__");
+
   const std::string absoluteFilePath = __FILE__;
   const std::string PROJECT_FOLDER = projectFolderName + "/";
 

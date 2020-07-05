@@ -42,7 +42,7 @@ int32_t SDLContainers::init() {
   }
 
   if (EXIT_SUCCESS == err) {
-    if (EXIT_SUCCESS != _rsrcLoader->init(_projectName, &resourceCfg)) {
+    if (EXIT_SUCCESS != _rsrcLoader->init(&resourceCfg)) {
       LOGERR("Error in _rsrcLoader.init() -> Terminating ...");
 
       err = EXIT_FAILURE;

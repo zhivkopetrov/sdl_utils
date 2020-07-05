@@ -1,5 +1,3 @@
-#define USE_WINDOW_ICON 1
-
 // Corresponding header
 #include "sdl_utils/drawing/MonitorWindow.h"
 
@@ -10,10 +8,7 @@
 
 // Other libraries headers
 #include <SDL_video.h>
-
-#if USE_WINDOW_ICON
 #include <SDL_image.h>
-#endif  // USE_WINDOW_ICON
 
 // Own components headers
 #include "sdl_utils/drawing/RendererDefines.h"
@@ -39,10 +34,7 @@ MonitorWindow::MonitorWindow(const Rectangle& rect)
 
 MonitorWindow::~MonitorWindow() { deinit(); }
 
-int32_t MonitorWindow::init(const std::string &projectFolderName,
-                            const int32_t displayMode) {
-  int32_t err = EXIT_SUCCESS;
-
+int32_t MonitorWindow::init(const int32_t displayMode) {
   int32_t initWindowX = 0;
   int32_t initWindowY = 0;
 
@@ -62,57 +54,17 @@ int32_t MonitorWindow::init(const std::string &projectFolderName,
 
   if (nullptr == _window) {
     LOGERR("Window could not be created! SDL Error: %s", SDL_GetError());
-
-    err = EXIT_FAILURE;
-  } else {
-    // obtain real window coordinates after creation
-    SDL_GetWindowPosition(_window, &_windowRect.x, &_windowRect.y);
+    return EXIT_FAILURE;
   }
+
+  // obtain real window coordinates after creation
+  SDL_GetWindowPosition(_window, &_windowRect.x, &_windowRect.y);
 
 #if !USE_SOFTWARE_RENDERER
   Texture::setMonitorRect(_windowRect);
 #endif /* USE_SOFTWARE_RENDERER */
 
-#if USE_WINDOW_ICON
-  if (EXIT_SUCCESS == err) {
-    const std::string absoluteFilePath = __FILE__;
-    const std::string PROJECT_FOLDER = projectFolderName + "/";
-
-    // use rfind, because we are closer to the end
-    const uint64_t currDirPos = absoluteFilePath.rfind(PROJECT_FOLDER);
-
-    std::string projectFilePath = "";
-
-    if (std::string::npos == currDirPos) {
-      LOGERR("Error, project folder not found");
-
-      err = EXIT_FAILURE;
-    } else {
-      projectFilePath =
-          absoluteFilePath.substr(0, currDirPos + PROJECT_FOLDER.size());
-
-      std::string ICON_FILE_PATH = projectFilePath;
-      ICON_FILE_PATH.append(
-          "/commonresources/p/loadingscreen/CHANGE_ME.jpg");
-
-      SDL_Surface* windowIcon = IMG_Load(ICON_FILE_PATH.c_str());
-
-      if (nullptr == windowIcon) {
-        LOGERR("Unable to create window Image from file! SDL Error: %s",
-               SDL_GetError());
-
-        err = EXIT_FAILURE;
-      } else {
-        SDL_SetWindowIcon(_window, windowIcon);
-
-        SDL_FreeSurface(windowIcon);
-        windowIcon = nullptr;
-      }
-    }
-  }
-#endif  // USE_WINDOW_ICON
-
-  return err;
+  return EXIT_SUCCESS;
 }
 
 void MonitorWindow::deinit() {
@@ -121,4 +73,18 @@ void MonitorWindow::deinit() {
     SDL_DestroyWindow(_window);
     _window = nullptr;
   }
+}
+
+int32_t MonitorWindow::loadWindowIcon(const char *iconPath) {
+  SDL_Surface* windowIcon = IMG_Load(iconPath);
+  if (nullptr == windowIcon) {
+    LOGERR("Unable to create window Image from file! SDL Error: %s",
+           SDL_GetError());
+    return EXIT_FAILURE;
+  }
+
+  SDL_SetWindowIcon(_window, windowIcon);
+  SDL_FreeSurface(windowIcon);
+  windowIcon = nullptr;
+  return EXIT_SUCCESS;
 }
