@@ -40,10 +40,10 @@
 #include "sdl_utils/containers/SoundContainer.h"
 #include "sdl_utils/containers/SpriteBufferContainer.h"
 #include "sdl_utils/containers/TextContainer.h"
+#include "sdl_utils/containers/config/SDLContainersConfig.hpp"
 
 // Forward declarations
 class ResourceLoader;
-class Renderer;
 
 class SDLContainers : public ResourceContainer,
                       public TextContainer,
@@ -51,8 +51,7 @@ class SDLContainers : public ResourceContainer,
                       public SoundContainer,
                       public SpriteBufferContainer {
  public:
-  explicit SDLContainers(Renderer* renderer, const std::string& projectName,
-                         const bool isMultithreadResAllowed);
+  explicit SDLContainers(const SDLContainersConfig &cfg);
 
   /** @brief used to initialise the SDL containers
    *
@@ -69,15 +68,9 @@ class SDLContainers : public ResourceContainer,
    *
    *  @returns int32_t - error code
    * */
-  int32_t populateSDLContainers();
+  int32_t populateSDLContainers(ResourceLoader &rsrcLoader);
 
-  // ResourceLoader is used to parse resource.bin and fonts.bin,
-  // which were previously created by the resourceBuilder Tool
-  ResourceLoader* _rsrcLoader;
-
-  std::string _projectName;
-
-  bool _isMultithreadResAllowed;
+  SDLContainersConfig _config;
 };
 
 #endif /* SDL_UTILS_SDLCONTAINERS_H_ */

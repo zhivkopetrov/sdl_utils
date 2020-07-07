@@ -9,126 +9,76 @@
 
 // Other libraries headers
 
-
 // Own components headers
 #include "sdl_utils/drawing/LoadingScreen.h"
 #include "resource_utils/resource_loader/ResourceLoader.h"
 #include "utils/debug/FunctionTracer.hpp"
 #include "utils/Log.h"
 
-SDLContainers::SDLContainers(Renderer* renderer, const std::string& projectName,
-                             const bool isMultithreadResAllowed)
-    :
-
-      ResourceContainer(renderer),
-      TextContainer(renderer),
-      SpriteBufferContainer(renderer),
-      _rsrcLoader(nullptr),
-      _projectName(projectName),
-      _isMultithreadResAllowed(isMultithreadResAllowed) {}
+SDLContainers::SDLContainers(const SDLContainersConfig &cfg)
+    : ResourceContainer(cfg.renderer),
+      TextContainer(cfg.renderer),
+      SpriteBufferContainer(cfg.renderer),
+      _config(cfg) {}
 
 int32_t SDLContainers::init() {
-  TRACE_ENTRY_EXIT;
-
-  int32_t err = EXIT_SUCCESS;
-
-  ResourceLoaderCfg resourceCfg;
-
-  _rsrcLoader = new ResourceLoader(_projectName);
-  if (nullptr == _rsrcLoader) {
-    LOGERR("Error, bad alloc for _rsrcLoader() -> Terminating ...");
-
-    err = EXIT_FAILURE;
+  ResourceLoader rsrcLoader;
+  if (EXIT_SUCCESS != rsrcLoader.init(_config.projectBuildPath)) {
+    LOGERR("Error in _rsrcLoader.init() -> Terminating ...");
+    return EXIT_FAILURE;
   }
 
-  if (EXIT_SUCCESS == err) {
-    if (EXIT_SUCCESS != _rsrcLoader->init(&resourceCfg)) {
-      LOGERR("Error in _rsrcLoader.init() -> Terminating ...");
-
-      err = EXIT_FAILURE;
-    }
+  EgnineBinHeadersData binHeaderData;
+  if (EXIT_SUCCESS != rsrcLoader.readEngineBinHeaders(binHeaderData)) {
+    LOGERR("Error in readEngineBinHeaders() -> Terminating ...");
+    return EXIT_FAILURE;
   }
 
-  if (EXIT_SUCCESS == err) {
-    if (EXIT_SUCCESS != SoundContainer::init(resourceCfg.musicsCount,
-                                             resourceCfg.chunksCount)) {
-      LOGERR("Error in SoundContainer::init() -> Terminating ...");
-
-      err = EXIT_FAILURE;
-    }
+  if (EXIT_SUCCESS != SoundContainer::init(binHeaderData.musicsCount,
+                                           binHeaderData.chunksCount)) {
+    LOGERR("Error in SoundContainer::init() -> Terminating ...");
+    return EXIT_FAILURE;
   }
 
-  if (EXIT_SUCCESS == err) {
-    if (EXIT_SUCCESS != FontContainer::init(resourceCfg.fontsCount)) {
-      LOGERR("Error in FontContainer::init() -> Terminating ...");
-
-      err = EXIT_FAILURE;
-    }
+  if (EXIT_SUCCESS != FontContainer::init(binHeaderData.fontsCount)) {
+    LOGERR("Error in FontContainer::init() -> Terminating ...");
+    return EXIT_FAILURE;
   }
 
-  if (EXIT_SUCCESS == err) {
-    if (EXIT_SUCCESS !=
-        ResourceContainer::init(resourceCfg.staticWidgetsCount,
-                                resourceCfg.dynamicWidgetsCount)) {
-      LOGERR("Error in ResourceContainer::init() -> Terminating ...");
-
-      err = EXIT_FAILURE;
-    }
+  if (EXIT_SUCCESS !=
+      ResourceContainer::init(binHeaderData.staticWidgetsCount,
+                              binHeaderData.dynamicWidgetsCount)) {
+    LOGERR("Error in ResourceContainer::init() -> Terminating ...");
+    return EXIT_FAILURE;
   }
 
-  if (EXIT_SUCCESS == err) {
-    if (EXIT_SUCCESS != TextContainer::init(FontContainer::getFontsMap())) {
-      LOGERR("Error in TextContainer::init() -> Terminating ...");
-
-      err = EXIT_FAILURE;
-    }
+  if (EXIT_SUCCESS != TextContainer::init(FontContainer::getFontsMap())) {
+    LOGERR("Error in TextContainer::init() -> Terminating ...");
+    return EXIT_FAILURE;
   }
 
-  if (EXIT_SUCCESS == err) {
-    if (EXIT_SUCCESS != SpriteBufferContainer::init()) {
-      LOGERR("Error in SpriteBufferContainer::init() -> Terminating ...");
-
-      err = EXIT_FAILURE;
-    }
+  if (EXIT_SUCCESS != SpriteBufferContainer::init()) {
+    LOGERR("Error in SpriteBufferContainer::init() -> Terminating ...");
+    return EXIT_FAILURE;
   }
 
-  if (EXIT_SUCCESS == err) {
-    const int32_t TOTAL_FILE_SIZE = resourceCfg.widgetsFileSize +
-                                    resourceCfg.fontsFileSize +
-                                    resourceCfg.soundsFileSize;
-
-    if (EXIT_SUCCESS != LoadingScreen::init(_projectName, TOTAL_FILE_SIZE)) {
-      LOGERR("Error in LoadingScreen::init() -> Terminating ...)");
-
-      err = EXIT_FAILURE;
-    }
+  const int32_t TOTAL_FILE_SIZE = binHeaderData.widgetsFileSize +
+      binHeaderData.fontsFileSize + binHeaderData.soundsFileSize;
+  if (EXIT_SUCCESS !=
+      LoadingScreen::init(_config.loadingScreenCfg, TOTAL_FILE_SIZE)) {
+    LOGERR("Error in LoadingScreen::init() -> Terminating ...)");
+    return EXIT_FAILURE;
   }
 
-  if (EXIT_SUCCESS == err) {
-    if (EXIT_SUCCESS != populateSDLContainers()) {
-      LOGERR("Error in populateSDLContainers() -> Terminating ...");
-
-      err = EXIT_FAILURE;
-    }
+  if (EXIT_SUCCESS != populateSDLContainers(rsrcLoader)) {
+    LOGERR("Error in populateSDLContainers() -> Terminating ...");
+    return EXIT_FAILURE;
   }
 
-  if (EXIT_SUCCESS == err) {
-    // deinit loading screen resources, because we no longer need them
-    LoadingScreen::deinit();
+  // deinit loading screen resources, because we no longer need them
+  LoadingScreen::deinit();
 
-    // close the resource loader, because we no longer need it
-    if (nullptr != _rsrcLoader) {
-      _rsrcLoader->deinit();
-
-      delete _rsrcLoader;
-      _rsrcLoader = nullptr;
-    }
-  }
-
-  // clear the string -> it is no longer needed
-  _projectName.clear();
-
-  return err;
+  return EXIT_SUCCESS;
 }
 
 void SDLContainers::deinit() {
@@ -143,15 +93,14 @@ void SDLContainers::deinit() {
   SpriteBufferContainer::deinit();
 }
 
-int32_t SDLContainers::populateSDLContainers() {
+int32_t SDLContainers::populateSDLContainers(ResourceLoader &rsrcLoader) {
   TRACE_ENTRY_EXIT;
 
   //=========== START SOUND POPULATE ==============
   SoundData soundData;
 
-  while (_rsrcLoader->readSoundChunk(&soundData)) {
+  while (rsrcLoader.readSoundChunk(soundData)) {
     SoundContainer::storeSoundData(soundData);
-
     soundData.reset();
   }
 
@@ -161,9 +110,8 @@ int32_t SDLContainers::populateSDLContainers() {
   //============ START FONT POPULATE ==============
   FontData fontData;
 
-  while (_rsrcLoader->readFontChunk(&fontData)) {
+  while (rsrcLoader.readFontChunk(fontData)) {
     FontContainer::storeFontData(fontData);
-
     fontData.reset();
   }
 
@@ -173,13 +121,12 @@ int32_t SDLContainers::populateSDLContainers() {
   //========== START RESOURCE POPULATE ============
   ResourceData resData;
 
-  while (_rsrcLoader->readResourceChunk(&resData)) {
+  while (rsrcLoader.readResourceChunk(resData)) {
     ResourceContainer::storeRsrcData(resData);
-
     resData.reset();
   }
 
-  ResourceContainer::loadAllStoredResources(_isMultithreadResAllowed);
+  ResourceContainer::loadAllStoredResources(_config.isMultithreadResAllowed);
   //=========== END RESOURCE POPULATE =============
 
   return EXIT_SUCCESS;

@@ -14,6 +14,7 @@
 // Forward declarations
 struct SDL_Texture;
 struct SDL_Renderer;
+struct LoadingScreenConfig;
 
 class LoadingScreen {
  public:
@@ -22,12 +23,11 @@ class LoadingScreen {
 
   /** @brief used to initialise background loading resources
    *
-   *  @param const int32_t - the total file size for all resources that
-   *                               should be loaded during initialization
+   *  @param const LoadingScreenConfig & - config for the LoadingScreen
    *
    *  @return int32_t      - error code
    * */
-  static int32_t init(const std::string & projectFolderName,
+  static int32_t init(const LoadingScreenConfig &cfg,
                       const int32_t totalFileSize);
 
   /** @brief used to deinitialise background loading resources
@@ -86,6 +86,9 @@ class LoadingScreen {
    *                         loaded during initialization (in percentage)
    * */
   static int32_t _lastLoadedPercent;
+
+  static int32_t _monitorWidth;
+  static int32_t _monitorHeight;
 };
 
 #endif /* SDL_UTILS_LOADINGSCREEN_H_ */

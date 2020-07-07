@@ -13,6 +13,7 @@
 // Own components headers
 #include "sdl_utils/drawing/Texture.h"
 #include "sdl_utils/drawing/RendererDefines.h"
+#include "sdl_utils/drawing/config/LoadingScreenConfig.hpp"
 #include "utils/drawing/Color.h"
 #include "utils/Log.h"
 
@@ -30,11 +31,14 @@ int32_t LoadingScreen::_currLoadedFileSize = 0;
 
 int32_t LoadingScreen::_lastLoadedPercent = 0;
 
+int32_t LoadingScreen::_monitorWidth = 0;
+int32_t LoadingScreen::_monitorHeight = 0;
+
 #define LOAD_WITH_PROGRESS_BAR 1
 
-#define USE_LOADING_BACKGROUND_IMAGE 0
+#define USE_LOADING_BACKGROUND_IMAGE 1
 
-int32_t LoadingScreen::init(const std::string & projectFolderName,
+int32_t LoadingScreen::init(const LoadingScreenConfig &cfg,
                             const int32_t totalFileSize) {
 #if USE_SOFTWARE_RENDERER && LOAD_WITH_PROGRESS_BAR
   LOGR(
@@ -43,101 +47,54 @@ int32_t LoadingScreen::init(const std::string & projectFolderName,
 
   return EXIT_SUCCESS;
 #endif /* USE_SOFTWARE_RENDERER && LOAD_WITH_PROGRESS_BAR */
-
-  int32_t err = EXIT_SUCCESS;
-
   _totalFileSize = totalFileSize;
+  _monitorWidth = cfg.monitorWidth;
+  _monitorHeight = cfg.monitorHeight;
 
   SDL_Surface* surface = nullptr;
 
-  LOGR("Fix the Loading screen __FILE__");
-
-  const std::string absoluteFilePath = __FILE__;
-  const std::string PROJECT_FOLDER = projectFolderName + "/";
-
-  // use rfind, because we are closer to the end
-  const uint64_t currDirPos = absoluteFilePath.rfind(PROJECT_FOLDER);
-
-  std::string projectFilePath = "";
-
-  if (std::string::npos == currDirPos) {
-    LOGERR("Error, project folder not found");
-
-    err = EXIT_FAILURE;
-  } else {
-    projectFilePath =
-        absoluteFilePath.substr(0, currDirPos + PROJECT_FOLDER.size());
-  }
-
 #if USE_LOADING_BACKGROUND_IMAGE
-  if (EXIT_SUCCESS == err) {
-    std::string currPath = projectFilePath;
-    currPath.append("/commonresources/p/loadingscreen/loading_background.jpg");
-
-    if (EXIT_SUCCESS !=
-        Texture::loadSurfaceFromFile(currPath.c_str(), surface)) {
-      LOGERR("Error, could not load _loadingBackground Surface");
-
-      err = EXIT_FAILURE;
-    }
+  if (EXIT_SUCCESS !=
+      Texture::loadSurfaceFromFile(cfg.backgroundImagePath.c_str(), surface)) {
+    LOGERR("Error, could not load _loadingBackground Surface");
+    return EXIT_FAILURE;
   }
 
-  if (EXIT_SUCCESS == err) {
-    if (EXIT_SUCCESS !=
-        Texture::loadTextureFromSurface(surface, _loadingBackground)) {
-      LOGERR("Error, could not load _loadingBackground Texture");
-
-      err = EXIT_FAILURE;
-    }
+  if (EXIT_SUCCESS !=
+      Texture::loadTextureFromSurface(surface, _loadingBackground)) {
+    LOGERR("Error, could not load _loadingBackground Texture");
+    return EXIT_FAILURE;
   }
 #endif /* USE_LOADING_BACKGROUND_IMAGE */
 
-  if (EXIT_SUCCESS == err) {
-    std::string currPath = projectFilePath;
-    currPath.append("/commonresources/p/loadingscreen/progress_bar_on.jpg");
-
-    if (EXIT_SUCCESS !=
-        Texture::loadSurfaceFromFile(currPath.c_str(), surface)) {
-      LOGERR("Error, could not load _progressBarOn Surface");
-
-      err = EXIT_FAILURE;
-    }
+  if (EXIT_SUCCESS != Texture::loadSurfaceFromFile(
+        cfg.progressBarOnImagePath.c_str(), surface)) {
+    LOGERR("Error, could not load _progressBarOn Surface");
+    return EXIT_FAILURE;
   }
 
-  if (EXIT_SUCCESS == err) {
-    if (EXIT_SUCCESS !=
-        Texture::loadTextureFromSurface(surface, _progressBarOn)) {
-      LOGERR("Error, could not load _progressBarOn Texture");
-
-      err = EXIT_FAILURE;
-    }
+  if (EXIT_SUCCESS !=
+      Texture::loadTextureFromSurface(surface, _progressBarOn)) {
+    LOGERR("Error, could not load _progressBarOn Texture");
+    return EXIT_FAILURE;
   }
 
-  if (EXIT_SUCCESS == err) {
-    std::string currPath = projectFilePath;
-    currPath.append("/commonresources/p/loadingscreen/progress_bar_off.jpg");
-
-    if (EXIT_SUCCESS !=
-        Texture::loadSurfaceFromFile(currPath.c_str(), surface)) {
-      LOGERR("Error, could not load _progressBarOff Surface");
-
-      err = EXIT_FAILURE;
-    }
+  if (EXIT_SUCCESS != Texture::loadSurfaceFromFile(
+      cfg.progressBarOffImagePath.c_str(), surface)) {
+    LOGERR("Error, could not load _progressBarOff Surface");
+    return EXIT_FAILURE;
   }
 
-  if (EXIT_SUCCESS == err) {
-    if (EXIT_SUCCESS !=
-        Texture::loadTextureFromSurface(surface, _progressBarOff)) {
-      LOGERR("Error, could not load _progressBarOff Texture");
-
-      err = EXIT_FAILURE;
-    }
+  if (EXIT_SUCCESS !=
+      Texture::loadTextureFromSurface(surface, _progressBarOff)) {
+    LOGERR("Error, could not load _progressBarOff Texture");
+    return EXIT_FAILURE;
   }
 
   // do an initial draw for zero loaded resources
   LoadingScreen::draw(0);  // 0 % loaded
 
-  return err;
+  return EXIT_SUCCESS;
 }
 
 void LoadingScreen::deinit() {
@@ -184,7 +141,7 @@ void LoadingScreen::draw(const int32_t percentLoaded) {
   }
 
 #if USE_LOADING_BACKGROUND_IMAGE
-  const SDL_Rect backgroundRenderQuad = {0, 0, 1920, 1080};
+  const SDL_Rect backgroundRenderQuad { 0, 0, _monitorWidth, _monitorHeight };
 
   // Render to screen
   if (EXIT_SUCCESS !=
@@ -194,25 +151,19 @@ void LoadingScreen::draw(const int32_t percentLoaded) {
                        &backgroundRenderQuad,  // destination rectangle
                        0.0,                    // rotation angles
                        nullptr,                // rotation center
-                       SDL_FLIP_NONE))         // flip mode
-  {
+                       SDL_FLIP_NONE)) {       // flip mode
     LOGERR("Error in, SDL_RenderCopyEx(), SDL Error: %s", SDL_GetError());
-
     return;
   }
 #endif /* USE_LOADING_BACKGROUND_IMAGE */
 
-  SDL_Rect progressBarRenderQuad = {710,  // progress bar start X
-                                    200,  // progress bar end X
-                                    0,    // destination width
-                                    60};  // destination height
-
-  const int32_t OFFSET_X = 5;
-
+  constexpr int32_t OFFSET_X = 5;
   const int32_t LOADED_WIDHT = OFFSET_X * percentLoaded;
-
   // resize progress bar width to match the loaded resources percentage
-  progressBarRenderQuad.w = LOADED_WIDHT;
+  SDL_Rect progressBarRenderQuad = { 710,          // progress bar start X
+                                     200,          // progress bar end X
+                                     LOADED_WIDHT, // destination width
+                                     60 };         // destination height
 
   // Render to screen loaded percentage
   if (EXIT_SUCCESS !=
@@ -222,10 +173,8 @@ void LoadingScreen::draw(const int32_t percentLoaded) {
                        &progressBarRenderQuad,  // destination rectangle
                        0.0,                     // rotation angles
                        nullptr,                 // rotation center
-                       SDL_FLIP_NONE))          // flip mode
-  {
+                       SDL_FLIP_NONE)) {        // flip mode
     LOGERR("Error in, SDL_RenderCopyEx(), SDL Error: %s", SDL_GetError());
-
     return;
   }
 
@@ -245,10 +194,8 @@ void LoadingScreen::draw(const int32_t percentLoaded) {
                        &progressBarRenderQuad,  // destination rectangle
                        0.0,                     // rotation angles
                        nullptr,                 // rotation center
-                       SDL_FLIP_NONE))          // flip mode
-  {
+                       SDL_FLIP_NONE)) {        // flip mode
     LOGERR("Error in, SDL_RenderCopyEx(), SDL Error: %s", SDL_GetError());
-
     return;
   }
 

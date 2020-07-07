@@ -20,6 +20,7 @@ set(_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src/sdl_utils")
 add_library(
     ${PROJECT_NAME} 
     STATIC
+        "${_INCLUDE_DIR}/containers/config/SDLContainersConfig.hpp"
         "${_INCLUDE_DIR}/containers/FontContainer.h"
         "${_INCLUDE_DIR}/containers/ResourceContainer.h"
         "${_INCLUDE_DIR}/containers/SDLContainers.h"
@@ -27,6 +28,7 @@ add_library(
         "${_INCLUDE_DIR}/containers/SpriteBufferContainer.h"
         "${_INCLUDE_DIR}/containers/TextContainer.h"
         "${_INCLUDE_DIR}/drawing/defines/DrawConstants.h"
+        "${_INCLUDE_DIR}/drawing/config/LoadingScreenConfig.hpp"
         "${_INCLUDE_DIR}/drawing/Camera.h"
         "${_INCLUDE_DIR}/drawing/DrawParams.h"
         "${_INCLUDE_DIR}/drawing/GeometryUtils.h"
