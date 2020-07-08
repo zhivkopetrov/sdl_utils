@@ -23,7 +23,7 @@ SDLContainers::SDLContainers(const SDLContainersConfig &cfg)
 
 int32_t SDLContainers::init() {
   ResourceLoader rsrcLoader;
-  if (EXIT_SUCCESS != rsrcLoader.init(_config.projectBuildPath)) {
+  if (EXIT_SUCCESS != rsrcLoader.init(_config.resourcesBinLocation)) {
     LOGERR("Error in _rsrcLoader.init() -> Terminating ...");
     return EXIT_FAILURE;
   }

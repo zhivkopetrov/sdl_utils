@@ -15,7 +15,7 @@ class Renderer;
 
 struct SDLContainersConfig {
   LoadingScreenConfig loadingScreenCfg;
-  std::string projectBuildPath;
+  std::string resourcesBinLocation;
   Renderer* renderer = nullptr;
   bool isMultithreadResAllowed = false;
 };

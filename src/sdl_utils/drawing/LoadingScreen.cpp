@@ -160,8 +160,8 @@ void LoadingScreen::draw(const int32_t percentLoaded) {
   constexpr int32_t OFFSET_X = 5;
   const int32_t LOADED_WIDHT = OFFSET_X * percentLoaded;
   // resize progress bar width to match the loaded resources percentage
-  SDL_Rect progressBarRenderQuad = { 710,          // progress bar start X
-                                     200,          // progress bar end X
+  SDL_Rect progressBarRenderQuad = { 1150,         // progress bar start X
+                                     300,          // progress bar end X
                                      LOADED_WIDHT, // destination width
                                      60 };         // destination height
 
