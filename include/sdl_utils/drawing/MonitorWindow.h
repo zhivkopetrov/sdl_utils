@@ -9,6 +9,7 @@
 // Other libraries headers
 
 // Own components headers
+#include "sdl_utils/drawing/defines/MonitorDefines.h"
 #include "utils/drawing/Point.h"
 #include "utils/drawing/Rectangle.h"
 
@@ -53,11 +54,13 @@ class MonitorWindow {
    *   If not coordinates for the windows were provided (Point::UNDEFINED)
    *   the new windows is created as CENTERED to the hardware monitor.
    *
-   *  @param const int32_t - display mode for the window
+   *  @param const WindowDisplayMode - full screen or windowed
+   *  @param const WindowBorderMode  - borderless or not
    *
-   *  @returns int32_t     - error code
+   *  @returns int32_t               - error code
    * */
-  int32_t init(const int32_t displayMode);
+  int32_t init(const WindowDisplayMode displayMode,
+               const WindowBorderMode borderMode);
 
   /** @brief used to deinitialize the created window
    * */

@@ -34,7 +34,8 @@ MonitorWindow::MonitorWindow(const Rectangle& rect)
 
 MonitorWindow::~MonitorWindow() { deinit(); }
 
-int32_t MonitorWindow::init(const int32_t displayMode) {
+int32_t MonitorWindow::init(const WindowDisplayMode displayMode,
+                            const WindowBorderMode borderMode) {
   int32_t initWindowX = 0;
   int32_t initWindowY = 0;
 
@@ -50,7 +51,8 @@ int32_t MonitorWindow::init(const int32_t displayMode) {
 
   // Create window
   _window = SDL_CreateWindow("GameWindow", initWindowX, initWindowY,
-                             _windowRect.w, _windowRect.h, displayMode);
+                             _windowRect.w, _windowRect.h,
+                             getValue(displayMode, borderMode));
 
   if (nullptr == _window) {
     LOGERR("Window could not be created! SDL Error: %s", SDL_GetError());
@@ -88,3 +90,4 @@ int32_t MonitorWindow::loadWindowIcon(const char *iconPath) {
   windowIcon = nullptr;
   return EXIT_SUCCESS;
 }
+

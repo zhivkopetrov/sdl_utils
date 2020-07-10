@@ -22,7 +22,8 @@
 #define LOCAL_DEBUG 0
 
 #if LOCAL_DEBUG
-const char *RENDERER_CMD_NAMES[]{
+namespace {
+constexpr const char* RENDERER_CMD_NAMES[]{
     "CLEAR_SCREEN",
     "FINISH_FRAME",
     "CHANGE_CLEAR_COLOR",
@@ -43,6 +44,7 @@ const char *RENDERER_CMD_NAMES[]{
     "ENABLE_DISABLE_MULTITHREAD_TEXTURE_LOADING"
     "EXIT_RENDERING_LOOP",
 };
+}
 #endif /* LOCAL_DEBUG */
 
 Renderer::Renderer()

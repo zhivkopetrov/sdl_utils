@@ -9,59 +9,61 @@ endif()
 if(NOT CMAKE_HELPERS_INCLUDED)
     include(${CMAKE_CURRENT_SOURCE_DIR}/cmake_helpers/helpers.cmake)
     set(CMAKE_MODULE_PATH 
-    ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake_helpers/find_modules")
+      ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake_helpers/find_modules)
 endif()
 
 project(sdl_utils)
   
-set(_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include/sdl_utils")         
-set(_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src/sdl_utils")
+set(_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include/sdl_utils)         
+set(_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/sdl_utils)
 
 add_library(
     ${PROJECT_NAME} 
     STATIC
-        "${_INCLUDE_DIR}/containers/config/SDLContainersConfig.hpp"
-        "${_INCLUDE_DIR}/containers/FontContainer.h"
-        "${_INCLUDE_DIR}/containers/ResourceContainer.h"
-        "${_INCLUDE_DIR}/containers/SDLContainers.h"
-        "${_INCLUDE_DIR}/containers/SoundContainer.h"
-        "${_INCLUDE_DIR}/containers/SpriteBufferContainer.h"
-        "${_INCLUDE_DIR}/containers/TextContainer.h"
-        "${_INCLUDE_DIR}/drawing/defines/DrawConstants.h"
-        "${_INCLUDE_DIR}/drawing/config/LoadingScreenConfig.hpp"
-        "${_INCLUDE_DIR}/drawing/Camera.h"
-        "${_INCLUDE_DIR}/drawing/DrawParams.h"
-        "${_INCLUDE_DIR}/drawing/GeometryUtils.h"
-        "${_INCLUDE_DIR}/drawing/LoadingScreen.h"
-        "${_INCLUDE_DIR}/drawing/MonitorWindow.h"
-        "${_INCLUDE_DIR}/drawing/Renderer.h"
-        "${_INCLUDE_DIR}/drawing/Texture.h"
-        "${_INCLUDE_DIR}/input/defines/EventDefines.h"
-        "${_INCLUDE_DIR}/input/InputEvent.h"
-        "${_INCLUDE_DIR}/input/MouseUtils.h"
-        "${_INCLUDE_DIR}/input/TouchEntity.h"
-        "${_INCLUDE_DIR}/sound/defines/SoundMixerDefines.h"
-        "${_INCLUDE_DIR}/sound/SoundMixer.h"
-        "${_INCLUDE_DIR}/SDLLoader.h"
+        ${_INCLUDE_DIR}/containers/config/SDLContainersConfig.hpp
+        ${_INCLUDE_DIR}/containers/FontContainer.h
+        ${_INCLUDE_DIR}/containers/ResourceContainer.h
+        ${_INCLUDE_DIR}/containers/SDLContainers.h
+        ${_INCLUDE_DIR}/containers/SoundContainer.h
+        ${_INCLUDE_DIR}/containers/SpriteBufferContainer.h
+        ${_INCLUDE_DIR}/containers/TextContainer.h
+        ${_INCLUDE_DIR}/drawing/defines/DrawConstants.h
+        ${_INCLUDE_DIR}/drawing/defines/MonitorDefines.h
+        ${_INCLUDE_DIR}/drawing/config/LoadingScreenConfig.hpp
+        ${_INCLUDE_DIR}/drawing/Camera.h
+        ${_INCLUDE_DIR}/drawing/DrawParams.h
+        ${_INCLUDE_DIR}/drawing/GeometryUtils.h
+        ${_INCLUDE_DIR}/drawing/LoadingScreen.h
+        ${_INCLUDE_DIR}/drawing/MonitorWindow.h
+        ${_INCLUDE_DIR}/drawing/Renderer.h
+        ${_INCLUDE_DIR}/drawing/Texture.h
+        ${_INCLUDE_DIR}/input/defines/EventDefines.h
+        ${_INCLUDE_DIR}/input/InputEvent.h
+        ${_INCLUDE_DIR}/input/MouseUtils.h
+        ${_INCLUDE_DIR}/input/TouchEntity.h
+        ${_INCLUDE_DIR}/sound/defines/SoundMixerDefines.h
+        ${_INCLUDE_DIR}/sound/SoundMixer.h
+        ${_INCLUDE_DIR}/SDLLoader.h
         
-        "${_SRC_DIR}/containers/FontContainer.cpp"
-        "${_SRC_DIR}/containers/ResourceContainer.cpp"
-        "${_SRC_DIR}/containers/SDLContainers.cpp"
-        "${_SRC_DIR}/containers/SoundContainer.cpp"
-        "${_SRC_DIR}/containers/SpriteBufferContainer.cpp"
-        "${_SRC_DIR}/containers/TextContainer.cpp"
-        "${_SRC_DIR}/drawing/Camera.cpp"
-        "${_SRC_DIR}/drawing/DrawParams.cpp"
-        "${_SRC_DIR}/drawing/GeometryUtils.cpp"
-        "${_SRC_DIR}/drawing/LoadingScreen.cpp"
-        "${_SRC_DIR}/drawing/MonitorWindow.cpp"
-        "${_SRC_DIR}/drawing/Renderer.cpp"
-        "${_SRC_DIR}/drawing/Texture.cpp"
-        "${_SRC_DIR}/input/InputEvent.cpp"
-        "${_SRC_DIR}/input/MouseUtils.cpp"
-        "${_SRC_DIR}/input/TouchEntity.cpp"
-        "${_SRC_DIR}/sound/SoundMixer.cpp"
-        "${_SRC_DIR}/SDLLoader.cpp"
+        ${_SRC_DIR}/containers/FontContainer.cpp
+        ${_SRC_DIR}/containers/ResourceContainer.cpp
+        ${_SRC_DIR}/containers/SDLContainers.cpp
+        ${_SRC_DIR}/containers/SoundContainer.cpp
+        ${_SRC_DIR}/containers/SpriteBufferContainer.cpp
+        ${_SRC_DIR}/containers/TextContainer.cpp
+        ${_SRC_DIR}/drawing/defines/MonitorDefines.cpp
+        ${_SRC_DIR}/drawing/Camera.cpp
+        ${_SRC_DIR}/drawing/DrawParams.cpp
+        ${_SRC_DIR}/drawing/GeometryUtils.cpp
+        ${_SRC_DIR}/drawing/LoadingScreen.cpp
+        ${_SRC_DIR}/drawing/MonitorWindow.cpp
+        ${_SRC_DIR}/drawing/Renderer.cpp
+        ${_SRC_DIR}/drawing/Texture.cpp
+        ${_SRC_DIR}/input/InputEvent.cpp
+        ${_SRC_DIR}/input/MouseUtils.cpp
+        ${_SRC_DIR}/input/TouchEntity.cpp
+        ${_SRC_DIR}/sound/SoundMixer.cpp
+        ${_SRC_DIR}/SDLLoader.cpp
 )
 
 find_package(SDL2 REQUIRED)
