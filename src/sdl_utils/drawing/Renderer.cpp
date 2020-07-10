@@ -213,7 +213,7 @@ void Renderer::addRendererCmd_UT(const RendererCmd rendererCmd,
 
 #if LOCAL_DEBUG
   LOGC("%s command pushed with %lu bytes of data, commands counter: %u",
-       RENDERER_CMD_NAMES[getEnumClassValue(rendererCmd)], bytes,
+       RENDERER_CMD_NAMES[getEnumValue(rendererCmd)], bytes,
        _rendererState[IDX].currRendererCmdsCounter);
 #endif /* LOCAL_DEBUG */
 }
@@ -429,10 +429,8 @@ void Renderer::executeRenderCommands_RT() {
           return;
 
         default:
-          LOGERR(
-              "Error, received unknown RendererOp: "
-              "%hhu at index: %u",
-              getEnumClassValue(
+          LOGERR("Error, received unknown RendererOp: %hhu at index: %u",
+              getEnumValue(
                   _rendererState[_renderStateIdx].rendererCmd[idx]), idx);
           break;
       }

@@ -21,7 +21,7 @@ int getValue(const WindowDisplayMode displayMode,
     break;
   default:
     LOGERR("Received unknown WindowBorderMode code: %d",
-        getEnumClassValue(borderMode));
+        getEnumValue(borderMode));
     return 0;
   }
 
@@ -34,7 +34,7 @@ int getValue(const WindowDisplayMode displayMode,
         (SDL_WINDOW_SHOWN | SDL_WINDOW_BORDERLESS) : SDL_WINDOW_SHOWN;
   default:
     LOGERR("Received unknown DisplayMode code: %d",
-        getEnumClassValue(displayMode));
+        getEnumValue(displayMode));
     return 0;
   }
 }

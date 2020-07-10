@@ -167,7 +167,7 @@ int32_t SoundContainer::loadMusic(const char *path, const SoundLevel soundLevel,
       err = EXIT_FAILURE;
     } else  // it is valid SoundLevel value
     {
-      SoundMixer::setMusicVolume(getEnumClassValue(soundLevel));
+      SoundMixer::setMusicVolume(getEnumValue(soundLevel));
     }
   }
 
@@ -188,7 +188,7 @@ int32_t SoundContainer::loadChunk(const char *path, const SoundLevel soundLevel,
       err = EXIT_FAILURE;
     } else  // it is valid SoundLevel value
     {
-      SoundMixer::setChunkVolume(outChunk, getEnumClassValue(soundLevel));
+      SoundMixer::setChunkVolume(outChunk, getEnumValue(soundLevel));
     }
   }
 
