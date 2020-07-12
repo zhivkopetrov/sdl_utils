@@ -25,11 +25,8 @@
 
 #define RGBA_BYTE_SIZE 4
 
-SpriteBufferContainer::SpriteBufferContainer(Renderer *renderer)
-    :
-
-      _renderer(renderer),
-      _gpuMemoryUsage(0) {
+SpriteBufferContainer::SpriteBufferContainer()
+    : _renderer(nullptr), _gpuMemoryUsage(0) {
   for (int32_t i = 0; i < RendererDefines::MAX_REAL_TIME_VBO_COUNT; ++i) {
     _spriteBuffers[i] = nullptr;
   }
@@ -60,7 +57,7 @@ void SpriteBufferContainer::deinit() {
 
 void SpriteBufferContainer::createSpriteBuffer(const int32_t width,
                                                const int32_t height,
-                                               int32_t *outContainerId) {
+                                               int32_t &outContainerId) {
   int32_t chosenIndex = INIT_INT32_VALUE;
 
   for (int32_t i = 0; i < RendererDefines::MAX_REAL_TIME_VBO_COUNT; ++i) {
@@ -84,7 +81,7 @@ void SpriteBufferContainer::createSpriteBuffer(const int32_t width,
 #endif /* NDEBUG */
 
   _spriteBuffers[chosenIndex] = RESERVE_SLOT_VALUE;
-  *outContainerId = chosenIndex;
+  outContainerId = chosenIndex;
 
   uint8_t data[sizeof(width) + sizeof(height) + sizeof(chosenIndex)];
   uint64_t populatedBytes = 0;
@@ -95,7 +92,7 @@ void SpriteBufferContainer::createSpriteBuffer(const int32_t width,
   memcpy(data + populatedBytes, &height, sizeof(height));
   populatedBytes += sizeof(height);
 
-  memcpy(data + populatedBytes, outContainerId, sizeof(chosenIndex));
+  memcpy(data + populatedBytes, &outContainerId, sizeof(chosenIndex));
   populatedBytes += sizeof(chosenIndex);
 
   _renderer->addRendererCmd_UT(RendererCmd::CREATE_VBO, data, populatedBytes);

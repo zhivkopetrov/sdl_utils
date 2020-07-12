@@ -11,12 +11,10 @@
 #include "sdl_utils/drawing/config/LoadingScreenConfig.hpp"
 
 //Forward declarations
-class Renderer;
 
 struct SDLContainersConfig {
   LoadingScreenConfig loadingScreenCfg;
   std::string resourcesBinLocation;
-  Renderer* renderer = nullptr;
   bool isMultithreadResAllowed = false;
 };
 

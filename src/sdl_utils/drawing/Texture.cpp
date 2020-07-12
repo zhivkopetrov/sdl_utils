@@ -53,9 +53,9 @@ void Texture::setMonitorRect([[maybe_unused]]Rectangle &monitorRect) {
 }
 
 int32_t Texture::getTextDimensions(const char *text, TTF_Font *font,
-                                   int32_t *outTextWidth,
-                                   int32_t *outTextHeight) {
-  if (EXIT_SUCCESS != TTF_SizeText(font, text, outTextWidth, outTextHeight)) {
+                                   int32_t &outTextWidth,
+                                   int32_t &outTextHeight) {
+  if (EXIT_SUCCESS != TTF_SizeText(font, text, &outTextWidth, &outTextHeight)) {
     LOGERR("TTF_SizeText() failed! SDL_image Error: %s", IMG_GetError());
     return EXIT_FAILURE;
   }
@@ -90,15 +90,15 @@ int32_t Texture::loadFromText(const char *text,
                               TTF_Font *font,
                               const Color &color,
                               SDL_Surface *&outTexture,
-                              int32_t *outTextWidth,
-                              int32_t *outTextHeight)
+                              int32_t &outTextWidth,
+                              int32_t &outTextHeight)
 #else
 int32_t Texture::loadFromText(const char *text,
                               TTF_Font *font,
                               const Color &color,
                               SDL_Texture *&outTexture,
-                              int32_t *outTextWidth,
-                              int32_t *outTextHeight)
+                              int32_t &outTextWidth,
+                              int32_t &outTextHeight)
 #endif /* USE_SOFTWARE_RENDERER */
 {
   // free the existing texture
@@ -120,8 +120,8 @@ int32_t Texture::loadFromText(const char *text,
     return EXIT_FAILURE;
   }
 
-  *outTextWidth = loadedSurface->w;
-  *outTextHeight = loadedSurface->h;
+  outTextWidth = loadedSurface->w;
+  outTextHeight = loadedSurface->h;
 
 #if USE_SOFTWARE_RENDERER
   outTexture = loadedSurface;
@@ -190,7 +190,7 @@ int32_t Texture::createEmptySurface(const int32_t width, const int32_t height,
    * If the depth is greater than 8 bits, the pixel format is set
    * using the flags '[RGB]/[RGBA] mask'.
    * */
-  const uint32_t DEPTH = 32;
+  constexpr uint32_t DEPTH = 32;
 
   /** SDL interprets each pixel as a 32-bit number, so masks must depend
    * on the endianness (byte order) of the machine

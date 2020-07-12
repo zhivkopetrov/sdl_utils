@@ -25,8 +25,8 @@
 
 #define RGBA_BYTE_SIZE 4
 
-TextContainer::TextContainer(Renderer *renderer)
-    : _renderer(renderer), _fontsMapPtr(nullptr), _gpuMemoryUsage(0) {
+TextContainer::TextContainer()
+    : _renderer(nullptr), _fontsMapPtr(nullptr), _gpuMemoryUsage(0) {
   for (int32_t i = 0; i < RendererDefines::MAX_REAL_TIME_TEXT_COUNT; ++i) {
     _texts[i] = nullptr;
   }
@@ -63,8 +63,8 @@ void TextContainer::deinit() {
 }
 
 void TextContainer::loadText(const uint64_t fontId, const char *text,
-                             const Color &color, int32_t *outUniqueId,
-                             int32_t *outTextWidth, int32_t *outTextHeight) {
+                             const Color &color, int32_t &outUniqueId,
+                             int32_t &outTextWidth, int32_t &outTextHeight) {
   if (EXIT_SUCCESS != Texture::getTextDimensions(text, (*_fontsMapPtr)[fontId],
                                                  outTextWidth, outTextHeight)) {
     LOGERR("Error in getTextDimensions() for fontId: %#16lX", fontId);
@@ -95,7 +95,7 @@ void TextContainer::loadText(const uint64_t fontId, const char *text,
 #endif /* NDEBUG */
 
   _texts[chosenIndex] = RESERVE_SLOT_VALUE;
-  *outUniqueId = chosenIndex;
+  outUniqueId = chosenIndex;
 
   const uint64_t TEXT_LEN = strlen(text);
   uint8_t data[sizeof(chosenIndex) + sizeof(fontId) + sizeof(color) +
@@ -125,7 +125,7 @@ void TextContainer::loadText(const uint64_t fontId, const char *text,
 void TextContainer::reloadText(const uint64_t fontId, const char *text,
                                const Color &color,
                                const int32_t textUniqueId,
-                               int32_t *outTextWidth, int32_t *outTextHeight) {
+                               int32_t &outTextWidth, int32_t &outTextHeight) {
   if (EXIT_SUCCESS != Texture::getTextDimensions(text, (*_fontsMapPtr)[fontId],
                                                  outTextWidth, outTextHeight)) {
     LOGERR("Error in getTextDimensions() for fontId: %#16lX", fontId);

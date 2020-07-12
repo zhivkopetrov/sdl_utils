@@ -64,14 +64,14 @@ class Texture {
    *
    *  @param const char * - user provided text
    *  @param TTF_Font *   - SDL_Font that is used
-   *  @param int32_t *    - width of the text if it would have been rendered
-   *  @param int32_t *    - height of the if it would have been rendered
+   *  @param int32_t &    - width of the text if it would have been rendered
+   *  @param int32_t &    - height of the if it would have been rendered
    *
    *  @returns int32_t    - error code
    * */
   static int32_t getTextDimensions(const char* text, TTF_Font* font,
-                                   int32_t* outTextWidth,
-                                   int32_t* outTextHeight);
+                                   int32_t& outTextWidth,
+                                   int32_t& outTextHeight);
 
   /** @brief used to load SDL_Surface from file on the hard drive
    *
@@ -142,8 +142,8 @@ class Texture {
    *  @param TTF_Font *     - SDL_Font that is used
    *  @param const Color &  - color used to create the text
    *  @param SDL_Surface *& - dynamically created SDL_Surface
-   *  @param int32_t *      - width of the created SDL_Surface text
-   *  @param int32_t *      - height of the created SDL_Surface text
+   *  @param int32_t &      - width of the created SDL_Surface text
+   *  @param int32_t &      - height of the created SDL_Surface text
    *
    *  @returns int32_t      - error code
    * */
@@ -151,8 +151,8 @@ class Texture {
                               TTF_Font* font,
                               const Color& color,
                               SDL_Surface*& outTexture,
-                              int32_t* outTextWidth,
-                              int32_t* outTextHeight);
+                              int32_t& outTextWidth,
+                              int32_t& outTextHeight);
 
   /** @brief used to render the input SDL_Surface widget with it's
    *                                       corresponding draw parameters.
@@ -208,8 +208,8 @@ class Texture {
    *  @param TTF_Font *     - SDL_Font that is used
    *  @param const Color &  - color used to create the text
    *  @param SDL_Texture *& - dynamically created SDL_Surface
-   *  @param int32_t *      - width of the created SDL_Surface text
-   *  @param int32_t *      - height of the created SDL_Surface text
+   *  @param int32_t &      - width of the created SDL_Surface text
+   *  @param int32_t &      - height of the created SDL_Surface text
    *
    *  @returns int32_t      - error code
    * */
@@ -217,8 +217,8 @@ class Texture {
                               TTF_Font* font,
                               const Color& color,
                               SDL_Texture*& outTexture,
-                              int32_t* outTextWidth,
-                              int32_t* outTextHeight);
+                              int32_t& outTextWidth,
+                              int32_t& outTextHeight);
 
   /** @brief used to render the input SDL_Texture widget with it's
    *                                       corresponding draw parameters.

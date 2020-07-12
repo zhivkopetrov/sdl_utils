@@ -19,7 +19,7 @@ struct SDL_Texture;
 
 class SpriteBufferContainer {
  public:
-  explicit SpriteBufferContainer(Renderer* renderer);
+  SpriteBufferContainer();
 
   /** @brief used to initialise the SpriteBufferContainer
    *
@@ -27,22 +27,29 @@ class SpriteBufferContainer {
    * */
   int32_t init();
 
-  /** @brief used to deinitialize
-   *                           (free memory occupied by Text container)
+  /** @brief used to deinitialize (free memory occupied by Text container)
    * */
   void deinit();
+
+  /** @brief used to acquire the global renderer (for pushing draw commands)
+   *
+   *  @return int32_t - error code
+   * */
+  inline void setRenderer(Renderer * renderer) {
+    _renderer = renderer;
+  }
 
   /** @brief used to allocate memory for new empty surface/texture
    *         NOTE: this function does not return error code
    *                                              for performance reasons
    *
    *  @param const int32_t - width for the generated Texture/Surface
-   *  @param int32_t *     - height for the generated Texture/Surface
-   *  @param int32_t *     - out unique container Id (used to determine
+   *  @param const int32_t - height for the generated Texture/Surface
+   *  @param int32_t &     - out unique container Id (used to determine
    *                                       unique _spriteBufferVec index)
    * */
   void createSpriteBuffer(const int32_t width, const int32_t height,
-                          int32_t* outContainerId);
+                          int32_t& outContainerId);
 
   /** @brief used to deallocate memory for selected sprite buffer's
    *                                                      surface/texture

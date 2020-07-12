@@ -114,10 +114,8 @@ static void loadSurfacesFromFileSystemAsync(
   }
 }
 
-ResourceContainer::ResourceContainer(Renderer *renderer)
-    :
-
-      _renderer(renderer),
+ResourceContainer::ResourceContainer()
+    : _renderer(nullptr),
       _resDataThreadQueue(nullptr),
       _loadedSurfacesThreadQueue(nullptr),
       _gpuMemoryUsage(0),

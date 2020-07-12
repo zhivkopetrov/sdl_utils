@@ -63,6 +63,12 @@ class SDLContainers : public ResourceContainer,
    * */
   void deinit();
 
+  /** @brief used to acquire the global renderer (for pushing draw commands)
+   *
+   *  @return int32_t - error code
+   * */
+  void setRenderer(Renderer * renderer);
+
  private:
   /** @brief used to load initiate all SDL containers at program start up
    *

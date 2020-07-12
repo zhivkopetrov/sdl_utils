@@ -15,11 +15,8 @@
 #include "utils/debug/FunctionTracer.hpp"
 #include "utils/Log.h"
 
-SDLContainers::SDLContainers(const SDLContainersConfig &cfg)
-    : ResourceContainer(cfg.renderer),
-      TextContainer(cfg.renderer),
-      SpriteBufferContainer(cfg.renderer),
-      _config(cfg) {}
+SDLContainers::SDLContainers(const SDLContainersConfig &cfg) : _config(cfg) {
+}
 
 int32_t SDLContainers::init() {
   ResourceLoader rsrcLoader;
@@ -91,6 +88,12 @@ void SDLContainers::deinit() {
   SoundContainer::deinit();
 
   SpriteBufferContainer::deinit();
+}
+
+void SDLContainers::setRenderer(Renderer * renderer) {
+  ResourceContainer::setRenderer(renderer);
+  TextContainer::setRenderer(renderer);
+  SpriteBufferContainer::setRenderer(renderer);
 }
 
 int32_t SDLContainers::populateSDLContainers(ResourceLoader &rsrcLoader) {

@@ -1194,7 +1194,7 @@ void Renderer::createTTFText_RT(const bool isTextBeingReloaded) {
 
   if (EXIT_SUCCESS !=
       Texture::loadFromText(textContent, (*_containers->getFontsMap())[fontId],
-                           textColor, texture, &createdWidth, &createdHeight)) {
+                           textColor, texture, createdWidth, createdHeight)) {
     LOGERR("Error in loadFromText() for fontId: %#16lX", fontId);
 
     delete[] textContent;

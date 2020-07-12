@@ -21,7 +21,7 @@ typedef struct _TTF_Font TTF_Font;
 
 class TextContainer {
  public:
-  explicit TextContainer(Renderer *renderer);
+  TextContainer();
 
   /** @brief used to initialise the Text container
    *
@@ -36,6 +36,14 @@ class TextContainer {
    * */
   void deinit();
 
+  /** @brief used to acquire the global renderer (for pushing draw commands)
+   *
+   *  @return int32_t - error code
+   * */
+  inline void setRenderer(Renderer * renderer) {
+    _renderer = renderer;
+  }
+
   /** @brief used to load text resource on demand
    *         NOTE: use this function when text is created for first time.
    *               If text re-creation is needed use reloadText(...);
@@ -45,15 +53,16 @@ class TextContainer {
    *  @param const uint64_t - unique font ID
    *  @param const char *   - text content
    *  @param const Color &  - text color
-   *  @param int32_t *      - out unique Text Id (used to determine
+   *  @param int32_t &      - out unique Text Id (used to determine
    *                                              unique _textsVec index)
-   *  @param int32_t *      - out width of the generated Texture/Surface
-   *  @param int32_t *      - out height of the generated Texture/Surface
+   *  @param int32_t &      - out width of the generated Texture/Surface
+   *  @param int32_t &      - out height of the generated Texture/Surface
+   *
    *  @returns int32_t      - error code
    * */
   void loadText(const uint64_t fontId, const char *text, const Color &color,
-                int32_t *outUniqueId, int32_t *outTextWidth,
-                int32_t *outTextHeight);
+                int32_t &outUniqueId, int32_t &outTextWidth,
+                int32_t &outTextHeight);
 
   /** @brief used to reload text resource on demand on the SAME position
    *                in the _textsVec (new Text has the same uniqueTextId).
@@ -68,12 +77,12 @@ class TextContainer {
    *  @param const Color &  - text color
    *  @param int32_t        - text unique Id (used to determine
    *                                              unique _textsVec index)
-   *  @param int32_t *      - out width of the generated Texture/Surface
-   *  @param int32_t *      - out height of the generated Texture/Surface
+   *  @param int32_t &      - out width of the generated Texture/Surface
+   *  @param int32_t &      - out height of the generated Texture/Surface
    * */
   void reloadText(const uint64_t fontId, const char *text, const Color &color,
-                  const int32_t textUniqueId, int32_t *outTextWidth,
-                  int32_t *outTextHeight);
+                  const int32_t textUniqueId, int32_t &outTextWidth,
+                  int32_t &outTextHeight);
 
   /** @brief used to unload text resource on demand
    *

@@ -28,7 +28,7 @@ struct SDL_Texture;
 
 class ResourceContainer {
  public:
-  explicit ResourceContainer(Renderer *renderer);
+  ResourceContainer();
 
   virtual ~ResourceContainer() = default;
 
@@ -47,6 +47,14 @@ class ResourceContainer {
    *                          (free memory occupied by Resource container)
    * */
   void deinit();
+
+  /** @brief used to acquire the global renderer (for pushing draw commands)
+   *
+   *  @return int32_t - error code
+   * */
+  inline void setRenderer(Renderer * renderer) {
+    _renderer = renderer;
+  }
 
   /** @brief used to store the provided ResourceData in Resource Container
    *
