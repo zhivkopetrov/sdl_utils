@@ -5,6 +5,7 @@
 
 // C++ system headers
 #include <cstdlib>
+#include <algorithm>
 
 // Other libraries headers
 #include <SDL_hints.h>
@@ -14,6 +15,7 @@
 #include "sdl_utils/containers/SDLContainers.h"
 #include "sdl_utils/drawing/LoadingScreen.h"
 #include "sdl_utils/drawing/Texture.h"
+#include "sdl_utils/drawing/config/RendererConfig.hpp"
 #include "utils/concurrency/ThreadSafeQueue.hpp"
 #include "utils/data_type/EnumClassUtils.hpp"
 #include "utils/drawing/Color.h"
@@ -30,8 +32,8 @@ constexpr const char* RENDERER_CMD_NAMES[]{
     "LOAD_TEXTURE_SINGLE",
     "LOAD_TEXTURE_MULTIPLE",
     "DESTROY_TEXTURE",
-    "CREATE_VBO",
-    "DESTROY_VBO",
+    "CREATE_FBO",
+    "DESTROY_FBO",
     "CHANGE_RENDERER_TARGET",
     "RESET_RENDERER_TARGET",
     "CLEAR_RENDERER_TARGET",
@@ -56,8 +58,15 @@ Renderer::Renderer()
       _isRendererBusy(false),
       _isMultithreadTextureLoadingEnabled(false) {}
 
-int32_t Renderer::init(SDL_Window *window) {
-  _window = window;
+int32_t Renderer::init(const RendererConfig& cfg) {
+  _window = cfg.window;
+
+  for (int32_t i = 0; i < SUPPORTED_BACK_BUFFERS; ++i) {
+    if (EXIT_SUCCESS != _rendererState[i].init(cfg)) {
+      LOGERR("_rendererState[%d].init() failed", i);
+      return EXIT_FAILURE;
+    }
+  }
 
   /** Set texture filtering to linear
    *                     (used for image scaling /pixel interpolation/ )
@@ -161,31 +170,17 @@ void Renderer::finishFrame_UT(const bool overrideRendererLockCheck) {
 
 void Renderer::addDrawCmd_UT(DrawParams *drawParams) {
   const int32_t IDX = _updateStateIdx;
-  // yes dereference the struct, because we need a copy of it
-  // C++14 move semantics should take place here
 
-  // later on we could send this struct via thread safe mechanism when
-  // multithread drawing is performed
-
-  /** Warning, MAX_WIDGETS_COUNT value is reached.
-   * In order to increase the performance increase the value of
-   * MAX_WIDGETS_COUNT in the source code.
-   *
-   * NOTE: simply array is used instead of std::vector, because this piece
-   *       of data is absolutely "hot" and if std::vector is used you will
-   *       blow your cache from cache misses.
-   * */
 #ifndef NDEBUG
   if (_rendererState[IDX].currWidgetCounter >=
-      RendererDefines::MAX_REAL_TIME_WIDGETS_COUNT) {
-    LOGERR(
-        "Critical Error, MAX_WIDGETS_COUNT value is reached! Increase "
-        "it's value from the RendererDefines.h! Current widget will not "
-        "be drawn in order to save the system from crashing.");
-
+      _rendererState[IDX].maxRuntimeWidgets) {
+    LOGERR("Critical Problem: maxRunTimeWidgets value: %d is reached! "
+           "Increase it's value from the configuration! or reduce the number of"
+           " active widgets. Widgets will not be drawn in order to save the "
+           "system from crashing", _rendererState[IDX].maxRuntimeWidgets);
     return;
   }
-#endif /* NDEBUG */
+#endif //!NDEBUG
 
   _rendererState[IDX].widgets[_rendererState[IDX].currWidgetCounter] =
       *drawParams;
@@ -197,6 +192,19 @@ void Renderer::addDrawCmd_UT(DrawParams *drawParams) {
 void Renderer::addRendererCmd_UT(const RendererCmd rendererCmd,
                                  const uint8_t *data, const uint64_t bytes) {
   const int32_t IDX = _updateStateIdx;
+
+#ifndef NDEBUG
+  if (_rendererState[IDX].currRendererCmdsCounter >=
+      _rendererState[IDX].maxRuntimeRendererCmds) {
+    LOGERR("Critical Problem: maxRunTimeRendererCommands value: %d is reached! "
+           "Increase it's value from the configuration! or reduce the number of"
+           " renderer calls. Renderer command: %hhu will not be execution in "
+           "order to save the system from crashing",
+           _rendererState[IDX].maxRuntimeRendererCmds,
+           getEnumValue(rendererCmd));
+    return;
+  }
+#endif //NDEBUG
 
   _rendererState[IDX].rendererCmd[_rendererState[IDX].currRendererCmdsCounter] =
       rendererCmd;
@@ -377,12 +385,12 @@ void Renderer::executeRenderCommands_RT() {
           destroyTexture_RT();
           break;
 
-        case RendererCmd::CREATE_VBO:
-          createVBO_RT();
+        case RendererCmd::CREATE_FBO:
+          createFBO_RT();
           break;
 
-        case RendererCmd::DESTROY_VBO:
-          destroyVBO_RT();
+        case RendererCmd::DESTROY_FBO:
+          destroyFBO_RT();
           break;
 
         case RendererCmd::CHANGE_RENDERER_TARGET:
@@ -523,7 +531,7 @@ void Renderer::finishFrameExecution_RT() {
   applyGlobalOffsets_RT(USED_SIZE);
 
   // do the actual drawing of all stored images for THIS FRAME
-  drawWidgetsToBackBuffer_RT(_rendererState[IDX].widgets, USED_SIZE);
+  drawWidgetsToBackBuffer_RT(_rendererState[IDX].widgets.data(), USED_SIZE);
 
 #if USE_SOFTWARE_RENDERER
   // Update the surface
@@ -854,7 +862,7 @@ void Renderer::destroyTexture_RT() {
   _containers->detachRsrcTexture(rsrcId);
 }
 
-void Renderer::createVBO_RT() {
+void Renderer::createFBO_RT() {
   int32_t width = 0;
   int32_t height = 0;
   int32_t containerId = 0;
@@ -863,7 +871,7 @@ void Renderer::createVBO_RT() {
 
 #if LOCAL_DEBUG
   LOGY(
-      "Executing createVBO_RT(), width: %d, height: %d, containerId: %d "
+      "Executing createFBO_RT(), width: %d, height: %d, containerId: %d "
       "(with %lu bytes of data)",
       width, height, containerId,
       (sizeof(width) + sizeof(height) + sizeof(containerId)));
@@ -894,12 +902,12 @@ void Renderer::createVBO_RT() {
   _containers->attachSpriteBuffer(containerId, width, height, texture);
 }
 
-void Renderer::destroyVBO_RT() {
+void Renderer::destroyFBO_RT() {
   int32_t containerId = 0;
   _rendererState[_renderStateIdx].renderData >> containerId;
 
 #if LOCAL_DEBUG
-  LOGY("Executing destroyVBO_RT(), containerId: %d (with %lu bytes of data)",
+  LOGY("Executing destroyFBO_RT(), containerId: %d (with %lu bytes of data)",
        containerId, sizeof(containerId));
 #endif /* LOCAL_DEBUG */
 

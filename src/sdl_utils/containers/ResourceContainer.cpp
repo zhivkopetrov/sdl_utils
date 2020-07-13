@@ -137,9 +137,7 @@ int32_t ResourceContainer::init(const uint64_t staticWidgetsCount,
    *  Here a place for future expansion is left, where couple of games could
    *  be opened simultaneously.
    * */
-  _rsrcMap.reserve(staticWidgetsCount +
-                   (RendererDefines::MAX_SIMULTANEOUSLY_SUPPORTED_GAMES *
-                    RendererDefines::MAX_REAL_TIME_GAME_WIDGETS));
+  _rsrcMap.reserve(staticWidgetsCount + dynamicWidgetsCount);
 
   _resDataThreadQueue = new ThreadSafeQueue<ResourceData>;
 

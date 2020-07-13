@@ -26,59 +26,58 @@
 #define RGBA_BYTE_SIZE 4
 
 SpriteBufferContainer::SpriteBufferContainer()
-    : _renderer(nullptr), _gpuMemoryUsage(0) {
-  for (int32_t i = 0; i < RendererDefines::MAX_REAL_TIME_VBO_COUNT; ++i) {
-    _spriteBuffers[i] = nullptr;
-  }
-
-#if !USE_SOFTWARE_RENDERER
-  for (int32_t i = 0; i < RendererDefines::MAX_REAL_TIME_VBO_COUNT; ++i) {
-    _sbMemoryUsage[i] = 0;
-  }
-#endif /* !USE_SOFTWARE_RENDERER */
+  : _renderer(nullptr), _gpuMemoryUsage(0), _sbSize(0) {
 }
 
-int32_t SpriteBufferContainer::init() { return EXIT_SUCCESS; }
+int32_t SpriteBufferContainer::init(const int32_t maxRuntimeSpriteBuffers) {
+  _sbSize = maxRuntimeSpriteBuffers;
+  _spriteBuffers.resize(maxRuntimeSpriteBuffers, nullptr);
+#if !USE_SOFTWARE_RENDERER
+  _sbMemoryUsage.resize(maxRuntimeSpriteBuffers, 0);
+#endif /* !USE_SOFTWARE_RENDERER */
+
+  return EXIT_SUCCESS;
+}
 
 void SpriteBufferContainer::deinit() {
-  // free Text Textures
-  for (int32_t containerId = 0;
-       containerId < RendererDefines::MAX_REAL_TIME_VBO_COUNT; ++containerId) {
+  for (SDL_Texture *& spriteBuffer : _spriteBuffers) {
     // free index found
-    if (nullptr != _spriteBuffers[containerId]) {
+    if (nullptr != spriteBuffer) {
 #if USE_SOFTWARE_RENDERER
-      Texture::freeSurface(_spriteBuffers[containerId]);
+      Texture::freeSurface(spriteBuffer);
 #else
-      Texture::freeTexture(_spriteBuffers[containerId]);
+      Texture::freeTexture(spriteBuffer);
 #endif /* USE_SOFTWARE_RENDERER */
     }
   }
+
+  _sbMemoryUsage.clear();
 }
 
 void SpriteBufferContainer::createSpriteBuffer(const int32_t width,
                                                const int32_t height,
                                                int32_t &outContainerId) {
+  bool foundIdx = false;
   int32_t chosenIndex = INIT_INT32_VALUE;
 
-  for (int32_t i = 0; i < RendererDefines::MAX_REAL_TIME_VBO_COUNT; ++i) {
+  for (int32_t i = 0; i < _sbSize; ++i) {
     // free index found, occupy it
     if (nullptr == _spriteBuffers[i]) {
+      foundIdx = true;
       chosenIndex = i;
       break;
     }
   }
 
 #ifndef NDEBUG
-  if (INIT_INT32_VALUE == chosenIndex) {
-    LOGERR(
-        "Critical Error, MAX_REAL_TIME_VBO_COUNT value is reached! "
-        "Increase it's value from the RendererDefines.h! Current text "
-        "widget will not be drawn in order to save the system "
-        "from crashing.");
-
+  if (!foundIdx) {
+    LOGERR("Critical Problem: maxRunTimeSpriteBuffers value: %d is reached! "
+           "Increase it's value from the configuration! or reduce the number of"
+           " active SpriteBuffers. SpriteBuffer will not be created in order "
+           "to save the system from crashing", _sbSize);
     return;
   }
-#endif /* NDEBUG */
+#endif //!NDEBUG
 
   _spriteBuffers[chosenIndex] = RESERVE_SLOT_VALUE;
   outContainerId = chosenIndex;
@@ -95,36 +94,29 @@ void SpriteBufferContainer::createSpriteBuffer(const int32_t width,
   memcpy(data + populatedBytes, &outContainerId, sizeof(chosenIndex));
   populatedBytes += sizeof(chosenIndex);
 
-  _renderer->addRendererCmd_UT(RendererCmd::CREATE_VBO, data, populatedBytes);
+  _renderer->addRendererCmd_UT(RendererCmd::CREATE_FBO, data, populatedBytes);
 }
 
 void SpriteBufferContainer::destroySpriteBuffer(
     const int32_t uniqueContainerId) {
   // textUniqueId has default value -> is not set at all
   if (-1 == uniqueContainerId) {
-    LOGERR(
-        "Warning, trying to destroy sprite buffer with non-existent "
-        "uniqueContainerId: %d",
-        uniqueContainerId);
+    LOGERR("Warning, trying to destroy sprite buffer with non-existent "
+           "uniqueContainerId: %d", uniqueContainerId);
 
     return;
   }
 
-#ifndef NDEBUG
-  if (uniqueContainerId >= RendererDefines::MAX_REAL_TIME_VBO_COUNT) {
-    LOGERR(
-        "Critical Error, uniqueContainerId: %d is outside of "
-        "MAX_REAL_TIME_VBO_COUNT max value! There is an error in the "
-        "internal business logic! Widget will not be destroyed in order "
-        "to save the system from crashing.",
-        uniqueContainerId);
-
+  if (uniqueContainerId >= _sbSize) {
+    LOGERR("Critical Error, uniqueContainerId: %d is outside of text container "
+           "size! There is an error in the internal business logic! Widget will"
+           " not be destroyed in order to save the system from crashing.",
+           uniqueContainerId);
     return;
   }
-#endif /* NDEBUG */
 
   _renderer->addRendererCmd_UT(
-      RendererCmd::DESTROY_VBO,
+      RendererCmd::DESTROY_FBO,
       reinterpret_cast<const uint8_t *>(&uniqueContainerId),
       sizeof(uniqueContainerId));
 }
@@ -162,13 +154,11 @@ void SpriteBufferContainer::getSpriteBufferTexture(const int32_t uniqueId,
 #endif /* USE_SOFTWARE_RENDERER */
 {
   // sanity check - check if such index exists
-  if (uniqueId < RendererDefines::MAX_REAL_TIME_VBO_COUNT) {
+  if (uniqueId < _sbSize) {
     outTexture = _spriteBuffers[uniqueId];
   } else {
-    LOGERR(
-        "Warning, trying to destroy sprite buffer with non-existent "
-        "uniqueContainerId: %d",
-        uniqueId);
+    LOGERR("Warning, trying to destroy sprite buffer with non-existent "
+           "uniqueContainerId: %d", uniqueId);
   }
 }
 

@@ -9,8 +9,8 @@
 #include <mutex>
 
 // Other libraries headers
-#include "sdl_utils/drawing/RendererDefines.h"
-#include "sdl_utils/drawing/RendererState.hpp"
+#include "sdl_utils/drawing/defines/RendererDefines.h"
+#include "sdl_utils/drawing/RendererState.h"
 
 // Own components headers
 
@@ -78,7 +78,7 @@ class Renderer {
    *   NOTE2: ::init() is executed before the secondary thread is still
    *          spawned (it is being executed on the main thread)
    * */
-  int32_t init(SDL_Window* window);
+  int32_t init(const RendererConfig& cfg);
 
   /** @brief used to destroy renderer and window
    *
@@ -306,19 +306,18 @@ class Renderer {
    * */
   void destroyTexture_RT();
 
-  /** @brief created a single VBO(vertex buffer object).
-   *         A VBO is a special texture which is marked with
+  /** @brief created a single FBO(frame buffer object).
+   *         A FBO is a special texture which is marked with
    *         TEXTURE_STREAMING by OpenGL.
    *
    *         It's idea is to be constantly changed so the GPU can know
    *         to locate it in a place where it can be accessed faster.
    * */
-  void createVBO_RT();
+  void createFBO_RT();
 
-  /** @brief destroys a VBO(vertex buffer object)
-   *                                        (releases memory on the GPU)
+  /** @brief destroys a FBO(frame buffer object) (releases memory on the GPU)
    * */
-  void destroyVBO_RT();
+  void destroyFBO_RT();
 
   /** @brief used to change the renderer target to a specific VBO
    * */
@@ -367,8 +366,8 @@ class Renderer {
 
   /** @brief actual rendering of stored widgets on the current back buffer
    *
-   *  @param const DrawParams [] - draw specific data for a Texture array
-   *  @param const uint32_t        - size of the array
+   *  @param const std::vector<DrawParams> -
+   *                                  draw specific data for a Texture array
    * */
   void drawWidgetsToBackBuffer_RT(const DrawParams drawParamsArr[],
                                   const uint32_t size);

@@ -11,7 +11,7 @@
 #include <SDL_image.h>
 
 // Own components headers
-#include "sdl_utils/drawing/RendererDefines.h"
+#include "sdl_utils/drawing/defines/RendererDefines.h"
 
 #if !USE_SOFTWARE_RENDERER
 #include "sdl_utils/drawing/Texture.h"

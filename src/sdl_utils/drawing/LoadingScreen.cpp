@@ -12,7 +12,7 @@
 
 // Own components headers
 #include "sdl_utils/drawing/Texture.h"
-#include "sdl_utils/drawing/RendererDefines.h"
+#include "sdl_utils/drawing/defines/RendererDefines.h"
 #include "sdl_utils/drawing/config/LoadingScreenConfig.hpp"
 #include "utils/drawing/Color.h"
 #include "utils/Log.h"

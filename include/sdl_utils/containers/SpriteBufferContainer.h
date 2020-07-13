@@ -5,9 +5,10 @@
 
 // C++ system headers
 #include <cstdint>
+#include <vector>
 
 // Other libraries headers
-#include "sdl_utils/drawing/RendererDefines.h"
+#include "sdl_utils/drawing/defines/RendererDefines.h"
 
 // Own components headers
 
@@ -23,9 +24,11 @@ class SpriteBufferContainer {
 
   /** @brief used to initialise the SpriteBufferContainer
    *
-   *  @return int32_t - error code
+   *  @param const int32_t - max runtime Sprite Buffers
+   *
+   *  @return int32_t      - error code
    * */
-  int32_t init();
+  int32_t init(const int32_t maxRuntimeSpriteBuffers);
 
   /** @brief used to deinitialize (free memory occupied by Text container)
    * */
@@ -129,29 +132,30 @@ class SpriteBufferContainer {
    *      > For better cache performance;
    *      > Simultaneous read/write from different threads on
    *        DIFFERENT(guaranteed) indexes may occur.
-   *        While using a raw array - this is fine.
-   *        If we were to use a std::vector<> this would cause a crash,
-   *        because it is prohibited by the standard.
    *
-   * NOTE: When text is deleted - do not remove it from the structure,
-   *       because this will be quite inefficient.
-   *       Instead - simply leave the vector element with nullptr value.
-   *       When new text is added - simply linearly scan the array and
-   *       search for a free position (nullptr value).
+   * NOTE: do NOT resize the vector. This will crash the program
+   *
+   * NOTE2: When text is deleted - do not remove it from the structure.
+   *        Instead - simply leave the vector element with nullptr value.
+   *        When new text is added - simply linearly scan the array and
+   *        search for a free position (nullptr value).
    **/
 #if USE_SOFTWARE_RENDERER
   //_textsVec holds all Texts
-  SDL_Surface* _spriteBuffers[RendererDefines::MAX_REAL_TIME_VBO_COUNT];
+  std::vector<SDL_Texture*> _spriteBuffers;
 #else
   //_textsVec holds all Texts
-  SDL_Texture* _spriteBuffers[RendererDefines::MAX_REAL_TIME_VBO_COUNT];
+  std::vector<SDL_Texture*> _spriteBuffers;
 
   // holds holds many bytes the current text occupied in GPU VRAM
-  uint64_t _sbMemoryUsage[RendererDefines::MAX_REAL_TIME_VBO_COUNT];
+  std::vector<uint64_t> _sbMemoryUsage;
 #endif /* USE_SOFTWARE_RENDERER */
 
   // holds the currently occupied GPU VRAM in bytes
   uint64_t _gpuMemoryUsage;
+
+  // holds the _spriteBuffers.size() count
+  int32_t _sbSize;
 };
 
 #endif /* SDL_UTILS_SPRITEBUFFERCONTAINER_H_ */

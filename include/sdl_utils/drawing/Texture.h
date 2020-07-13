@@ -7,7 +7,7 @@
 #include <cstdint>
 
 // Other libraries headers
-#include "sdl_utils/drawing/RendererDefines.h"
+#include "sdl_utils/drawing/defines/RendererDefines.h"
 
 // Own components headers
 

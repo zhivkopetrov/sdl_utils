@@ -1,67 +1,56 @@
-#ifndef SDL_UTILS_RENDERERSTATE_HPP_
-#define SDL_UTILS_RENDERERSTATE_HPP_
+#ifndef SDL_UTILS_RENDERERSTATE_H_
+#define SDL_UTILS_RENDERERSTATE_H_
 
 // C system headers
 
 // C++ system headers
+#include <cstdint>
+#include <vector>
 
 // Other libraries headers
-#include "RendererDefines.h"
 
 // Own components headers
+#include "sdl_utils/drawing/defines/RendererDefines.h"
 #include "sdl_utils/drawing/DrawParams.h"
-#include "utils/common/AutoCircularBuffer.hpp"
+#include "utils/common/CircularBuffer.h"
 
 #if USE_SOFTWARE_RENDERER
 #include "utils/drawing/Color.h"
 #endif /* USE_SOFTWARE_RENDERER*/
 
-namespace RendererStateDefines {
-enum Defines {
-  // keep buffer size a multiple of 2 -> (2^16)
-  RENDER_DATA_BUFFER_SIZE = UINT16_MAX + 1
-};
-}
+// Forward declarations
+struct RendererConfig;
 
-/** WARNING: Since RendererState is crucial for performance -> strictly keep
- *          any method outside of the RendererState struct definition.
- *          Placing it inside will automatically exclude big number of
- *                                                 compile time optimisations.
- **/
 struct RendererState {
   RendererState()
 #if USE_SOFTWARE_RENDERER
       : clearColor(Colors::BLACK)
 #endif /* USE_SOFTWARE_RENDERER*/
-  {
-    currWidgetCounter = 0;
-    currRendererCmdsCounter = 0;
-    lastTotalWidgetCounter = 0;
-    globalOffsetX = 0;
-    globalOffsetY = 0;
-    isLocked = true;
+  { }
 
-    for (int32_t i = 0; i < RendererDefines::RENDERER_MAX_COMMANDS; ++i) {
-      rendererCmd[i] = RendererCmd::UNDEFINED;
-    }
-  }
+  int32_t init(const RendererConfig &cfg);
 
   /** Holds stored number of widgets for the current frame
    * */
-  uint32_t currWidgetCounter;
+  uint32_t currWidgetCounter = 0;
 
   /** Holds stored number or renderer commands for the current frame
    * */
-  uint32_t currRendererCmdsCounter;
+  uint32_t currRendererCmdsCounter = 0;
 
   /** Store total widget in order to monitor their number in the
    *  graphical debug console
    * */
-  uint32_t lastTotalWidgetCounter;
+  uint32_t lastTotalWidgetCounter = 0;
+
+  /** Holds widgets.size() and rendererCmd.size()
+   * */
+  uint32_t maxRuntimeWidgets = 0;
+  uint32_t maxRuntimeRendererCmds = 0;
 
   /* Holds global moves offsets (by default they are not used) */
-  int32_t globalOffsetX;
-  int32_t globalOffsetY;
+  int32_t globalOffsetX = 0;
+  int32_t globalOffsetY = 0;
 
   /* A container for all draw specific widget data.
    * Since rendering will be the most heavy operation we need to prepare
@@ -71,17 +60,17 @@ struct RendererState {
    * 0(1) lookup time and constant cache hits, because of the
    * sequential memory layout
    * */
-  DrawParams widgets[RendererDefines::MAX_REAL_TIME_WIDGETS_COUNT];
+  std::vector<DrawParams> widgets;
 
   /* Used to store draw specific rendering commands populated by
    * the main(update) thread
    * */
-  RendererCmd rendererCmd[RendererDefines::RENDERER_MAX_COMMANDS];
+  std::vector<RendererCmd> rendererCmd;
 
   /** A buffer that holds all draw specific data populated by
    *  the main(update) thread
    **/
-  AutoCircularBuffer<RendererStateDefines::RENDER_DATA_BUFFER_SIZE> renderData;
+  CircularBuffer renderData;
 
   /** Used to determine whether the render is locked or not.
    *     > If Renderer is locked - the default renderer target is used;
@@ -89,11 +78,11 @@ struct RendererState {
    *          has been changed to some other SDL_Texture
    *                                     (usually owned by SpriteBuffer);
    * */
-  bool isLocked;
+  bool isLocked = true;
 
 #if USE_SOFTWARE_RENDERER
   Color clearColor;
 #endif /* USE_SOFTWARE_RENDERER*/
 };
 
-#endif //SDL_UTILS_RENDERERSTATE_HPP_
+#endif //SDL_UTILS_RENDERERSTATE_H_

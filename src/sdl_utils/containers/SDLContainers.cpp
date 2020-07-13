@@ -49,12 +49,14 @@ int32_t SDLContainers::init() {
     return EXIT_FAILURE;
   }
 
-  if (EXIT_SUCCESS != TextContainer::init(FontContainer::getFontsMap())) {
+  if (EXIT_SUCCESS != TextContainer::init(
+      FontContainer::getFontsMap(), _config.maxRuntimeTexts)) {
     LOGERR("Error in TextContainer::init() -> Terminating ...");
     return EXIT_FAILURE;
   }
 
-  if (EXIT_SUCCESS != SpriteBufferContainer::init()) {
+  if (EXIT_SUCCESS !=
+      SpriteBufferContainer::init(_config.maxRuntimeSpriteBuffers)) {
     LOGERR("Error in SpriteBufferContainer::init() -> Terminating ...");
     return EXIT_FAILURE;
   }

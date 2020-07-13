@@ -30,12 +30,14 @@ add_library(
         ${_INCLUDE_DIR}/drawing/defines/DrawConstants.h
         ${_INCLUDE_DIR}/drawing/defines/MonitorDefines.h
         ${_INCLUDE_DIR}/drawing/config/LoadingScreenConfig.hpp
+        ${_INCLUDE_DIR}/drawing/config/RendererConfig.hpp
         ${_INCLUDE_DIR}/drawing/Camera.h
         ${_INCLUDE_DIR}/drawing/DrawParams.h
         ${_INCLUDE_DIR}/drawing/GeometryUtils.h
         ${_INCLUDE_DIR}/drawing/LoadingScreen.h
         ${_INCLUDE_DIR}/drawing/MonitorWindow.h
         ${_INCLUDE_DIR}/drawing/Renderer.h
+        ${_INCLUDE_DIR}/drawing/RendererState.h
         ${_INCLUDE_DIR}/drawing/Texture.h
         ${_INCLUDE_DIR}/input/defines/EventDefines.h
         ${_INCLUDE_DIR}/input/InputEvent.h
@@ -58,6 +60,7 @@ add_library(
         ${_SRC_DIR}/drawing/LoadingScreen.cpp
         ${_SRC_DIR}/drawing/MonitorWindow.cpp
         ${_SRC_DIR}/drawing/Renderer.cpp
+        ${_SRC_DIR}/drawing/RendererState.cpp
         ${_SRC_DIR}/drawing/Texture.cpp
         ${_SRC_DIR}/input/InputEvent.cpp
         ${_SRC_DIR}/input/MouseUtils.cpp

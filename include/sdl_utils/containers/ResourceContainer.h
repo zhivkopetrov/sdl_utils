@@ -12,7 +12,7 @@
 // Other libraries headers
 
 // Own components headers
-#include "sdl_utils/drawing/RendererDefines.h"
+#include "sdl_utils/drawing/defines/RendererDefines.h"
 #include "resource_utils/structs/ResourceData.h"
 
 // Forward declarations

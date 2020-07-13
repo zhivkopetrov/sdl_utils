@@ -26,21 +26,19 @@
 #define RGBA_BYTE_SIZE 4
 
 TextContainer::TextContainer()
-    : _renderer(nullptr), _fontsMapPtr(nullptr), _gpuMemoryUsage(0) {
-  for (int32_t i = 0; i < RendererDefines::MAX_REAL_TIME_TEXT_COUNT; ++i) {
-    _texts[i] = nullptr;
-  }
-
-#if !USE_SOFTWARE_RENDERER
-  for (int32_t i = 0; i < RendererDefines::MAX_REAL_TIME_TEXT_COUNT; ++i) {
-    _textMemoryUsage[i] = 0;
-  }
-#endif /* !USE_SOFTWARE_RENDERER */
+    : _renderer(nullptr), _fontsMapPtr(nullptr), _gpuMemoryUsage(0),
+      _textsSize(0) {
 }
 
 int32_t TextContainer::init(
-    std::unordered_map<uint64_t, TTF_Font *> *fontsContainer) {
+    std::unordered_map<uint64_t, TTF_Font *> *fontsContainer,
+    const int32_t maxRuntimeTexts) {
+  _textsSize = maxRuntimeTexts;
   _fontsMapPtr = fontsContainer;
+  _texts.resize(maxRuntimeTexts, nullptr);
+#if !USE_SOFTWARE_RENDERER
+  _textMemoryUsage.resize(maxRuntimeTexts, 0);
+#endif /* !USE_SOFTWARE_RENDERER */
 
   return EXIT_SUCCESS;
 }
@@ -49,17 +47,18 @@ void TextContainer::deinit() {
   // release the reference to the fonts data map
   _fontsMapPtr = nullptr;
 
-  for (int32_t containerId = 0;
-       containerId < RendererDefines::MAX_REAL_TIME_TEXT_COUNT; ++containerId) {
+  for (SDL_Texture *& text : _texts) {
     // free index found
-    if (nullptr != _texts[containerId]) {
+    if (nullptr != text) {
 #if USE_SOFTWARE_RENDERER
-      Texture::freeSurface(_texts[containerId]);
+      Texture::freeSurface(text);
 #else
-      Texture::freeTexture(_texts[containerId]);
+      Texture::freeTexture(text);
 #endif /* USE_SOFTWARE_RENDERER */
     }
   }
+
+  _textMemoryUsage.clear();
 }
 
 void TextContainer::loadText(const uint64_t fontId, const char *text,
@@ -72,27 +71,27 @@ void TextContainer::loadText(const uint64_t fontId, const char *text,
     return;
   }
 
+  bool foundIdx = false;
   int32_t chosenIndex = INIT_INT32_VALUE;
 
-  for (int32_t i = 0; i < RendererDefines::MAX_REAL_TIME_TEXT_COUNT; ++i) {
+  for (int32_t i = 0; i < _textsSize; ++i) {
     // free index found, occupy it
     if (nullptr == _texts[i]) {
+      foundIdx = true;
       chosenIndex = i;
       break;
     }
   }
 
 #ifndef NDEBUG
-  if (INIT_INT32_VALUE == chosenIndex) {
-    LOGERR(
-        "Critical Error, MAX_REAL_TIME_TEXT_COUNT value is reached! "
-        "Increase it's value from the RendererDefines.h! Current text "
-        "widget will not be drawn in order to save the system "
-        "from crashing.");
-
+  if (!foundIdx) {
+    LOGERR("Critical Problem: maxRunTimeTexts value: %d is reached! "
+           "Increase it's value from the configuration! or reduce the number of"
+           " active texts. Text with content: %s will not be created in order "
+           "to save the system from crashing", _textsSize, text);
     return;
   }
-#endif /* NDEBUG */
+#endif //!NDEBUG
 
   _texts[chosenIndex] = RESERVE_SLOT_VALUE;
   outUniqueId = chosenIndex;
@@ -129,7 +128,6 @@ void TextContainer::reloadText(const uint64_t fontId, const char *text,
   if (EXIT_SUCCESS != Texture::getTextDimensions(text, (*_fontsMapPtr)[fontId],
                                                  outTextWidth, outTextHeight)) {
     LOGERR("Error in getTextDimensions() for fontId: %#16lX", fontId);
-
     return;
   }
 
@@ -167,18 +165,13 @@ void TextContainer::unloadText(const int32_t textUniqueId) {
     return;
   }
 
-#ifndef NDEBUG
-  if (textUniqueId >= RendererDefines::MAX_REAL_TIME_TEXT_COUNT) {
-    LOGERR(
-        "Critical Error, textUniqueId: %d is outside of "
-        "MAX_REAL_TIME_TEXT_COUNT max value! There is an error in the "
-        "internal business logic! Widget will not be destroyed "
-        "in order to save the system from crashing.",
-        textUniqueId);
-
+  if (textUniqueId >= _textsSize) {
+    LOGERR("Critical Error, textUniqueId: %d is outside of text container size!"
+           " There is an error in the internal business logic! Widget will not "
+           "be destroyed in order to save the system from crashing.",
+           textUniqueId);
     return;
   }
-#endif /* NDEBUG */
 
   _renderer->addRendererCmd_UT(RendererCmd::DESTROY_TTF_TEXT,
                                reinterpret_cast<const uint8_t *>(&textUniqueId),
@@ -218,7 +211,7 @@ void TextContainer::getTextTexture(const int32_t uniqueId,
 #endif /* USE_SOFTWARE_RENDERER */
 {
   // sanity check - check if such index exists
-  if (uniqueId < RendererDefines::MAX_REAL_TIME_TEXT_COUNT) {
+  if (uniqueId < _textsSize) {
     outTexture = _texts[uniqueId];
   } else {
     LOGERR("Warning, trying to get text with non-existent uniqueId: %d",
