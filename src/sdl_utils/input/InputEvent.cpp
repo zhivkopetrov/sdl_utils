@@ -12,14 +12,9 @@
 #include "sdl_utils/input/MouseUtils.h"
 #include "sdl_utils/input/TouchEntity.h"
 #include "sdl_utils/drawing/defines/RendererDefines.h"
-
-#if USE_SOFTWARE_RENDERER
-#include "sdl_utils/drawing/Camera.h"
-#endif /* USE_SOFTWARE_RENDERER */
-
-#include "utils/Log.h"
 #include "utils/data_type/EnumClassUtils.hpp"
 #include "utils/drawing/Rectangle.h"
+#include "utils/Log.h"
 
 InputEvent::InputEvent()
     : pos(Point::UNDEFINED), key(Keyboard::KEY_UNKNOWN),

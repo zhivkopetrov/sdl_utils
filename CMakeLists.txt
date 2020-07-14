@@ -31,7 +31,6 @@ add_library(
         ${_INCLUDE_DIR}/drawing/defines/MonitorDefines.h
         ${_INCLUDE_DIR}/drawing/config/LoadingScreenConfig.hpp
         ${_INCLUDE_DIR}/drawing/config/RendererConfig.hpp
-        ${_INCLUDE_DIR}/drawing/Camera.h
         ${_INCLUDE_DIR}/drawing/DrawParams.h
         ${_INCLUDE_DIR}/drawing/GeometryUtils.h
         ${_INCLUDE_DIR}/drawing/LoadingScreen.h
@@ -54,7 +53,6 @@ add_library(
         ${_SRC_DIR}/containers/SpriteBufferContainer.cpp
         ${_SRC_DIR}/containers/TextContainer.cpp
         ${_SRC_DIR}/drawing/defines/MonitorDefines.cpp
-        ${_SRC_DIR}/drawing/Camera.cpp
         ${_SRC_DIR}/drawing/DrawParams.cpp
         ${_SRC_DIR}/drawing/GeometryUtils.cpp
         ${_SRC_DIR}/drawing/LoadingScreen.cpp
