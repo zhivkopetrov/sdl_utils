@@ -40,18 +40,20 @@ int32_t SpriteBufferContainer::init(const int32_t maxRuntimeSpriteBuffers) {
 }
 
 void SpriteBufferContainer::deinit() {
-  for (SDL_Texture *& spriteBuffer : _spriteBuffers) {
+  for (int32_t i = 0; i < _sbSize; ++i) {
     // free index found
-    if (nullptr != spriteBuffer) {
+    if (nullptr != _spriteBuffers[i]) {
 #if USE_SOFTWARE_RENDERER
-      Texture::freeSurface(spriteBuffer);
+      Texture::freeSurface(_spriteBuffers[i]);
 #else
-      Texture::freeTexture(spriteBuffer);
+      Texture::freeTexture(_spriteBuffers[i]);
 #endif /* USE_SOFTWARE_RENDERER */
     }
   }
 
+#if !USE_SOFTWARE_RENDERER
   _sbMemoryUsage.clear();
+#endif //!USE_SOFTWARE_RENDERER
 }
 
 void SpriteBufferContainer::createSpriteBuffer(const int32_t width,

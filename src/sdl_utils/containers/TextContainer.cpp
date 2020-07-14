@@ -47,18 +47,20 @@ void TextContainer::deinit() {
   // release the reference to the fonts data map
   _fontsMapPtr = nullptr;
 
-  for (SDL_Texture *& text : _texts) {
+  for (int32_t i = 0; i < _textsSize; ++i) {
     // free index found
-    if (nullptr != text) {
+    if (nullptr != _texts[i]) {
 #if USE_SOFTWARE_RENDERER
-      Texture::freeSurface(text);
+      Texture::freeSurface(_texts[i]);
 #else
-      Texture::freeTexture(text);
+      Texture::freeTexture(_texts[i]);
 #endif /* USE_SOFTWARE_RENDERER */
     }
   }
 
+#if !USE_SOFTWARE_RENDERER
   _textMemoryUsage.clear();
+#endif //!USE_SOFTWARE_RENDERER
 }
 
 void TextContainer::loadText(const uint64_t fontId, const char *text,

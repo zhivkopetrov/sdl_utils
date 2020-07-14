@@ -171,7 +171,7 @@ class TextContainer {
    *        search for a free position (nullptr value).
    **/
 #if USE_SOFTWARE_RENDERER
-  std::vector<SDL_Texture*> _texts;
+  std::vector<SDL_Surface*> _texts;
 #else
   std::vector<SDL_Texture*> _texts;
 

@@ -142,7 +142,7 @@ class SpriteBufferContainer {
    **/
 #if USE_SOFTWARE_RENDERER
   //_textsVec holds all Texts
-  std::vector<SDL_Texture*> _spriteBuffers;
+  std::vector<SDL_Surface*> _spriteBuffers;
 #else
   //_textsVec holds all Texts
   std::vector<SDL_Texture*> _spriteBuffers;
