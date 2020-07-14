@@ -407,9 +407,14 @@ void ResourceContainer::loadResourceOnDemandMultiple(
 
 void ResourceContainer::unloadResourceOnDemandSingle(const uint64_t rsrcId) {
   _rsrcDataMapIt rsrcDataMapIt = _rsrcDataMap.find(rsrcId);
+  if (rsrcDataMapIt == _rsrcDataMap.end()) {
+    LOGERR(
+        "Error, trying to unload rsrcId: %#16lX which is not existing", rsrcId);
+    return;
+  }
+
   if (0 == rsrcDataMapIt->second.refCount) {
     LOGERR("Error, trying to unload rsrcId: %#16lX that is not loaded", rsrcId);
-
     return;
   }
 
@@ -435,6 +440,12 @@ void ResourceContainer::unloadResourceOnDemandMultiple(
 
   for (uint32_t i = 0; i < SIZE; ++i) {
     rsrcDataMapIt = _rsrcDataMap.find(rsrcIds[i]);
+    if (rsrcDataMapIt == _rsrcDataMap.end()) {
+      LOGERR("Error, trying to unload rsrcId: %#16lX which is not existing",
+          rsrcIds[i]);
+      continue;
+    }
+
     if (0 == rsrcDataMapIt->second.refCount) {
       LOGERR("Error, trying to unload rsrcId: %#16lX that is not loaded",
              rsrcIds[i]);
@@ -499,13 +510,22 @@ void ResourceContainer::getRsrcTexture(const uint64_t rsrcId,
 }
 
 void ResourceContainer::detachRsrcTexture(const uint64_t rsrcId) {
-  // it is assured that _rsrcMap.find() will never return _rsrcMap.end()
-  // if this actually happens -> it is an error in the multithreading setup
-  // let it crash and catch the bug instead of memory leaking
-  _rsrcMap.erase(_rsrcMap.find(rsrcId));
+  _rsrcMapConstIt rsrcMapIt = _rsrcMap.find(rsrcId);
+  if (rsrcMapIt == _rsrcMap.end()) {
+    LOGERR("Error, trying to detach rsrcId: %#16lX which is not existing",
+        rsrcId);
+    return;
+  }
+
+  _rsrcMap.erase(rsrcMapIt);
 
 #if !USE_SOFTWARE_RENDERER
   _rsrcDataMapConstIt rsrcDataMapIt = _rsrcDataMap.find(rsrcId);
+  if (rsrcDataMapIt == _rsrcDataMap.end()) {
+    LOGERR("Error, trying to detach rsrcId: %#16lX which is not existing",
+        rsrcId);
+    return;
+  }
 
   // decrease the occupied GPU memory usage counter for the
   // destroyed texture

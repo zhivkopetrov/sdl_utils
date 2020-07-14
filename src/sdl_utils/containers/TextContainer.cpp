@@ -73,20 +73,18 @@ void TextContainer::loadText(const uint64_t fontId, const char *text,
     return;
   }
 
-  bool foundIdx = false;
   int32_t chosenIndex = INIT_INT32_VALUE;
 
   for (int32_t i = 0; i < _textsSize; ++i) {
     // free index found, occupy it
     if (nullptr == _texts[i]) {
-      foundIdx = true;
       chosenIndex = i;
       break;
     }
   }
 
 #ifndef NDEBUG
-  if (!foundIdx) {
+  if (INIT_INT32_VALUE == chosenIndex) {
     LOGERR("Critical Problem: maxRunTimeTexts value: %d is reached! "
            "Increase it's value from the configuration! or reduce the number of"
            " active texts. Text with content: %s will not be created in order "

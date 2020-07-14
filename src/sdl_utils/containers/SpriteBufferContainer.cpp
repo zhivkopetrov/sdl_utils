@@ -59,20 +59,18 @@ void SpriteBufferContainer::deinit() {
 void SpriteBufferContainer::createSpriteBuffer(const int32_t width,
                                                const int32_t height,
                                                int32_t &outContainerId) {
-  bool foundIdx = false;
   int32_t chosenIndex = INIT_INT32_VALUE;
 
   for (int32_t i = 0; i < _sbSize; ++i) {
     // free index found, occupy it
     if (nullptr == _spriteBuffers[i]) {
-      foundIdx = true;
       chosenIndex = i;
       break;
     }
   }
 
 #ifndef NDEBUG
-  if (!foundIdx) {
+  if (INIT_INT32_VALUE == chosenIndex) {
     LOGERR("Critical Problem: maxRunTimeSpriteBuffers value: %d is reached! "
            "Increase it's value from the configuration! or reduce the number of"
            " active SpriteBuffers. SpriteBuffer will not be created in order "
