@@ -15,9 +15,9 @@
 struct SDLContainersConfig {
   LoadingScreenConfig loadingScreenCfg;
   std::string resourcesBinLocation;
+  uint32_t maxResourceLoadingThreads = 0;
   int32_t maxRuntimeTexts = 0;
   int32_t maxRuntimeSpriteBuffers = 0;
-  bool isMultithreadResAllowed = false;
 };
 
 #endif /* SDL_UTILS_INCLUDE_SDL_UTILS_CONTAINERS_CONFIG_SDLCONTAINERSCONFIG_HPP_ */

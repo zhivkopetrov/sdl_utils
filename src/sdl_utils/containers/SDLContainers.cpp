@@ -131,7 +131,7 @@ int32_t SDLContainers::populateSDLContainers(ResourceLoader &rsrcLoader) {
     resData.reset();
   }
 
-  ResourceContainer::loadAllStoredResources(_config.isMultithreadResAllowed);
+  ResourceContainer::loadAllStoredResources(_config.maxResourceLoadingThreads);
   //=========== END RESOURCE POPULATE =============
 
   return EXIT_SUCCESS;

@@ -210,8 +210,8 @@ void ResourceContainer::storeRsrcData(ResourceData &resourceData) {
 }
 
 void ResourceContainer::loadAllStoredResources(
-    const bool isMultithreadResAllowed) {
-  if (!isMultithreadResAllowed) {
+    const uint32_t maxResourceLoadingThreads) {
+  if (1 == maxResourceLoadingThreads) {
     LOGG("Starting Single Core resource loading ");
     loadAllStoredResourcesSingleCore();
     return;
@@ -241,41 +241,52 @@ void ResourceContainer::loadAllStoredResources(
   /** Hardware_concurrency may return 0 if its not supported
    * if this happens -> run the resourceLoad in single core
    * */
-  const uint32_t HARDWARE_THREAD_NUM = std::thread::hardware_concurrency();
+  constexpr auto hardwareConcurrencyHint = 0;
+  const uint32_t supportedHardwareThreads = std::thread::hardware_concurrency();
+
+  uint32_t hardwareThreadNumber = 0;
+  if (maxResourceLoadingThreads < supportedHardwareThreads) {
+    hardwareThreadNumber =
+        (hardwareConcurrencyHint == maxResourceLoadingThreads) ?
+            supportedHardwareThreads : maxResourceLoadingThreads;
+  } else {
+    hardwareThreadNumber = supportedHardwareThreads;
+    LOGR("maxResourceThreads requested: %d but hardware only supports up to: %d"
+        " threads. Will use: %d resource loading threads",
+        maxResourceLoadingThreads, supportedHardwareThreads,
+        supportedHardwareThreads);
+  }
+
+  if (1 == hardwareThreadNumber) {
+    LOGR("Multi Threading is not supported on this hardware. ");
+    LOGG("Starting Single Core resource loading ");
+    loadAllStoredResourcesSingleCore();
+  }
 
   /** If threads are <= 1 no need to spawn second thread,
    *  because there will be a performance
    *  lost from the constant threads context switches
    * */
-  if (HARDWARE_THREAD_NUM > 1)  // multi core case (only for ::init() case)
+  /* Generate THREAD_NUM - 1 worker CPU threads and leave the main
+   * thread to operate ot GPU + CPU operations
+   * */
+  const uint32_t WORKER_THREAD_NUM = hardwareThreadNumber - 1;
+
+  LOGG("Starting Multi Core resource loading on %u threads",
+       hardwareThreadNumber);
+
+  if (WORKER_THREAD_NUM > 1)  // for the lifetime of the program
   {
-    /* Generate THREAD_NUM - 1 worker CPU threads and leave the main
-     * thread to operate ot GPU + CPU operations
-     * */
-    const uint32_t WORKER_THREAD_NUM = HARDWARE_THREAD_NUM - 1;
+    _isMultithreadTextureLoadingEnabled = true;
 
-    LOGG("Starting Multi Core resource loading on %u threads",
-         HARDWARE_THREAD_NUM);
-
-    if (WORKER_THREAD_NUM > 1)  // for the lifetime of the program
-    {
-      _isMultithreadTextureLoadingEnabled = true;
-
-      _renderer->addRendererCmd_UT(
-          RendererCmd::ENABLE_DISABLE_MULTITHREAD_TEXTURE_LOADING,
-          reinterpret_cast<const uint8_t *>(
-              &_isMultithreadTextureLoadingEnabled),
-          sizeof(_isMultithreadTextureLoadingEnabled));
-    }
-
-    loadAllStoredResourcesMultiCore(WORKER_THREAD_NUM);
-  } else  // single core case
-  {
-    LOGR("Multi Threading is not supported on this hardware. ");
-    LOGG("Starting Single Core resource loading ");
-
-    loadAllStoredResourcesSingleCore();
+    _renderer->addRendererCmd_UT(
+        RendererCmd::ENABLE_DISABLE_MULTITHREAD_TEXTURE_LOADING,
+        reinterpret_cast<const uint8_t *>(
+            &_isMultithreadTextureLoadingEnabled),
+        sizeof(_isMultithreadTextureLoadingEnabled));
   }
+
+  loadAllStoredResourcesMultiCore(WORKER_THREAD_NUM);
 }
 
 int32_t ResourceContainer::getRsrcData(const uint64_t rsrcId,

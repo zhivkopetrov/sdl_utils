@@ -67,14 +67,15 @@ class ResourceContainer {
    *       > as SDL_Surface * in the _rsrsMap (for Software Renderer);
    *       > as SDL_Textute * in the _rsrsMap (for Hardware Renderer);
    *
-   *  @param const bool     - is multithread resource loading allowed
+   *  @param const uint32_t - number of multithreading resource loading
+   *                         if '0' is provided - hardware_concurrency is used
    *
    *         NOTE: if the hardware that runs the compiled source is
    *               capable of supporting multithreading - such is used.
    *               If multithreading is not supported - resources are
    *               loaded only on one thread.
    * */
-  void loadAllStoredResources(const bool isMultithreadResAllowed);
+  void loadAllStoredResources(const uint32_t maxResourceLoadingThreads);
 
   /** @brief used to load resource on demand
    *         IMPORTANT
