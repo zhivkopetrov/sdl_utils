@@ -37,7 +37,7 @@ class SoundContainer {
    *  @param const SoundData & - populated structure with
    *                                                 Sound specific data
    * */
-  inline void storeSoundData(const SoundData &soundData) {
+   void storeSoundData(const SoundData &soundData) {
     _soundsDataMap[soundData.header.hashValue] = soundData;
   }
 

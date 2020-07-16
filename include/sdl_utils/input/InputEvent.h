@@ -64,7 +64,7 @@ public:
    *
    *  @param TouchEntity * - last clicked TouchEntity
    * */
-  inline void setLastClicked(TouchEntity *lastClicked) const {
+  void setLastClicked(TouchEntity *lastClicked) const {
     _lastClicked = lastClicked;
   }
 

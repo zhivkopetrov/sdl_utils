@@ -34,7 +34,7 @@ class FontContainer {
    *  @param const FontData & - populated structure with
    *                                                 Font specific data
    * */
-  inline void storeFontData(const FontData &fontData) {
+   void storeFontData(const FontData &fontData) {
     _fontsDataMap[fontData.header.hashValue] = fontData;
   }
 
@@ -54,7 +54,7 @@ class FontContainer {
    *  @return TTF_Font *    - requested TTF_Font * corresponding
    *                                      to the unique provided font id
    * */
-  inline TTF_Font *getTtfFont(const uint64_t fontId) {
+   TTF_Font *getTtfFont(const uint64_t fontId) {
     return _fontsMap[fontId];
   }
 
@@ -63,7 +63,7 @@ class FontContainer {
    *  @return std::unordered_map<uint64_t, TTF_Font *> * -
    *                                      reference to fontsMap container
    * */
-  inline std::unordered_map<uint64_t, TTF_Font *> *getFontsMap() {
+   std::unordered_map<uint64_t, TTF_Font *> *getFontsMap() {
     return &_fontsMap;
   }
 

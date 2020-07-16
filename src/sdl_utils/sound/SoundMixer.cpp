@@ -14,33 +14,24 @@
 #include "utils/Log.h"
 
 int32_t SoundMixer::allocateSoundChannels(const int32_t requestedChannels) {
-  int32_t err = EXIT_SUCCESS;
-
   if (requestedChannels != Mix_AllocateChannels(requestedChannels)) {
-    LOGERR(
-        "Error in Mix_AllocateChannels() with requested channels: %d "
-        "SDL_Mixer error: %s",
-        requestedChannels, Mix_GetError());
-
-    err = EXIT_FAILURE;
+    LOGERR("Error in Mix_AllocateChannels() with requested channels: %d "
+           "SDL_Mixer error: %s", requestedChannels, Mix_GetError());
+    return EXIT_FAILURE;
   }
 
-  return err;
+  return EXIT_SUCCESS;
 }
 
 int32_t SoundMixer::setCallbackOnChannelFinish(
     void (*cb)(const int32_t channel)) {
-  int32_t err = EXIT_SUCCESS;
-
   if (nullptr == cb) {
     LOGERR("Warning, nullptr user defined callback detected.");
-    err = EXIT_FAILURE;
-  } else  // valid user defined callback
-  {
-    Mix_ChannelFinished(cb);
+    return EXIT_FAILURE;
   }
+  Mix_ChannelFinished(cb);
 
-  return err;
+  return EXIT_SUCCESS;
 }
 
 void SoundMixer::setChannelVolume(const int32_t channel, const int32_t volume) {
@@ -94,37 +85,33 @@ bool SoundMixer::isChannelPlaying(const int32_t channel) {
 int32_t SoundMixer::setChannelPanning(const int32_t channel,
                                       const uint8_t leftVolume,
                                       const uint8_t rightVolume) {
-  int32_t err = EXIT_SUCCESS;
-
   if (0 == Mix_SetPanning(channel, leftVolume, rightVolume)) {
-    LOGERR(
-        "Error in Mix_SetPanning() for leftVolume: %hhu, rightVolume: "
-        "%hhu, SDL_Mixer error: %s",
-        leftVolume, rightVolume, Mix_GetError());
-
-    err = EXIT_FAILURE;
+    LOGERR("Error in Mix_SetPanning() for leftVolume: %hhu, rightVolume: %hhu, "
+           "SDL_Mixer error: %s", leftVolume, rightVolume, Mix_GetError());
+    return EXIT_FAILURE;
   }
 
-  return err;
+  return EXIT_SUCCESS;
+}
+
+int32_t SoundMixer::resetChannelPanning(const int32_t channel) {
+  return setChannelPanning(channel, 255, 255);
 }
 
 int32_t SoundMixer::loadMusicFromFile(const char* path, Mix_Music*& outMusic) {
-  int32_t err = EXIT_SUCCESS;
-
   // check for memory leaks
   if (nullptr != outMusic) {
     freeMusic(outMusic);
   }
-
   outMusic = Mix_LoadMUS(path);
 
   if (nullptr == outMusic) {
     LOGERR("Failed to load Mix_Music from path: %s. SDL_mixer Error: %s", path,
            Mix_GetError());
-    err = EXIT_FAILURE;
+    return EXIT_FAILURE;
   }
 
-  return err;
+  return EXIT_SUCCESS;
 }
 
 void SoundMixer::freeMusic(Mix_Music*& music) {
@@ -169,22 +156,19 @@ bool SoundMixer::isMusicPlaying() { return Mix_PlayingMusic(); }
 bool SoundMixer::isMusicPaused() { return Mix_PausedMusic(); }
 
 int32_t SoundMixer::loadChunkFromFile(const char* path, Mix_Chunk*& outChunk) {
-  int32_t err = EXIT_SUCCESS;
-
   // check for memory leaks
   if (nullptr != outChunk) {
     freeChunk(outChunk);
   }
-
   outChunk = Mix_LoadWAV(path);
 
   if (nullptr == outChunk) {
     LOGERR("Failed to load Mix_Chunk from path: %s. SDL_mixer Error: %s", path,
            Mix_GetError());
-    err = EXIT_FAILURE;
+    return EXIT_FAILURE;
   }
 
-  return err;
+  return EXIT_SUCCESS;
 }
 
 void SoundMixer::freeChunk(Mix_Chunk*& chunk) {

@@ -78,7 +78,7 @@ class TouchEntity {
    *
    *  @return bool - is TouchEntity locked or not
    * */
-  inline bool isInputUnlocked() const { return _isInputUnlocked; }
+   bool isInputUnlocked() const { return _isInputUnlocked; }
 
   /** Points to button's event rectangle in order to check whether
    *  InputEvent is inside or not.

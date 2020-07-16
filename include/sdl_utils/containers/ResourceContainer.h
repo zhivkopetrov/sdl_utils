@@ -52,7 +52,7 @@ class ResourceContainer {
    *
    *  @return int32_t - error code
    * */
-  inline void setRenderer(Renderer * renderer) {
+   void setRenderer(Renderer * renderer) {
     _renderer = renderer;
   }
 
@@ -238,7 +238,7 @@ class ResourceContainer {
    *         WARNING: do not invoke this method outside of
    *                  the Renderer API!!!
    * */
-  inline ThreadSafeQueue<std::pair<uint64_t, SDL_Surface *>>
+   ThreadSafeQueue<std::pair<uint64_t, SDL_Surface *>>
       *getLoadedSurfacesQueue() const {
     return _loadedSurfacesThreadQueue;
   }
@@ -248,7 +248,7 @@ class ResourceContainer {
    *
    *  @return uint64_t - occupied VRAM in bytes
    * */
-  inline uint64_t getGPUMemoryUsage() const { return _gpuMemoryUsage; }
+   uint64_t getGPUMemoryUsage() const { return _gpuMemoryUsage; }
 
   /** @brief a callback fired when a successful
    *         RendererCmd::LOAD_TEXTURE_MULTIPLE batch has been completed

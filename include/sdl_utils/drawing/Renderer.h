@@ -189,7 +189,7 @@ class Renderer {
    *
    *  @returns uint32_t - total widget count currently being drawn
    * */
-  inline uint32_t getTotalWidgetCount_UT() const {
+  uint32_t getTotalWidgetCount_UT() const {
     return _rendererState[_updateStateIdx].lastTotalWidgetCounter;
   }
 
@@ -230,7 +230,7 @@ class Renderer {
 
   /** @brief resets absolute global renderer axis movement
    * */
-  inline void resetAbsoluteGlobalMovement_UT() {
+  void resetAbsoluteGlobalMovement_UT() {
     setAbsoluteGlobalMovement_UT(0, 0);
   }
 
@@ -241,7 +241,7 @@ class Renderer {
    *  @param const int32_t - X axis movement
    *  @param const int32_t - Y axis movement
    * */
-  inline void setAbsoluteGlobalMovement_UT(const int32_t x, const int32_t y) {
+  void setAbsoluteGlobalMovement_UT(const int32_t x, const int32_t y) {
     _rendererState[_updateStateIdx].globalOffsetX = x;
     _rendererState[_updateStateIdx].globalOffsetY = y;
   }
@@ -250,7 +250,7 @@ class Renderer {
    *
    *  @param const int32_t - X axis movement
    * */
-  inline void moveGlobalX_UT(const int32_t x) {
+  void moveGlobalX_UT(const int32_t x) {
     _rendererState[_updateStateIdx].globalOffsetX += x;
   }
 
@@ -258,7 +258,7 @@ class Renderer {
    *
    *  @param const int32_t - Y axis movement
    * */
-  inline void moveGlobalY_UT(const int32_t y) {
+  void moveGlobalY_UT(const int32_t y) {
     _rendererState[_updateStateIdx].globalOffsetY += y;
   }
 

@@ -68,7 +68,7 @@ class MonitorWindow {
 
   /** @brief used to get access to the the actual created window
    * */
-  inline SDL_Window* getWindow() const { return _window; }
+  SDL_Window* getWindow() const { return _window; }
 
   /** @brief loads window icon (on the dash bar) for the application window
    *

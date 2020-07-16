@@ -170,9 +170,7 @@ class SoundMixer {
    *
    *  @return int32_t      - error code
    * */
-  static inline int32_t resetChannelPanning(const int32_t channel) {
-    return setChannelPanning(channel, 255, 255);
-  }
+  static int32_t resetChannelPanning(const int32_t channel);
 
   //==================== END Channel Sound functions =====================
 

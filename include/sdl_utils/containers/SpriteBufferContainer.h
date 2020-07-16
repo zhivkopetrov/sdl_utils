@@ -38,7 +38,7 @@ class SpriteBufferContainer {
    *
    *  @return int32_t - error code
    * */
-  inline void setRenderer(Renderer * renderer) {
+   void setRenderer(Renderer * renderer) {
     _renderer = renderer;
   }
 
@@ -119,7 +119,7 @@ class SpriteBufferContainer {
    *
    *  @return uint64_t - occupied VRAM in bytes
    * */
-  inline uint64_t getGPUMemoryUsage() const { return _gpuMemoryUsage; }
+   uint64_t getGPUMemoryUsage() const { return _gpuMemoryUsage; }
 
  private:
   // holds pointer to hardware render in order
