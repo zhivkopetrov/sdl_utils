@@ -411,15 +411,16 @@ void Texture::draw(SDL_Texture *texture, const DrawParams &drawParams)
   }
 #else
   // Render to screen
-  if (EXIT_SUCCESS !=
-      SDL_RenderCopyEx(_renderer,         // the hardware renderer
-                       texture,           // source texture
-                       SDLFrameRect,      // source rectangle
-                       &renderQuad,       // destination rectangle
-                       drawParams.angle,  // rotation angles
-                       reinterpret_cast<const SDL_Point *>(
-                           drawParams.center),  // rotation center
-                       SDL_FLIP_NONE)) {         // flip mode
+  if (EXIT_SUCCESS != SDL_RenderCopyEx(
+      _renderer,         // the hardware renderer
+      texture,           // source texture
+      SDLFrameRect,      // source rectangle
+      &renderQuad,       // destination rectangle
+      drawParams.angle,  // rotation angles
+      reinterpret_cast<const SDL_Point *>(
+           drawParams.center),  // rotation center
+      static_cast<SDL_RendererFlip>(
+          drawParams.widgetFlipType))) { // flip mode
     LOGERR("Error in SDL_RenderCopyEx(), SDL Error: %s from widget with "
            "rsrcId: %#16lX ", SDL_GetError(), drawParams.rsrcId);
     return;

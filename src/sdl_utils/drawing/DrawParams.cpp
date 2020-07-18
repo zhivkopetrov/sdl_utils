@@ -17,6 +17,7 @@ DrawParams::DrawParams() :
   center(&centerPos),
   opacity(FULL_OPACITY),
   widgetType(WidgetType::UNKNOWN),
+  widgetFlipType(WidgetFlipType::NONE),
   hasCrop(false),
   hasScaling(false) {
 

@@ -20,6 +20,13 @@ enum class WidgetType : uint8_t {
   UNKNOWN = 255
 };
 
+enum class WidgetFlipType : uint8_t {
+  NONE = 0,
+  VERTICAL = 1,
+  HORIZONTAL = 2,
+  VERTICAL_AND_HORIZONTAL = 3
+};
+
 constexpr inline int32_t ZERO_OPACITY = 0;
 constexpr inline int32_t FULL_OPACITY = 255;
 

@@ -63,6 +63,9 @@ struct DrawParams {
   // Holds the specific widget type (IMAGE, TEXT, SPRITE_BUFFER, etc...)
   WidgetType widgetType;
 
+  // Used to flip (mirror) the widget /NONE, VERTICAL, HORIZONTAL, etc.../
+  WidgetFlipType widgetFlipType;
+
   // A flag to determine whether crop is activated for current Widget
   bool hasCrop;
 
