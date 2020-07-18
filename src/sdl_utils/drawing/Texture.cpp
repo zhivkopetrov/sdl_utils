@@ -474,13 +474,13 @@ void Texture::setAlpha(SDL_Texture *texture, const int32_t alpha) {
 
 #if USE_SOFTWARE_RENDERER
 int32_t Texture::setBlendMode([[maybe_unused]]SDL_Surface *texture,
-                              [[maybe_unused]]const int32_t blendMode) {
+                              [[maybe_unused]]const BlendMode blendMode) {
   LOGR("Warning, .setBlendMode() is not supported for Software renderer. "
        "Blend mode will not be changed.");
   return EXIT_SUCCESS;
 }
 #else
-int32_t Texture::setBlendMode(SDL_Texture *texture, const int32_t blendMode) {
+int32_t Texture::setBlendMode(SDL_Texture *texture, const BlendMode blendMode) {
   if (EXIT_SUCCESS !=
       SDL_SetTextureBlendMode(texture, static_cast<SDL_BlendMode>(blendMode))) {
     LOGERR("Warning, .setBlendMode() method will not take effect. Reason: "

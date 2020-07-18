@@ -1032,7 +1032,7 @@ void Renderer::updateRendererTarget_RT() {
 
 void Renderer::changeTextureBlending_RT() {
   WidgetType widgetType = WidgetType::UNKNOWN;
-  int32_t blendmode = 0;
+  BlendMode blendmode = BlendMode::NONE;
   uint64_t parsedBytes = 0;
 
   _rendererState[_renderStateIdx].renderData >> widgetType >> blendmode;
@@ -1056,8 +1056,7 @@ void Renderer::changeTextureBlending_RT() {
     parsedBytes += sizeof(containerId);
 
     _containers->getTextTexture(containerId, texture);
-  } else  // WidgetType::SPRITE_BUFFER == widgetType
-  {
+  } else { // WidgetType::SPRITE_BUFFER == widgetType
     int32_t containerId = 0;
     _rendererState[_renderStateIdx].renderData >> containerId;
     parsedBytes += sizeof(containerId);
@@ -1067,13 +1066,14 @@ void Renderer::changeTextureBlending_RT() {
 
 #if LOCAL_DEBUG
   LOGY(
-      "Executing changeTextureBlending_RT(), widgetType: %hhu, blendmode: %d"
+      "Executing changeTextureBlending_RT(), widgetType: %hhu, blendmode: %hhu"
       " (with %lu bytes of data)",
-      static_cast<uint8_t>(widgetType), blendmode, parsedBytes);
+      getEnumValue(widgetType), getEnumValue(blendmode), parsedBytes);
 #endif /* LOCAL_DEBUG */
 
   if (EXIT_SUCCESS != Texture::setBlendMode(texture, blendmode)) {
-    LOGERR("Error in Texture::setBlendMode() for  blendMode: %d", blendmode);
+    LOGERR("Error in Texture::setBlendMode() for  blendMode: %hhu",
+        getEnumValue(blendmode));
   }
 }
 
@@ -1092,7 +1092,7 @@ void Renderer::changeTextureOpacity_RT() {
   LOGY(
       "Executing changeTextureOpacity_RT(), widgetType: %hhu, opacity: %d "
       "(with %lu bytes of data)",
-      static_cast<uint8_t>(widgetType), opacity, parsedBytes);
+      getEnumValue(widgetType), opacity, parsedBytes);
 #endif /* LOCAL_DEBUG */
 
 #if USE_SOFTWARE_RENDERER

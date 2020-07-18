@@ -21,6 +21,7 @@ struct SDL_Texture;
 struct SDL_Renderer;
 struct DrawParams;
 typedef struct _TTF_Font TTF_Font;
+enum class BlendMode : uint8_t;
 
 class Texture {
  public:
@@ -183,12 +184,12 @@ class Texture {
    *
    *         NOTE: blend mode is only supported by Hardware renderer
    *
-   *  @param SDL_Surface * - texture to be modified
-   *  @param const int32_t - new blend mode value
+   *  @param SDL_Surface *   - texture to be modified
+   *  @param const BlendMode - new blend mode value
    *
-   *  @return int32_t      - error code
+   *  @return int32_t         - error code
    * */
-  static int32_t setBlendMode(SDL_Surface* texture, const int32_t blendMode);
+  static int32_t setBlendMode(SDL_Surface* texture, const BlendMode blendMode);
 #else
   /** @brief used to change the target for main graphical renderer.
    *
@@ -249,12 +250,12 @@ class Texture {
    *
    *         NOTE: blend mode is only supported by Hardware renderer
    *
-   *  @param SDL_Texture * - texture to be modified
-   *  @param const int32_t - new blend mode value
+   *  @param SDL_Texture *   - texture to be modified
+   *  @param const BlendMode - new blend mode value
    *
-   *  @return int32_t      - error code
+   *  @return int32_t        - error code
    * */
-  static int32_t setBlendMode(SDL_Texture* texture, const int32_t blendMode);
+  static int32_t setBlendMode(SDL_Texture* texture, const BlendMode blendMode);
 
   /** @brief to create a texture for the current rendering context.
    *
