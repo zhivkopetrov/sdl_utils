@@ -4,7 +4,6 @@
 // C system headers
 
 // C++ system headers
-#include <cstdlib>
 #include <cstring>
 
 // Other libraries headers
@@ -14,6 +13,7 @@
 #include "sdl_utils/drawing/Texture.h"
 #include "utils/LimitValues.hpp"
 #include "utils/drawing/Color.h"
+#include "utils/ErrorCode.h"
 #include "utils/Log.h"
 
 // basically anything different than nullptr
@@ -36,7 +36,7 @@ int32_t SpriteBufferContainer::init(const int32_t maxRuntimeSpriteBuffers) {
   _sbMemoryUsage.resize(maxRuntimeSpriteBuffers, 0);
 #endif /* !USE_SOFTWARE_RENDERER */
 
-  return EXIT_SUCCESS;
+  return SUCCESS;
 }
 
 void SpriteBufferContainer::deinit() {

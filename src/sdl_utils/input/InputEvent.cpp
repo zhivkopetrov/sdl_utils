@@ -14,6 +14,7 @@
 #include "sdl_utils/drawing/defines/RendererDefines.h"
 #include "utils/data_type/EnumClassUtils.hpp"
 #include "utils/drawing/Rectangle.h"
+#include "utils/ErrorCode.h"
 #include "utils/Log.h"
 
 InputEvent::InputEvent()
@@ -25,19 +26,14 @@ InputEvent::InputEvent()
 }
 
 int32_t InputEvent::init() {
-  int32_t err = EXIT_SUCCESS;
+  _sdlEvent = new SDL_Event;
 
-  if (EXIT_SUCCESS == err) {
-    _sdlEvent = new SDL_Event;
-
-    if (nullptr == _sdlEvent) {
-      LOGERR("Error, bad alloc for SDL_Event");
-
-      err = EXIT_FAILURE;
-    }
+  if (nullptr == _sdlEvent) {
+    LOGERR("Error, bad alloc for SDL_Event");
+    return FAILURE;
   }
 
-  return err;
+  return SUCCESS;
 }
 
 void InputEvent::deinit() {

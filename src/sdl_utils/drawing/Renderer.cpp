@@ -4,7 +4,6 @@
 // C system headers
 
 // C++ system headers
-#include <cstdlib>
 #include <algorithm>
 
 // Other libraries headers
@@ -19,6 +18,7 @@
 #include "utils/concurrency/ThreadSafeQueue.hpp"
 #include "utils/data_type/EnumClassUtils.hpp"
 #include "utils/drawing/Color.h"
+#include "utils/ErrorCode.h"
 #include "utils/Log.h"
 
 #define LOCAL_DEBUG 0
@@ -62,9 +62,9 @@ int32_t Renderer::init(const RendererConfig& cfg) {
   _window = cfg.window;
 
   for (int32_t i = 0; i < SUPPORTED_BACK_BUFFERS; ++i) {
-    if (EXIT_SUCCESS != _rendererState[i].init(cfg)) {
+    if (SUCCESS != _rendererState[i].init(cfg)) {
       LOGERR("_rendererState[%d].init() failed", i);
-      return EXIT_FAILURE;
+      return FAILURE;
     }
   }
 
@@ -76,7 +76,7 @@ int32_t Renderer::init(const RendererConfig& cfg) {
         "Warning: Linear texture filtering not enabled! "
         "SDL_SetHint() failed. SDL Error: %s",
         SDL_GetError());
-    return EXIT_FAILURE;
+    return FAILURE;
   }
 
 #if USE_SOFTWARE_RENDERER
@@ -87,7 +87,7 @@ int32_t Renderer::init(const RendererConfig& cfg) {
         "Software Renderer could not be created! "
         "SDL_GetWindowSurface() failed. SDL Error: %s",
         SDL_GetError());
-    return EXIT_FAILURE;
+    return FAILURE;
   }
 #else
   // Create the actual hardware renderer for window
@@ -100,24 +100,24 @@ int32_t Renderer::init(const RendererConfig& cfg) {
       );
   if (nullptr == _sdlRenderer) {
     LOGERR("Renderer could not be created! SDL Error: %s", SDL_GetError());
-    return EXIT_FAILURE;
+    return FAILURE;
   }
 
   // Initialize renderer color
-  if (EXIT_SUCCESS !=
+  if (SUCCESS !=
       SDL_SetRenderDrawColor(_sdlRenderer, Colors::BLACK.rgba.r,
                              Colors::BLACK.rgba.g, Colors::BLACK.rgba.b,
                              Colors::BLACK.rgba.a)) {
     LOGERR("Error in, SDL_SetRenderDrawColor(), SDL Error: %s",
            SDL_GetError());
-    return EXIT_FAILURE;
+    return FAILURE;
   }
 
 #if ENABLE_VSYNC && DISABLE_DOUBLE_BUFFERING_SWAP_INTERVAL
-  if (EXIT_SUCCESS != SDL_GL_SetSwapInterval(0)) {
+  if (SUCCESS != SDL_GL_SetSwapInterval(0)) {
     LOGERR("SDL_GL_SetSwapInterval(0) failed, SDL Error: %s",
            SDL_GetError());
-    return EXIT_FAILURE;
+    return FAILURE;
   }
 #endif /* ENABLE_VSYNC && DISABLE_DOUBLE_BUFFERING_SWAP_INTERVAL */
 #endif /* USE_SOFTWARE_RENDERER */
@@ -134,7 +134,7 @@ int32_t Renderer::init(const RendererConfig& cfg) {
   }
 #endif /* !USE_SOFTWARE_RENDERER */
 
-  return EXIT_SUCCESS;
+  return SUCCESS;
 }
 
 void Renderer::deinit() {
@@ -293,10 +293,10 @@ int32_t Renderer::unlockRenderer_UT() {
     LOGERR(
         "Error, trying to unlock the main renderer, "
         "when it's already unlocked");
-    return EXIT_FAILURE;
+    return FAILURE;
   }
 
-  return EXIT_SUCCESS;
+  return SUCCESS;
 }
 
 int32_t Renderer::lockRenderer_UT() {
@@ -308,10 +308,10 @@ int32_t Renderer::lockRenderer_UT() {
     LOGERR(
         "Error, trying to lock the main renderer, "
         "when it's already locked");
-    return EXIT_FAILURE;
+    return FAILURE;
   }
 
-  return EXIT_SUCCESS;
+  return SUCCESS;
 }
 
 void Renderer::setRendererClearColor_UT(const Color &clearColor) {
@@ -463,7 +463,7 @@ void Renderer::clearScreenExecution_RT() {
 #endif /* LOCAL_DEBUG */
 
 #if USE_SOFTWARE_RENDERER
-  if (EXIT_SUCCESS !=
+  if (SUCCESS !=
       SDL_FillRect(_sdlRenderer,  // current target
                    nullptr,       // nullptr for whole rectangle
                    _rendererState[_renderStateIdx].clearColor.get32BitRGBA())) {
@@ -473,7 +473,7 @@ void Renderer::clearScreenExecution_RT() {
   }
 #else
   // clear screen
-  if (EXIT_SUCCESS != SDL_RenderClear(_sdlRenderer)) {
+  if (SUCCESS != SDL_RenderClear(_sdlRenderer)) {
     LOGERR("Error in, SDL_RenderClear(), SDL Error: %s", SDL_GetError());
 
     return;
@@ -567,7 +567,7 @@ void Renderer::changeClearColor_RT() {
   _rendererState[_renderStateIdx].clearColor = clearColor;
 #else
   // set renderer drawing color
-  if (EXIT_SUCCESS !=
+  if (SUCCESS !=
       SDL_SetRenderDrawColor(_sdlRenderer, clearColor.rgba.r, clearColor.rgba.g,
                              clearColor.rgba.b, clearColor.rgba.a)) {
     LOGERR("Error in, SDL_SetRenderDrawColor(), SDL Error: %s", SDL_GetError());
@@ -636,7 +636,7 @@ void Renderer::loadTextureSingle_RT() {
     }
   } else  // single thread approach
   {
-    if (EXIT_SUCCESS != _containers->loadSurface(rsrcId, surface)) {
+    if (SUCCESS != _containers->loadSurface(rsrcId, surface)) {
       LOGERR(
           "Error, gRsrcMgrBase->loadSurface() failed for rsrcId: "
           "%#16lX",
@@ -657,7 +657,7 @@ void Renderer::loadTextureSingle_RT() {
 #endif /* USE_SOFTWARE_RENDERER */
 
 #if !USE_SOFTWARE_RENDERER
-  if (EXIT_SUCCESS != Texture::loadTextureFromSurface(surface, texture)) {
+  if (SUCCESS != Texture::loadTextureFromSurface(surface, texture)) {
     LOGERR("Error in Texture::loadTextureFromSurface() for rsrcId: %#16lX",
            rsrcId);
 
@@ -765,7 +765,7 @@ void Renderer::loadTextureMultiple_RT() {
 #if USE_SOFTWARE_RENDERER
       texture = currResSurface.second;
 #else
-      if (EXIT_SUCCESS !=
+      if (SUCCESS !=
           Texture::loadTextureFromSurface(currResSurface.second, texture)) {
         LOGERR(
             "Error in Texture::loadTextureFromSurface() for rsrcId: "
@@ -791,7 +791,7 @@ void Renderer::loadTextureMultiple_RT() {
 
     // start uploading on the GPU on the rendering thread
     while (0 != itemsToPop) {
-      if (EXIT_SUCCESS !=
+      if (SUCCESS !=
           _containers->loadSurface(rsrcIds[currIndex], surface)) {
         LOGERR(
             "Error, gRsrcMgrBase->loadSurface() failed for rsrcId: "
@@ -807,7 +807,7 @@ void Renderer::loadTextureMultiple_RT() {
 #if USE_SOFTWARE_RENDERER
       texture = surface;
 #else
-      if (EXIT_SUCCESS != Texture::loadTextureFromSurface(surface, texture)) {
+      if (SUCCESS != Texture::loadTextureFromSurface(surface, texture)) {
         LOGERR(
             "Error in Texture::loadTextureFromSurface() for rsrcId: "
             "%#16lX",
@@ -885,14 +885,14 @@ void Renderer::createFBO_RT() {
 
 #if USE_SOFTWARE_RENDERER
   // allocate new empty Surface
-  if (EXIT_SUCCESS != Texture::createEmptySurface(width, height, texture)) {
+  if (SUCCESS != Texture::createEmptySurface(width, height, texture)) {
     LOGERR("Texture::createEmptySurface() failed");
 
     return;
   }
 #else
   // allocate new empty Texture
-  if (EXIT_SUCCESS != Texture::createEmptyTexture(width, height, texture)) {
+  if (SUCCESS != Texture::createEmptyTexture(width, height, texture)) {
     LOGERR("Texture::createEmptyTexture() failed");
 
     return;
@@ -948,7 +948,7 @@ void Renderer::changeRendererTarget_RT() {
   _containers->getSpriteBufferTexture(containerId, texture);
 
   // set SpriteBuffer texture as renderer target
-  if (EXIT_SUCCESS != Texture::setRendererTarget(texture)) {
+  if (SUCCESS != Texture::setRendererTarget(texture)) {
     LOGERR("Error, Texture::setRendererTarget() failed");
   }
 }
@@ -961,9 +961,9 @@ void Renderer::resetRendererTarget_RT() {
   // NOTE: Software renderer is represented by a simple window Surface
   //      Hardware renderer default target is set by providing nullptr
 #if USE_SOFTWARE_RENDERER
-  if (EXIT_SUCCESS != Texture::setRendererTarget(_sdlRenderer))
+  if (SUCCESS != Texture::setRendererTarget(_sdlRenderer))
 #else
-  if (EXIT_SUCCESS != Texture::setRendererTarget(nullptr))
+  if (SUCCESS != Texture::setRendererTarget(nullptr))
 #endif /* USE_SOFTWARE_RENDERER */
   {
     LOGERR(
@@ -987,7 +987,7 @@ void Renderer::clearRendererTarget_RT() {
       clearColor.get32BitRGBA(), sizeof(clearColor));
 #endif /* LOCAL_DEBUG */
 
-  if (EXIT_SUCCESS != Texture::clearCurrentRendererTarget(clearColor)) {
+  if (SUCCESS != Texture::clearCurrentRendererTarget(clearColor)) {
     LOGERR("Error in Texture::clearCurrentRendererTarget()");
   }
 }
@@ -1071,7 +1071,7 @@ void Renderer::changeTextureBlending_RT() {
       getEnumValue(widgetType), getEnumValue(blendmode), parsedBytes);
 #endif /* LOCAL_DEBUG */
 
-  if (EXIT_SUCCESS != Texture::setBlendMode(texture, blendmode)) {
+  if (SUCCESS != Texture::setBlendMode(texture, blendmode)) {
     LOGERR("Error in Texture::setBlendMode() for  blendMode: %hhu",
         getEnumValue(blendmode));
   }
@@ -1200,7 +1200,7 @@ void Renderer::createTTFText_RT(const bool isTextBeingReloaded) {
       parsedBytes);
 #endif /* LOCAL_DEBUG */
 
-  if (EXIT_SUCCESS !=
+  if (SUCCESS !=
       Texture::loadFromText(textContent, (*_containers->getFontsMap())[fontId],
                            textColor, texture, createdWidth, createdHeight)) {
     LOGERR("Error in loadFromText() for fontId: %#16lX", fontId);

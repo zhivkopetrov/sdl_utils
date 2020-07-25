@@ -19,8 +19,8 @@
 
 // Own components headers
 #include "sdl_utils/sound/defines/SoundMixerDefines.h"
-
 #include "utils/debug/FunctionTracer.hpp"
+#include "utils/ErrorCode.h"
 #include "utils/Log.h"
 
 int32_t SDLLoader::init() {
@@ -30,18 +30,18 @@ int32_t SDLLoader::init() {
   // needed for X multhithread support
   if (!XInitThreads()) {
     LOGERR("Error in XInitThreads() -> Terminating ...");
-    return EXIT_FAILURE;
+    return FAILURE;
   }
 #endif /* __linux__ */
 
   if (-1 == TTF_Init()) {
     LOGERR("SDL_ttf could not initialize! SDL_ttf Error: %s", TTF_GetError());
-    return EXIT_FAILURE;
+    return FAILURE;
   }
 
   if (0 > SDL_Init(SDL_INIT_VIDEO)) {
     LOGERR("SDL could not be initialised! SDL Error: %s", SDL_GetError());
-    return EXIT_FAILURE;
+    return FAILURE;
   }
 
   // Initialise PNG loading
@@ -49,13 +49,13 @@ int32_t SDLLoader::init() {
   if (!(IMG_Init(imgFlags) & imgFlags)) {
     LOGERR("SDL_image could not be initialised! SDL_image Error: %s",
         IMG_GetError());
-    return EXIT_FAILURE;
+    return FAILURE;
   }
 
   if (0 > SDL_Init(SDL_INIT_AUDIO)) {
     LOGERR("SDL Audio could not be initialised! SDL Error: %s",
            SDL_GetError());
-    return EXIT_FAILURE;
+    return FAILURE;
   }
 
   if (0 > Mix_OpenAudio(FREQUENCY,           // sound frequency
@@ -65,7 +65,7 @@ int32_t SDLLoader::init() {
   {
     LOGERR("SDL_mixer could not initialised! SDL_mixer Error: %s",
            Mix_GetError());
-    return EXIT_FAILURE;
+    return FAILURE;
   }
 
   // fix a bug in SDL with version lower than 2.0.10
@@ -74,11 +74,11 @@ int32_t SDLLoader::init() {
     if (0 > SDL_Init(SDL_INIT_JOYSTICK)) {
       LOGERR("SDL Joystick could not be initialised! SDL Error: %s",
              SDL_GetError());
-      return EXIT_FAILURE;
+      return FAILURE;
     }
   }
 
-  return EXIT_SUCCESS;
+  return SUCCESS;
 }
 
 void SDLLoader::deinit() {

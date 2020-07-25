@@ -4,34 +4,34 @@
 // C system headers
 
 // C++ system headers
-#include <cstdlib>
 
 // Other libraries headers
 #include <SDL_mixer.h>
 
 // Own components headers
 #include "sdl_utils/sound/defines/SoundMixerDefines.h"
+#include "utils/ErrorCode.h"
 #include "utils/Log.h"
 
 int32_t SoundMixer::allocateSoundChannels(const int32_t requestedChannels) {
   if (requestedChannels != Mix_AllocateChannels(requestedChannels)) {
     LOGERR("Error in Mix_AllocateChannels() with requested channels: %d "
            "SDL_Mixer error: %s", requestedChannels, Mix_GetError());
-    return EXIT_FAILURE;
+    return FAILURE;
   }
 
-  return EXIT_SUCCESS;
+  return SUCCESS;
 }
 
 int32_t SoundMixer::setCallbackOnChannelFinish(
     void (*cb)(const int32_t channel)) {
   if (nullptr == cb) {
     LOGERR("Warning, nullptr user defined callback detected.");
-    return EXIT_FAILURE;
+    return FAILURE;
   }
   Mix_ChannelFinished(cb);
 
-  return EXIT_SUCCESS;
+  return SUCCESS;
 }
 
 void SoundMixer::setChannelVolume(const int32_t channel, const int32_t volume) {
@@ -88,10 +88,10 @@ int32_t SoundMixer::setChannelPanning(const int32_t channel,
   if (0 == Mix_SetPanning(channel, leftVolume, rightVolume)) {
     LOGERR("Error in Mix_SetPanning() for leftVolume: %hhu, rightVolume: %hhu, "
            "SDL_Mixer error: %s", leftVolume, rightVolume, Mix_GetError());
-    return EXIT_FAILURE;
+    return FAILURE;
   }
 
-  return EXIT_SUCCESS;
+  return SUCCESS;
 }
 
 int32_t SoundMixer::resetChannelPanning(const int32_t channel) {
@@ -108,10 +108,10 @@ int32_t SoundMixer::loadMusicFromFile(const char* path, Mix_Music*& outMusic) {
   if (nullptr == outMusic) {
     LOGERR("Failed to load Mix_Music from path: %s. SDL_mixer Error: %s", path,
            Mix_GetError());
-    return EXIT_FAILURE;
+    return FAILURE;
   }
 
-  return EXIT_SUCCESS;
+  return SUCCESS;
 }
 
 void SoundMixer::freeMusic(Mix_Music*& music) {
@@ -165,10 +165,10 @@ int32_t SoundMixer::loadChunkFromFile(const char* path, Mix_Chunk*& outChunk) {
   if (nullptr == outChunk) {
     LOGERR("Failed to load Mix_Chunk from path: %s. SDL_mixer Error: %s", path,
            Mix_GetError());
-    return EXIT_FAILURE;
+    return FAILURE;
   }
 
-  return EXIT_SUCCESS;
+  return SUCCESS;
 }
 
 void SoundMixer::freeChunk(Mix_Chunk*& chunk) {

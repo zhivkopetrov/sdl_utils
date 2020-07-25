@@ -17,6 +17,7 @@
 #include "sdl_utils/drawing/Texture.h"
 #endif /* !USE_SOFTWARE_RENDERER */
 
+#include "utils/ErrorCode.h"
 #include "utils/Log.h"
 
 // Window modes:
@@ -56,7 +57,7 @@ int32_t MonitorWindow::init(const WindowDisplayMode displayMode,
 
   if (nullptr == _window) {
     LOGERR("Window could not be created! SDL Error: %s", SDL_GetError());
-    return EXIT_FAILURE;
+    return FAILURE;
   }
 
   // obtain real window coordinates after creation
@@ -66,7 +67,7 @@ int32_t MonitorWindow::init(const WindowDisplayMode displayMode,
   Texture::setMonitorRect(_windowRect);
 #endif /* USE_SOFTWARE_RENDERER */
 
-  return EXIT_SUCCESS;
+  return SUCCESS;
 }
 
 void MonitorWindow::deinit() {
@@ -82,12 +83,12 @@ int32_t MonitorWindow::loadWindowIcon(const char *iconPath) {
   if (nullptr == windowIcon) {
     LOGERR("Unable to create window Image from file! SDL Error: %s",
            SDL_GetError());
-    return EXIT_FAILURE;
+    return FAILURE;
   }
 
   SDL_SetWindowIcon(_window, windowIcon);
   SDL_FreeSurface(windowIcon);
   windowIcon = nullptr;
-  return EXIT_SUCCESS;
+  return SUCCESS;
 }
 

@@ -4,13 +4,13 @@
 // C system headers
 
 // C++ system headers
-#include <cstdlib>
 
 // Other libraries headers
 #include <SDL_ttf.h>
 
 // Own components headers
 #include "sdl_utils/drawing/LoadingScreen.h"
+#include "utils/ErrorCode.h"
 #include "utils/Log.h"
 
 typedef std::unordered_map<uint64_t, TTF_Font*>::iterator _fontsMapIt;
@@ -25,7 +25,7 @@ int32_t FontContainer::init(const uint64_t fontsCount) {
   _fontsDataMap.reserve(fontsCount);
   _fontsMap.reserve(fontsCount);
 
-  return EXIT_SUCCESS;
+  return SUCCESS;
 }
 
 void FontContainer::deinit() {
@@ -49,8 +49,8 @@ void FontContainer::loadAllStoredFonts() {
   _fontsDataMapConstIt it;
 
   for (it = _fontsDataMap.begin(); it != _fontsDataMap.end(); ++it) {
-    if (EXIT_SUCCESS != loadTtfFont(it->second.header.path.c_str(),
-                                    it->second.fontSize, font)) {
+    if (SUCCESS != loadTtfFont(it->second.header.path.c_str(),
+                               it->second.fontSize, font)) {
       LOGERR("Failed to load %s font! SDL_ttf Error: %s",
              it->second.header.path.c_str(), TTF_GetError());
     } else {
@@ -72,8 +72,8 @@ int32_t FontContainer::loadTtfFont(const char* path, const int32_t fontSize,
   outFont = TTF_OpenFont(path, fontSize);
   if (nullptr == outFont) {
     LOGERR("Failed to load %s font! SDL_ttf Error: %s", path, TTF_GetError());
-    return EXIT_FAILURE;
+    return FAILURE;
   }
 
-  return EXIT_SUCCESS;
+  return SUCCESS;
 }

@@ -4,7 +4,6 @@
 // C system headers
 
 // C++ system headers
-#include <cstdlib>
 #include <string>
 
 // Other libraries headers
@@ -15,6 +14,7 @@
 #include "sdl_utils/drawing/defines/RendererDefines.h"
 #include "sdl_utils/drawing/config/LoadingScreenConfig.hpp"
 #include "utils/drawing/Color.h"
+#include "utils/ErrorCode.h"
 #include "utils/Log.h"
 
 SDL_Renderer* LoadingScreen::_renderer = nullptr;
@@ -45,7 +45,7 @@ int32_t LoadingScreen::init(const LoadingScreenConfig &cfg,
       "Warning, Loading screen and loading progress bar "
       "are not supported for Software renderer!");
 
-  return EXIT_SUCCESS;
+  return SUCCESS;
 #endif /* USE_SOFTWARE_RENDERER && LOAD_WITH_PROGRESS_BAR */
   _totalFileSize = totalFileSize;
   _monitorWidth = cfg.monitorWidth;
@@ -54,47 +54,47 @@ int32_t LoadingScreen::init(const LoadingScreenConfig &cfg,
   SDL_Surface* surface = nullptr;
 
 #if USE_LOADING_BACKGROUND_IMAGE
-  if (EXIT_SUCCESS !=
+  if (SUCCESS !=
       Texture::loadSurfaceFromFile(cfg.backgroundImagePath.c_str(), surface)) {
     LOGERR("Error, could not load _loadingBackground Surface");
-    return EXIT_FAILURE;
+    return FAILURE;
   }
 
-  if (EXIT_SUCCESS !=
+  if (SUCCESS !=
       Texture::loadTextureFromSurface(surface, _loadingBackground)) {
     LOGERR("Error, could not load _loadingBackground Texture");
-    return EXIT_FAILURE;
+    return FAILURE;
   }
 #endif /* USE_LOADING_BACKGROUND_IMAGE */
 
-  if (EXIT_SUCCESS != Texture::loadSurfaceFromFile(
+  if (SUCCESS != Texture::loadSurfaceFromFile(
         cfg.progressBarOnImagePath.c_str(), surface)) {
     LOGERR("Error, could not load _progressBarOn Surface");
-    return EXIT_FAILURE;
+    return FAILURE;
   }
 
-  if (EXIT_SUCCESS !=
+  if (SUCCESS !=
       Texture::loadTextureFromSurface(surface, _progressBarOn)) {
     LOGERR("Error, could not load _progressBarOn Texture");
-    return EXIT_FAILURE;
+    return FAILURE;
   }
 
-  if (EXIT_SUCCESS != Texture::loadSurfaceFromFile(
+  if (SUCCESS != Texture::loadSurfaceFromFile(
       cfg.progressBarOffImagePath.c_str(), surface)) {
     LOGERR("Error, could not load _progressBarOff Surface");
-    return EXIT_FAILURE;
+    return FAILURE;
   }
 
-  if (EXIT_SUCCESS !=
+  if (SUCCESS !=
       Texture::loadTextureFromSurface(surface, _progressBarOff)) {
     LOGERR("Error, could not load _progressBarOff Texture");
-    return EXIT_FAILURE;
+    return FAILURE;
   }
 
   // do an initial draw for zero loaded resources
   LoadingScreen::draw(0);  // 0 % loaded
 
-  return EXIT_SUCCESS;
+  return SUCCESS;
 }
 
 void LoadingScreen::deinit() {
@@ -134,7 +134,7 @@ void LoadingScreen::onNewResourceLoaded(const int32_t loadedSize) {
 
 void LoadingScreen::draw(const int32_t percentLoaded) {
   // clear screen
-  if (EXIT_SUCCESS != SDL_RenderClear(_renderer)) {
+  if (SUCCESS != SDL_RenderClear(_renderer)) {
     LOGERR("Error in, SDL_RenderClear(), SDL Error: %s", SDL_GetError());
 
     return;
@@ -144,7 +144,7 @@ void LoadingScreen::draw(const int32_t percentLoaded) {
   const SDL_Rect backgroundRenderQuad { 0, 0, _monitorWidth, _monitorHeight };
 
   // Render to screen
-  if (EXIT_SUCCESS !=
+  if (SUCCESS !=
       SDL_RenderCopyEx(_renderer,           // the hardware renderer
                        _loadingBackground,  // source texture
                        nullptr,  // source rectangle (nullptr for whole rect)
@@ -166,7 +166,7 @@ void LoadingScreen::draw(const int32_t percentLoaded) {
                                      60 };         // destination height
 
   // Render to screen loaded percentage
-  if (EXIT_SUCCESS !=
+  if (SUCCESS !=
       SDL_RenderCopyEx(_renderer,       // the hardware renderer
                        _progressBarOn,  // source texture
                        nullptr,  // source rectangle (nullptr for whole rect)
@@ -187,7 +187,7 @@ void LoadingScreen::draw(const int32_t percentLoaded) {
   progressBarRenderQuad.w = REMAINING_WIDTH;
 
   // Render to screen remaining percentage
-  if (EXIT_SUCCESS !=
+  if (SUCCESS !=
       SDL_RenderCopyEx(_renderer,        // the hardware renderer
                        _progressBarOff,  // source texture
                        nullptr,  // source rectangle (nullptr for whole rect)

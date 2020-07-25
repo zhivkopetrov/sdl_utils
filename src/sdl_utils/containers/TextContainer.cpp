@@ -4,7 +4,6 @@
 // C system headers
 
 // C++ system headers
-#include <cstdlib>
 #include <cstring>
 
 // Other libraries headers
@@ -14,6 +13,7 @@
 #include "sdl_utils/drawing/Texture.h"
 #include "utils/drawing/Color.h"
 #include "utils/LimitValues.hpp"
+#include "utils/ErrorCode.h"
 #include "utils/Log.h"
 
 // basically anything different than nullptr
@@ -40,7 +40,7 @@ int32_t TextContainer::init(
   _textMemoryUsage.resize(maxRuntimeTexts, 0);
 #endif /* !USE_SOFTWARE_RENDERER */
 
-  return EXIT_SUCCESS;
+  return SUCCESS;
 }
 
 void TextContainer::deinit() {
@@ -66,7 +66,7 @@ void TextContainer::deinit() {
 void TextContainer::loadText(const uint64_t fontId, const char *text,
                              const Color &color, int32_t &outUniqueId,
                              int32_t &outTextWidth, int32_t &outTextHeight) {
-  if (EXIT_SUCCESS != Texture::getTextDimensions(text, (*_fontsMapPtr)[fontId],
+  if (SUCCESS != Texture::getTextDimensions(text, (*_fontsMapPtr)[fontId],
                                                  outTextWidth, outTextHeight)) {
     LOGERR("Error in getTextDimensions() for fontId: %#16lX", fontId);
 
@@ -125,7 +125,7 @@ void TextContainer::reloadText(const uint64_t fontId, const char *text,
                                const Color &color,
                                const int32_t textUniqueId,
                                int32_t &outTextWidth, int32_t &outTextHeight) {
-  if (EXIT_SUCCESS != Texture::getTextDimensions(text, (*_fontsMapPtr)[fontId],
+  if (SUCCESS != Texture::getTextDimensions(text, (*_fontsMapPtr)[fontId],
                                                  outTextWidth, outTextHeight)) {
     LOGERR("Error in getTextDimensions() for fontId: %#16lX", fontId);
     return;

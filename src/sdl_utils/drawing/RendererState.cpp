@@ -4,18 +4,18 @@
 // C system headers
 
 // C++ system headers
-#include <cstdlib>
 
 // Other libraries headers
 
 // Own components headers
 #include "sdl_utils/drawing/config/RendererConfig.hpp"
+#include "utils/ErrorCode.h"
 #include "utils/Log.h"
 
 int32_t RendererState::init(const RendererConfig &cfg) {
-  if (EXIT_SUCCESS != renderData.init(cfg.maxRendererBackBufferDataSize)) {
+  if (SUCCESS != renderData.init(cfg.maxRendererBackBufferDataSize)) {
     LOGERR("renderData.init() failed");
-    return EXIT_FAILURE;
+    return FAILURE;
   }
 
   maxRuntimeRendererCmds = cfg.maxRuntimeRendererCommands;
@@ -24,5 +24,5 @@ int32_t RendererState::init(const RendererConfig &cfg) {
   maxRuntimeWidgets = cfg.maxRuntimeWidgets;
   widgets.resize(cfg.maxRuntimeWidgets);
 
-  return EXIT_SUCCESS;
+  return SUCCESS;
 }

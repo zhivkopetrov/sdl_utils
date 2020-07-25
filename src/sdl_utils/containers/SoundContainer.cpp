@@ -4,7 +4,6 @@
 // C system headers
 
 // C++ system headers
-#include <cstdlib>
 
 // Other libraries headers
 
@@ -12,6 +11,7 @@
 #include "sdl_utils/drawing/LoadingScreen.h"
 #include "sdl_utils/sound/SoundMixer.h"
 #include "utils/data_type/EnumClassUtils.hpp"
+#include "utils/ErrorCode.h"
 #include "utils/Log.h"
 
 typedef std::unordered_map<uint64_t, Mix_Music *>::iterator _musicMapIt;
@@ -28,15 +28,13 @@ typedef std::unordered_map<uint64_t, SoundData>::const_iterator
 
 int32_t SoundContainer::init(const uint64_t musicsCount,
                              const uint64_t chunksCount) {
-  int32_t err = EXIT_SUCCESS;
-
   _soundsDataMap.reserve(musicsCount + chunksCount);
 
   _musicMap.reserve(musicsCount);
 
   _chunkMap.reserve(chunksCount);
 
-  return err;
+  return SUCCESS;
 }
 
 void SoundContainer::deinit() {
@@ -72,7 +70,7 @@ void SoundContainer::loadAllStoredSounds() {
 
   for (it = _soundsDataMap.begin(); it != _soundsDataMap.end(); ++it) {
     if (SoundType::CHUNK == it->second.soundType) {
-      if (EXIT_SUCCESS != loadChunk(it->second.header.path.c_str(),
+      if (SUCCESS != loadChunk(it->second.header.path.c_str(),
                                     it->second.soundLevel, newChunk)) {
         LOGERR("Error in loadChunk() for soundId: %#16lX",
                it->second.header.hashValue);
@@ -89,7 +87,7 @@ void SoundContainer::loadAllStoredSounds() {
       }
     } else  // SoundType::MUSIC == it->second.soundType
     {
-      if (EXIT_SUCCESS != loadMusic(it->second.header.path.c_str(),
+      if (SUCCESS != loadMusic(it->second.header.path.c_str(),
                                     it->second.soundLevel, newMusic)) {
         LOGERR("Error in loadMusic() for soundId: %#16lX",
                it->second.header.hashValue);
@@ -110,21 +108,16 @@ void SoundContainer::loadAllStoredSounds() {
 
 int32_t SoundContainer::getSoundData(const uint64_t soundId,
                                      const SoundData *&outData) {
-  int32_t err = EXIT_SUCCESS;
-
   _soundsDataMapConstIt it = _soundsDataMap.find(soundId);
 
   // key not found
   if (it == _soundsDataMap.end()) {
     LOGERR("Error, soundData for rsrcId: %#16lX not found", soundId);
-
-    err = EXIT_FAILURE;
-  } else  // key found
-  {
-    outData = &it->second;
+    return FAILURE;
   }
 
-  return err;
+  outData = &it->second;
+  return SUCCESS;
 }
 
 void SoundContainer::getMusicSound(const uint64_t rsrcId,
@@ -155,42 +148,34 @@ void SoundContainer::getChunkSound(const uint64_t rsrcId,
 
 int32_t SoundContainer::loadMusic(const char *path, const SoundLevel soundLevel,
                                   Mix_Music *&outMusic) {
-  int32_t err = SoundMixer::loadMusicFromFile(path, outMusic);
-
-  if (EXIT_SUCCESS != err) {
+  if (SUCCESS != SoundMixer::loadMusicFromFile(path, outMusic)) {
     LOGERR("Error in SoundMixer::loadMusicFromFile for filePath: %s", path);
-  } else  // EXIT_SUCCESS == err
-  {
-    if (SoundLevel::UNKNOWN == soundLevel) {
-      LOGERR("Error, UNKNOWN soundLevel value detected.");
-
-      err = EXIT_FAILURE;
-    } else  // it is valid SoundLevel value
-    {
-      SoundMixer::setMusicVolume(getEnumValue(soundLevel));
-    }
+    return FAILURE;
   }
 
-  return err;
+  if (SoundLevel::UNKNOWN == soundLevel) {
+    LOGERR("Error, UNKNOWN soundLevel value detected.");
+    return FAILURE;
+  }
+
+  SoundMixer::setMusicVolume(getEnumValue(soundLevel));
+
+  return SUCCESS;
 }
 
 int32_t SoundContainer::loadChunk(const char *path, const SoundLevel soundLevel,
                                   Mix_Chunk *&outChunk) {
-  int32_t err = SoundMixer::loadChunkFromFile(path, outChunk);
-
-  if (EXIT_SUCCESS != err) {
+  if (SUCCESS != SoundMixer::loadChunkFromFile(path, outChunk)) {
     LOGERR("Error in SoundMixer::loadChunkFromFile for filePath: %s", path);
-  } else  // EXIT_SUCCESS == err
-  {
-    if (SoundLevel::UNKNOWN == soundLevel) {
-      LOGERR("Error, UNKNOWN soundLevel value detected.");
-
-      err = EXIT_FAILURE;
-    } else  // it is valid SoundLevel value
-    {
-      SoundMixer::setChunkVolume(outChunk, getEnumValue(soundLevel));
-    }
+    return FAILURE;
   }
 
-  return err;
+  if (SoundLevel::UNKNOWN == soundLevel) {
+    LOGERR("Error, UNKNOWN soundLevel value detected.");
+    return FAILURE;
+  }
+
+  SoundMixer::setChunkVolume(outChunk, getEnumValue(soundLevel));
+
+  return SUCCESS;
 }

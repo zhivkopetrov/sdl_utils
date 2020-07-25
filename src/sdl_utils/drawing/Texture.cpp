@@ -13,6 +13,7 @@
 // Own components headers
 #include "sdl_utils/drawing/DrawParams.h"
 #include "utils/drawing/Color.h"
+#include "utils/ErrorCode.h"
 #include "utils/Log.h"
 
 #if USE_SOFTWARE_RENDERER
@@ -49,12 +50,12 @@ void Texture::setMonitorRect([[maybe_unused]]Rectangle &monitorRect) {
 int32_t Texture::getTextDimensions(const char *text, TTF_Font *font,
                                    int32_t &outTextWidth,
                                    int32_t &outTextHeight) {
-  if (EXIT_SUCCESS != TTF_SizeText(font, text, &outTextWidth, &outTextHeight)) {
+  if (SUCCESS != TTF_SizeText(font, text, &outTextWidth, &outTextHeight)) {
     LOGERR("TTF_SizeText() failed! SDL_image Error: %s", IMG_GetError());
-    return EXIT_FAILURE;
+    return FAILURE;
   }
 
-  return EXIT_SUCCESS;
+  return SUCCESS;
 }
 
 int32_t Texture::loadSurfaceFromFile(const char *path,
@@ -63,7 +64,7 @@ int32_t Texture::loadSurfaceFromFile(const char *path,
   if (nullptr != outTexture) {
     LOGERR("Warning non-nullptr detected! Will no create Surface. "
         "Memory leak prevented!");
-    return EXIT_FAILURE;
+    return FAILURE;
   }
 
   // Load image at specified path
@@ -71,10 +72,10 @@ int32_t Texture::loadSurfaceFromFile(const char *path,
   if (nullptr == outTexture) {
     LOGERR("Unable to load image %s! SDL_image Error: %s", path,
            IMG_GetError());
-    return EXIT_FAILURE;
+    return FAILURE;
   }
 
-  return EXIT_SUCCESS;
+  return SUCCESS;
 }
 
 #if USE_SOFTWARE_RENDERER
@@ -109,7 +110,7 @@ int32_t Texture::loadFromText(const char *text,
 #endif /* USE_ANTI_ALIASING_ON_TEXT */
   if (loadedSurface == nullptr) {
     LOGERR("Unable to load image! SDL_image Error: %s", IMG_GetError());
-    return EXIT_FAILURE;
+    return FAILURE;
   }
 
   outTextWidth = loadedSurface->w;
@@ -119,14 +120,14 @@ int32_t Texture::loadFromText(const char *text,
   outTexture = loadedSurface;
 #else
   //create hardware accelerated texture
-  if (EXIT_SUCCESS !=
+  if (SUCCESS !=
       Texture::loadTextureFromSurface(loadedSurface, outTexture)) {
     LOGERR("Unable to create text texture");
-    return EXIT_FAILURE;
+    return FAILURE;
   }
 #endif
 
-  return EXIT_SUCCESS;
+  return SUCCESS;
 }
 
 int32_t Texture::loadTextureFromSurface(
@@ -135,7 +136,7 @@ int32_t Texture::loadTextureFromSurface(
 #if !USE_SOFTWARE_RENDERER
   if (nullptr == surface) {
     LOGERR("Nullptr surface detected. Unable to loadFromSurface()");
-    return EXIT_FAILURE;
+    return FAILURE;
   }
 
   // Check for memory leaks and get rid of preexisting texture
@@ -150,7 +151,7 @@ int32_t Texture::loadTextureFromSurface(
 
   if (nullptr == outTexture) {
     LOGERR("Unable to create texture! SDL Error: %s", SDL_GetError());
-    return EXIT_FAILURE;
+    return FAILURE;
   }
 
   // Get rid of old loaded surface
@@ -158,10 +159,10 @@ int32_t Texture::loadTextureFromSurface(
 #else
   LOGERR("Error, loadTextureFromSurface is designed to be used by hardware "
          "accelerated Texture. You can not them with software renderer");
-  return EXIT_FAILURE;
+  return FAILURE;
 #endif /* USE_SOFTWARE_RENDERER */
 
-  return EXIT_SUCCESS;
+  return SUCCESS;
 }
 
 int32_t Texture::createEmptySurface(const int32_t width, const int32_t height,
@@ -169,7 +170,7 @@ int32_t Texture::createEmptySurface(const int32_t width, const int32_t height,
   if (nullptr != outSurface) {
     LOGERR("Warning, outSurface is not empty. Will not create Empty "
            "Surface. Memory leak prevented.");
-    return EXIT_FAILURE;
+    return FAILURE;
   }
 
   /** If the depth is 4 or 8 bits, an empty palette will be allocated
@@ -205,10 +206,10 @@ int32_t Texture::createEmptySurface(const int32_t width, const int32_t height,
 
   if (nullptr == outSurface) {
     LOGERR("SDL_CreateRGBSurface() failed: %s", SDL_GetError());
-    return EXIT_FAILURE;
+    return FAILURE;
   }
 
-  return EXIT_SUCCESS;
+  return SUCCESS;
 }
 
 #if !USE_SOFTWARE_RENDERER
@@ -217,7 +218,7 @@ int32_t Texture::createEmptyTexture(const int32_t width, const int32_t height,
   if (nullptr != outTexture) {
     LOGERR("Warning, outTexture is not empty. Will not create Empty "
            "Surface. Memory leak prevented.");
-    return EXIT_FAILURE;
+    return FAILURE;
   }
 
   /** NOTE: This method will probably be used by Hardware Accelerated
@@ -237,32 +238,32 @@ int32_t Texture::createEmptyTexture(const int32_t width, const int32_t height,
 
   if (nullptr == outTexture) {
     LOGERR("SDL_CreateTexture() failed: %s", SDL_GetError());
-    return EXIT_FAILURE;
+    return FAILURE;
   }
 
-  return EXIT_SUCCESS;
+  return SUCCESS;
 }
 #endif /* !USE_SOFTWARE_RENDERER */
 
 int32_t Texture::clearCurrentRendererTarget(const Color &clearColor) {
 #if USE_SOFTWARE_RENDERER
-  if (EXIT_SUCCESS != SDL_FillRect(_renderer,  // current target
+  if (SUCCESS != SDL_FillRect(_renderer,  // current target
                                    nullptr,    // nullptr for whole rectangle
                                    clearColor.get32BitRGBA())) {
     LOGERR("Error in SDL_FillRect");
-    return EXIT_FAILURE;
+    return FAILURE;
   }
 #else
   Color currRendererColor = Colors::BLACK;
   bool isSameColorAsOld = true;
 
   // remember old renderer color
-  if (EXIT_SUCCESS != SDL_GetRenderDrawColor(
+  if (SUCCESS != SDL_GetRenderDrawColor(
                           _renderer, &currRendererColor.rgba.r,
                           &currRendererColor.rgba.g, &currRendererColor.rgba.b,
                           &currRendererColor.rgba.a)) {
     LOGERR("Error in, SDL_GetRenderDrawColor(), SDL Error: %s", SDL_GetError());
-    return EXIT_FAILURE;
+    return FAILURE;
   }
 
   if (currRendererColor != clearColor) {
@@ -271,38 +272,38 @@ int32_t Texture::clearCurrentRendererTarget(const Color &clearColor) {
 
   if (isSameColorAsOld) {
     // clear target
-    if (EXIT_SUCCESS != SDL_RenderClear(_renderer)) {
+    if (SUCCESS != SDL_RenderClear(_renderer)) {
       LOGERR("Error in, SDL_RenderClear(), SDL Error: %s", SDL_GetError());
-      return EXIT_FAILURE;
+      return FAILURE;
     }
   } else { // color should be changed temporary
     // set new renderer color
-    if (EXIT_SUCCESS != SDL_SetRenderDrawColor(
+    if (SUCCESS != SDL_SetRenderDrawColor(
                             _renderer, clearColor.rgba.r, clearColor.rgba.g,
                             clearColor.rgba.b, clearColor.rgba.a)) {
       LOGERR("Error in, SDL_SetRenderDrawColor(), SDL Error: %s",
              SDL_GetError());
-      return EXIT_FAILURE;
+      return FAILURE;
     }
 
     // clear target
-    if (EXIT_SUCCESS != SDL_RenderClear(_renderer)) {
+    if (SUCCESS != SDL_RenderClear(_renderer)) {
       LOGERR("Error in, SDL_RenderClear(), SDL Error: %s", SDL_GetError());
-      return EXIT_FAILURE;
+      return FAILURE;
     }
 
     // restore old renderer color
-    if (EXIT_SUCCESS != SDL_SetRenderDrawColor(
+    if (SUCCESS != SDL_SetRenderDrawColor(
             _renderer, currRendererColor.rgba.r, currRendererColor.rgba.g,
             currRendererColor.rgba.b, currRendererColor.rgba.a)) {
       LOGERR("Error in, SDL_SetRenderDrawColor(), SDL Error: %s",
              SDL_GetError());
-      return EXIT_FAILURE;
+      return FAILURE;
     }
   }
 #endif /* USE_SOFTWARE_RENDERER */
 
-  return EXIT_SUCCESS;
+  return SUCCESS;
 }
 
 #if USE_SOFTWARE_RENDERER
@@ -314,20 +315,20 @@ int32_t Texture::setRendererTarget(SDL_Texture *target)
   if (nullptr == _renderer) {
     LOGERR("Error, renderer is still not set for Texture. You are missing "
            "Texture::setRenderer() call in the program initialization process");
-    return EXIT_FAILURE;
+    return FAILURE;
   }
 
 #if USE_SOFTWARE_RENDERER
   _renderer = target;
 #else
-  if (EXIT_SUCCESS != SDL_SetRenderTarget(_renderer, target)) {
+  if (SUCCESS != SDL_SetRenderTarget(_renderer, target)) {
     LOGERR("Error, default renderer target could not be set. "
            "SDL_SetRenderTarget() failed, SDL Error: %s", SDL_GetError());
-    return EXIT_FAILURE;
+    return FAILURE;
   }
 #endif /* USE_SOFTWARE_RENDERER */
 
-  return EXIT_SUCCESS;
+  return SUCCESS;
 }
 
 #if USE_SOFTWARE_RENDERER
@@ -359,7 +360,7 @@ void Texture::draw(SDL_Texture *texture, const DrawParams &drawParams)
       }
 
       if (drawParams.scaledWidth > drawParams.frameCropRect.w) {
-        if (EXIT_SUCCESS != SDL_RenderSetClipRect(_renderer, &renderQuad)) {
+        if (SUCCESS != SDL_RenderSetClipRect(_renderer, &renderQuad)) {
           LOGERR("Error in SDL_RenderSetClipRect, SDL Error: %s",
                  SDL_GetError());
           return;
@@ -370,7 +371,7 @@ void Texture::draw(SDL_Texture *texture, const DrawParams &drawParams)
 
       if (drawParams.scaledHeight > drawParams.frameCropRect.h) {
         if (!rendererClipped) {
-          if (EXIT_SUCCESS != SDL_RenderSetClipRect(_renderer, &renderQuad)) {
+          if (SUCCESS != SDL_RenderSetClipRect(_renderer, &renderQuad)) {
             LOGERR("Error in SDL_RenderSetClipRect, SDL Error: %s",
                    SDL_GetError());
             return;
@@ -401,7 +402,7 @@ void Texture::draw(SDL_Texture *texture, const DrawParams &drawParams)
 
 #if USE_SOFTWARE_RENDERER
   // Apply the image
-  if (EXIT_SUCCESS != SDL_BlitSurface(texture,        // source surface
+  if (SUCCESS != SDL_BlitSurface(texture,        // source surface
                                       SDLFrameRect,   // source rectangle
                                       _renderer,      // destination surface
                                       &renderQuad)) { // destination rectangle
@@ -411,7 +412,7 @@ void Texture::draw(SDL_Texture *texture, const DrawParams &drawParams)
   }
 #else
   // Render to screen
-  if (EXIT_SUCCESS != SDL_RenderCopyEx(
+  if (SUCCESS != SDL_RenderCopyEx(
       _renderer,         // the hardware renderer
       texture,           // source texture
       SDLFrameRect,      // source rectangle
@@ -429,7 +430,7 @@ void Texture::draw(SDL_Texture *texture, const DrawParams &drawParams)
   // if clipping was done on the Hardware renderer -> reset it to default
   // monitor rectangle
   if (rendererClipped) {
-    if (EXIT_SUCCESS != SDL_RenderSetClipRect(
+    if (SUCCESS != SDL_RenderSetClipRect(
             _renderer, reinterpret_cast<const SDL_Rect *>(_monitorRect))) {
       LOGERR("Error in SDL_RenderSetClipRect(), SDL Error: %s", SDL_GetError());
 
@@ -456,13 +457,13 @@ void Texture::setAlpha([[maybe_unused]]SDL_Surface *texture,
 }
 #else
 void Texture::setAlpha(SDL_Texture *texture, const int32_t alpha) {
-  if (EXIT_SUCCESS != SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND)) {
+  if (SUCCESS != SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND)) {
     LOGERR("Warning, SDL_SetTextureBlendMode() failed. Reason: "
            "invalid texture or alpha modulation is not supported. The "
            "closest supported mode will be used. SDL Error: %s",SDL_GetError());
   }
 
-  if (EXIT_SUCCESS !=
+  if (SUCCESS !=
       SDL_SetTextureAlphaMod(texture, static_cast<uint8_t>(alpha))) {
     LOGERR("Warning, .setAlpha() method will not take effect. Reason: "
            "invalid texture or alpha modulation is not supported. "
@@ -477,18 +478,18 @@ int32_t Texture::setBlendMode([[maybe_unused]]SDL_Surface *texture,
                               [[maybe_unused]]const BlendMode blendMode) {
   LOGR("Warning, .setBlendMode() is not supported for Software renderer. "
        "Blend mode will not be changed.");
-  return EXIT_SUCCESS;
+  return SUCCESS;
 }
 #else
 int32_t Texture::setBlendMode(SDL_Texture *texture, const BlendMode blendMode) {
-  if (EXIT_SUCCESS !=
+  if (SUCCESS !=
       SDL_SetTextureBlendMode(texture, static_cast<SDL_BlendMode>(blendMode))) {
     LOGERR("Warning, .setBlendMode() method will not take effect. Reason: "
            "invalid texture or blend mode is not supported. "
            "SDL_SetTextureBlendMode() failed. SDL Error: %s", SDL_GetError());
-    return EXIT_FAILURE;
+    return FAILURE;
   }
 
-  return EXIT_SUCCESS;
+  return SUCCESS;
 }
 #endif /* USE_SOFTWARE_RENDERER */
