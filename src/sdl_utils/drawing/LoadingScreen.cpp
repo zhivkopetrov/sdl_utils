@@ -34,6 +34,8 @@ int32_t LoadingScreen::_lastLoadedPercent = 0;
 int32_t LoadingScreen::_monitorWidth = 0;
 int32_t LoadingScreen::_monitorHeight = 0;
 
+bool LoadingScreen::_isUsed = false;
+
 #define LOAD_WITH_PROGRESS_BAR 1
 
 #define USE_LOADING_BACKGROUND_IMAGE 1
@@ -47,9 +49,15 @@ int32_t LoadingScreen::init(const LoadingScreenConfig &cfg,
 
   return SUCCESS;
 #endif /* USE_SOFTWARE_RENDERER && LOAD_WITH_PROGRESS_BAR */
+
+  if (LoadingScreenUsage::DISABLED == cfg.loadingScreenUsage) {
+    return SUCCESS;
+  }
+
   _totalFileSize = totalFileSize;
   _monitorWidth = cfg.monitorWidth;
   _monitorHeight = cfg.monitorHeight;
+  _isUsed = true;
 
   SDL_Surface* surface = nullptr;
 
@@ -104,6 +112,10 @@ void LoadingScreen::deinit() {
   return;
 #endif /* USE_SOFTWARE_RENDERER && LOAD_WITH_PROGRESS_BAR */
 
+  if (!_isUsed) {
+    return;
+  }
+
   _renderer = nullptr;
 
 #if USE_LOADING_BACKGROUND_IMAGE
@@ -121,6 +133,10 @@ void LoadingScreen::onNewResourceLoaded(const int32_t loadedSize) {
   return;
 #endif /* USE_SOFTWARE_RENDERER && LOAD_WITH_PROGRESS_BAR */
 
+  if (!_isUsed) {
+    return;
+  }
+
   _currLoadedFileSize += loadedSize;
 
   const int32_t currLoadedPercent = static_cast<int32_t>(
@@ -133,6 +149,10 @@ void LoadingScreen::onNewResourceLoaded(const int32_t loadedSize) {
 }
 
 void LoadingScreen::draw(const int32_t percentLoaded) {
+  if (!_isUsed) {
+    return;
+  }
+
   // clear screen
   if (SUCCESS != SDL_RenderClear(_renderer)) {
     LOGERR("Error in, SDL_RenderClear(), SDL Error: %s", SDL_GetError());

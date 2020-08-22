@@ -89,6 +89,8 @@ class LoadingScreen {
 
   static int32_t _monitorWidth;
   static int32_t _monitorHeight;
+
+  static bool _isUsed;
 };
 
 #endif /* SDL_UTILS_LOADINGSCREEN_H_ */
