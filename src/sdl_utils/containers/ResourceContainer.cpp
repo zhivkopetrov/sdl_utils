@@ -2,9 +2,9 @@
 #include "sdl_utils/containers/ResourceContainer.h"
 
 // C system headers
-#include <unistd.h>
 
 // C++ system headers
+#include <thread>
 
 // Other libraries headers
 #include <SDL_surface.h>
@@ -179,8 +179,10 @@ void ResourceContainer::deinit() {
     _resDataThreadQueue->shutdown();
     _loadedSurfacesThreadQueue->shutdown();
 
+    using namespace std::literals;
+
     // wait for some time to be sure the queues has completed shutdown
-    usleep(2000);  // 2ms
+    std::this_thread::sleep_for(2ms);
 
     // and release memory for the queues
     delete _resDataThreadQueue;
