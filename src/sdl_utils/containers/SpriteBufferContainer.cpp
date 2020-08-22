@@ -42,7 +42,8 @@ int32_t SpriteBufferContainer::init(const int32_t maxRuntimeSpriteBuffers) {
 void SpriteBufferContainer::deinit() {
   for (int32_t i = 0; i < _sbSize; ++i) {
     // free index found
-    if (nullptr != _spriteBuffers[i]) {
+    if ((nullptr != _spriteBuffers[i]) &&
+        (RESERVE_SLOT_VALUE != _spriteBuffers[i])) {
 #if USE_SOFTWARE_RENDERER
       Texture::freeSurface(_spriteBuffers[i]);
 #else

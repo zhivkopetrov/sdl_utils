@@ -49,7 +49,7 @@ void TextContainer::deinit() {
 
   for (int32_t i = 0; i < _textsSize; ++i) {
     // free index found
-    if (nullptr != _texts[i]) {
+    if ((nullptr != _texts[i]) && ((RESERVE_SLOT_VALUE != _texts[i]))) {
 #if USE_SOFTWARE_RENDERER
       Texture::freeSurface(_texts[i]);
 #else
