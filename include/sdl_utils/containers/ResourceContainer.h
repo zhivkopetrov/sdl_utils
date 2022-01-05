@@ -170,28 +170,6 @@ class ResourceContainer {
    * */
   int32_t getRsrcData(const uint64_t rsrcId, const ResourceData *&outData);
 
-#if USE_SOFTWARE_RENDERER
-  /** @brief used to attach a newly generated SDL_Surface by the renderer
-   *         to the ResourceContainer and increase the used GPU VRAM
-   *
-   *  @param const uint64_t - unique resource ID
-   *  @param const int32_t  - created width of the SDL_Surface
-   *  @param const int32_t  - created height of the SDL_Surface
-   *  @param SDL_Surface *  - pointer to memory of the created SDL_Surface
-   **/
-  void attachRsrcTexture(const uint64_t rsrcId, const int32_t createdWidth,
-                         const int32_t createdHeight,
-                         SDL_Surface *createdTexture);
-
-  /** @brief used to acquire previously stored pre-created SDL_Surface
-   *                                       for a given unique resource ID
-   *  This function does not return error code for performance reasons
-   *
-   *  @param const uint64_t - unique resource ID
-   *  @param SDL_Surface *& - pre-created SDL_Surface
-   * */
-  void getRsrcTexture(const uint64_t rsrcId, SDL_Surface *&outTexture);
-#else
   /** @brief used to attach a newly generated SDL_Texture by the renderer
    *         to the ResourceContainer and increase the used GPU VRAM
    *
@@ -212,7 +190,6 @@ class ResourceContainer {
    *  @param SDL_Texture *& - pre-created SDL_Texture
    * */
   void getRsrcTexture(const uint64_t rsrcId, SDL_Texture *&outTexture);
-#endif /* USE_SOFTWARE_RENDERER */
 
   /** @brief used to detach(free the slot in the container) for
    *         successfully destroyed SDL_Surface/SDL_Texture by the
@@ -297,14 +274,8 @@ class ResourceContainer {
   // to be able to push RendererCmd's
   Renderer *_renderer;
 
-#if USE_SOFTWARE_RENDERER
-  //_rsrcMap holds all Images
-  std::unordered_map<uint64_t, SDL_Surface *> _rsrcMap;
-#else
   //_rsrcMap holds all Images
   std::unordered_map<uint64_t, SDL_Texture *> _rsrcMap;
-
-#endif /* USE_SOFTWARE_RENDERER */
 
   //_rsrcDataMap holds resource specific information for every Image
   std::unordered_map<uint64_t, ResourceData> _rsrcDataMap;

@@ -17,11 +17,7 @@
 #include "utils/Log.h"
 
 // basically anything different than nullptr
-#if USE_SOFTWARE_RENDERER
-#define RESERVE_SLOT_VALUE (reinterpret_cast<SDL_Surface *>(1))
-#else
 #define RESERVE_SLOT_VALUE (reinterpret_cast<SDL_Texture *>(1))
-#endif /* USE_SOFTWARE_RENDERER */
 
 #define RGBA_BYTE_SIZE 4
 
@@ -36,9 +32,7 @@ int32_t TextContainer::init(
   _textsSize = maxRuntimeTexts;
   _fontsMapPtr = fontsContainer;
   _texts.resize(maxRuntimeTexts, nullptr);
-#if !USE_SOFTWARE_RENDERER
   _textMemoryUsage.resize(maxRuntimeTexts, 0);
-#endif /* !USE_SOFTWARE_RENDERER */
 
   return SUCCESS;
 }
@@ -50,17 +44,11 @@ void TextContainer::deinit() {
   for (int32_t i = 0; i < _textsSize; ++i) {
     // free index found
     if ((nullptr != _texts[i]) && ((RESERVE_SLOT_VALUE != _texts[i]))) {
-#if USE_SOFTWARE_RENDERER
-      Texture::freeSurface(_texts[i]);
-#else
       Texture::freeTexture(_texts[i]);
-#endif /* USE_SOFTWARE_RENDERER */
     }
   }
 
-#if !USE_SOFTWARE_RENDERER
   _textMemoryUsage.clear();
-#endif //!USE_SOFTWARE_RENDERER
 }
 
 void TextContainer::loadText(const uint64_t fontId, const char *text,
@@ -178,37 +166,23 @@ void TextContainer::unloadText(const int32_t textUniqueId) {
                                sizeof(textUniqueId));
 }
 
-#if USE_SOFTWARE_RENDERER
-void TextContainer::attachText(const int32_t containerId,
-                               [[maybe_unused]]const int32_t createdWidth,
-                               [[maybe_unused]]const int32_t createdHeight,
-                               SDL_Surface *createdTexture)
-#else
 void TextContainer::attachText(const int32_t containerId,
                                const int32_t createdWidth,
                                const int32_t createdHeight,
                                SDL_Texture *createdTexture)
-#endif /* USE_SOFTWARE_RENDERER */
 {
   _texts[containerId] = createdTexture;
 
-#if !USE_SOFTWARE_RENDERER
   // calculate how much GPU VRAM will be used
   _textMemoryUsage[containerId] =
-      static_cast<uint64_t>((createdWidth * createdHeight * RGBA_BYTE_SIZE));
+      static_cast<uint64_t>(createdWidth) * createdHeight * RGBA_BYTE_SIZE;
 
   // increase the occupied GPU memory usage counter for the new texture
   _gpuMemoryUsage += _textMemoryUsage[containerId];
-#endif /* !!USE_SOFTWARE_RENDERER */
 }
 
-#if USE_SOFTWARE_RENDERER
-void TextContainer::getTextTexture(const int32_t uniqueId,
-                                   SDL_Surface *&outTexture)
-#else
 void TextContainer::getTextTexture(const int32_t uniqueId,
                                    SDL_Texture *&outTexture)
-#endif /* USE_SOFTWARE_RENDERER */
 {
   // sanity check - check if such index exists
   if (uniqueId < _textsSize) {
@@ -222,10 +196,8 @@ void TextContainer::getTextTexture(const int32_t uniqueId,
 void TextContainer::detachText(const int32_t containerId) {
   _texts[containerId] = nullptr;
 
-#if !USE_SOFTWARE_RENDERER
   // decrease the occupied GPU memory usage counter for the old texture
   _gpuMemoryUsage -= _textMemoryUsage[containerId];
 
   _textMemoryUsage[containerId] = 0;
-#endif /* USE_SOFTWARE_RENDERER */
 }

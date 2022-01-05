@@ -126,71 +126,6 @@ class Texture {
    * */
   static int32_t clearCurrentRendererTarget(const Color& clearColor);
 
-#if USE_SOFTWARE_RENDERER
-  /** @brief used to change the target for main graphical renderer.
-   *
-   *         WARNING: use this method only if you know what you are doing!
-   *
-   *  @param SDL_Surface *  - the new target for the software renderer
-   *
-   *  @return int32_t       - error code
-   * */
-  static int32_t setRendererTarget(SDL_Surface* target);
-
-  /** @brief used to load SDL_Surface from provided user text
-   *
-   *  @param const char *   - user provided text
-   *  @param TTF_Font *     - SDL_Font that is used
-   *  @param const Color &  - color used to create the text
-   *  @param SDL_Surface *& - dynamically created SDL_Surface
-   *  @param int32_t &      - width of the created SDL_Surface text
-   *  @param int32_t &      - height of the created SDL_Surface text
-   *
-   *  @returns int32_t      - error code
-   * */
-  static int32_t loadFromText(const char* text,
-                              TTF_Font* font,
-                              const Color& color,
-                              SDL_Surface*& outTexture,
-                              int32_t& outTextWidth,
-                              int32_t& outTextHeight);
-
-  /** @brief used to render the input SDL_Surface widget with it's
-   *                                       corresponding draw parameters.
-   *
-   *  @param SDL_Surface *&     - surface to be drawn
-   *  @param const DrawParams & - draw parameters
-   * */
-  static void draw(SDL_Surface* texture, const DrawParams& drawParams);
-
-  /** @brief used to acquire renderer pointer that will be performing
-   *                                         the graphical render calls.
-   *
-   *  @param SDL_Surface * - the actual software renderer
-   * */
-  static void setRenderer(SDL_Surface* renderer);
-
-  /** @brief used to change the alpha channel (Widget transparency)
-   *
-   *         NOTE: alpha channel is only supported by Hardware renderer
-   *
-   *  @param SDL_Surface * - surface to be modified
-   *  @param const int32_t - new alpha channel value
-   * */
-  static void setAlpha(SDL_Surface* texture, const int32_t alpha);
-
-  /** @brief used to change the Widget blend mode (used for calculations
-   *         on the SDL_Texture RGBA pixels)
-   *
-   *         NOTE: blend mode is only supported by Hardware renderer
-   *
-   *  @param SDL_Surface *   - texture to be modified
-   *  @param const BlendMode - new blend mode value
-   *
-   *  @return int32_t         - error code
-   * */
-  static int32_t setBlendMode(SDL_Surface* texture, const BlendMode blendMode);
-#else
   /** @brief used to change the target for main graphical renderer.
    *
    *         WARNING: use this method only if you know what you are doing!
@@ -274,20 +209,15 @@ class Texture {
    * */
   static int32_t createEmptyTexture(const int32_t width, const int32_t height,
                                     SDL_Texture*& outTexture);
-#endif /* USE_SOFTWARE_RENDERER */
 
  private:
   /** Keep pointer to the actual renderer,
    * since Texture class function will be used all the time
    * and in order not to pass pointers on every single function call
    * */
-#if USE_SOFTWARE_RENDERER
-  static SDL_Surface* _renderer;
-#else
   static SDL_Renderer* _renderer;
 
   static Rectangle* _monitorRect;
-#endif /* USE_SOFTWARE_RENDERER */
 };
 
 #endif /* SDL_UTILS_TEXTURE_H_ */

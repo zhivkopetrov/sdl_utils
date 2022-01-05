@@ -62,28 +62,6 @@ class SpriteBufferContainer {
    * */
   void destroySpriteBuffer(const int32_t uniqueContainerId);
 
-#if USE_SOFTWARE_RENDERER
-  /** @brief used to attach a newly generated SDL_Surface by the renderer
-   *         to the SpriteBufferContainer and increase the used GPU VRAM
-   *
-   *  @param const int32_t - uniqueContainerId
-   *  @param const int32_t - created width of the SDL_Surface
-   *  @param const int32_t - created height of the SDL_Surface
-   *  @param SDL_Surface * - pointer to memory of the created SDL_Surface
-   **/
-  void attachSpriteBuffer(const int32_t containerId, const int32_t createdWidth,
-                          const int32_t createdHeight,
-                          SDL_Surface* createdTexture);
-
-  /** @brief used to acquire previously stored pre-created SDL_Surface
-   *                                       for a given unique resource ID
-   *  This function does not return error code for performance reasons
-   *
-   *  @param const int32_t  - unique text resource ID
-   *  @param SDL_Surface *& - pre-created SDL_Surface
-   * */
-  void getSpriteBufferTexture(const int32_t uniqueId, SDL_Surface*& outTexture);
-#else
   /** @brief used to attach a newly generated SDL_Texture by the renderer
    *         to the SpriteBufferContainer and increase the used GPU VRAM
    *
@@ -104,7 +82,6 @@ class SpriteBufferContainer {
    *  @param SDL_Texture *& - pre-created SDL_Texture
    * */
   void getSpriteBufferTexture(const int32_t uniqueId, SDL_Texture*& outTexture);
-#endif /* USE_SOFTWARE_RENDERER */
 
   /** @brief used to detach(free the slot in the container) for
    *         successfully destroyed SDL_Surface/SDL_Texture by the
@@ -140,16 +117,11 @@ class SpriteBufferContainer {
    *        When new text is added - simply linearly scan the array and
    *        search for a free position (nullptr value).
    **/
-#if USE_SOFTWARE_RENDERER
-  //_textsVec holds all Texts
-  std::vector<SDL_Surface*> _spriteBuffers;
-#else
   //_textsVec holds all Texts
   std::vector<SDL_Texture*> _spriteBuffers;
 
   // holds holds many bytes the current text occupied in GPU VRAM
   std::vector<uint64_t> _sbMemoryUsage;
-#endif /* USE_SOFTWARE_RENDERER */
 
   // holds the currently occupied GPU VRAM in bytes
   uint64_t _gpuMemoryUsage;

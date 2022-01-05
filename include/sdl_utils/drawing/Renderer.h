@@ -392,13 +392,8 @@ class Renderer {
   // The window we'll be rendering to
   SDL_Window* _window;
 
-#if USE_SOFTWARE_RENDERER
-  // The surface contained by the window (Software Renderer)
-  SDL_Surface* _sdlRenderer;
-#else
   // The Hardware Accelerated Renderer
   SDL_Renderer* _sdlRenderer;
-#endif /* USE_SOFTWARE_RENDERER */
 
   SDLContainers* _containers;
 

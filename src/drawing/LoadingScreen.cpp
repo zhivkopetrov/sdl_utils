@@ -42,14 +42,6 @@ bool LoadingScreen::_isUsed = false;
 
 int32_t LoadingScreen::init(const LoadingScreenConfig &cfg,
                             const int32_t totalFileSize) {
-#if USE_SOFTWARE_RENDERER && LOAD_WITH_PROGRESS_BAR
-  LOGR(
-      "Warning, Loading screen and loading progress bar "
-      "are not supported for Software renderer!");
-
-  return SUCCESS;
-#endif /* USE_SOFTWARE_RENDERER && LOAD_WITH_PROGRESS_BAR */
-
   if (LoadingScreenUsage::DISABLED == cfg.loadingScreenUsage) {
     return SUCCESS;
   }
@@ -106,12 +98,6 @@ int32_t LoadingScreen::init(const LoadingScreenConfig &cfg,
 }
 
 void LoadingScreen::deinit() {
-  // Loading screen and loading progress bar
-  // are not supported for Software renderer!
-#if USE_SOFTWARE_RENDERER && LOAD_WITH_PROGRESS_BAR
-  return;
-#endif /* USE_SOFTWARE_RENDERER && LOAD_WITH_PROGRESS_BAR */
-
   if (!_isUsed) {
     return;
   }
@@ -127,12 +113,6 @@ void LoadingScreen::deinit() {
 }
 
 void LoadingScreen::onNewResourceLoaded(const int32_t loadedSize) {
-  // Loading screen and loading progress bar
-  // are not supported for Software renderer!
-#if USE_SOFTWARE_RENDERER && LOAD_WITH_PROGRESS_BAR
-  return;
-#endif /* USE_SOFTWARE_RENDERER && LOAD_WITH_PROGRESS_BAR */
-
   if (!_isUsed) {
     return;
   }

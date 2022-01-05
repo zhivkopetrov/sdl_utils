@@ -22,19 +22,6 @@
 
 #define RGBA_BYTE_SIZE 4
 
-#if USE_SOFTWARE_RENDERER
-typedef std::unordered_map<uint64_t, SDL_Surface *>::iterator _rsrcMapIt;
-typedef std::unordered_map<uint64_t, SDL_Surface *>::const_iterator
-    _rsrcMapConstIt;
-#else
-typedef std::unordered_map<uint64_t, SDL_Texture *>::iterator _rsrcMapIt;
-typedef std::unordered_map<uint64_t, SDL_Texture *>::const_iterator
-    _rsrcMapConstIt;
-#endif /* USE_SOFTWARE_RENDERER */
-typedef std::unordered_map<uint64_t, ResourceData>::iterator _rsrcDataMapIt;
-typedef std::unordered_map<uint64_t, ResourceData>::const_iterator
-    _rsrcDataMapConstIt;
-
 /** @brief used to load SDL_Surface's from file system async until a shutdown
  *         signal is provided
  *
@@ -157,12 +144,8 @@ int32_t ResourceContainer::init(const uint64_t staticWidgetsCount,
 
 void ResourceContainer::deinit() {
   // free Image/Sprite Textures
-  for (_rsrcMapIt it = _rsrcMap.begin(); it != _rsrcMap.end(); ++it) {
-#if USE_SOFTWARE_RENDERER
-    Texture::freeSurface(it->second);
-#else
+  for (auto it = _rsrcMap.begin(); it != _rsrcMap.end(); ++it) {
     Texture::freeTexture(it->second);
-#endif
   }
 
   // clear rsrcMap unordered_map and shrink size
@@ -291,20 +274,17 @@ void ResourceContainer::loadAllStoredResources(
 
 int32_t ResourceContainer::getRsrcData(const uint64_t rsrcId,
                                        const ResourceData *&outData) {
-  _rsrcDataMapConstIt it = _rsrcDataMap.find(rsrcId);
-
+  auto it = _rsrcDataMap.find(rsrcId);
   // key not found
   if (it == _rsrcDataMap.end()) {
     return FAILURE;
   }
   outData = &it->second; // key found
-
   return SUCCESS;
 }
 
 void ResourceContainer::loadResourceOnDemandSingle(const uint64_t rsrcId) {
-  _rsrcDataMapIt it = _rsrcDataMap.find(rsrcId);
-
+  auto it = _rsrcDataMap.find(rsrcId);
   if (_rsrcDataMap.end() == it)  // key not found
   {
     LOGERR("Error, rsrcData for rsrcId: %#16lX not found. "
@@ -350,24 +330,23 @@ void ResourceContainer::loadResourceOnDemandMultiple(
   std::vector<uint64_t> rsrcIdsToSend;
   rsrcIdsToSend.reserve(RSRC_SIZE);
 
-  _rsrcDataMapIt rsrcDataMapIt;
   uint32_t itemsToPop = 0;
 
   for (uint32_t i = 0; i < RSRC_SIZE; ++i) {
-    rsrcDataMapIt = _rsrcDataMap.find(rsrcIds[i]);
+    auto it = _rsrcDataMap.find(rsrcIds[i]);
 
-    if (_rsrcDataMap.end() != rsrcDataMapIt) {
+    if (_rsrcDataMap.end() != it) {
       if (ResourceDefines::TextureLoadType::ON_INIT !=
-          rsrcDataMapIt->second.textureLoadType) {
+          it->second.textureLoadType) {
         // if refCount is bigger than zero -> resource is already loaded
         // increase the refCount and continue
-        if (0 < rsrcDataMapIt->second.refCount) {
-          ++rsrcDataMapIt->second.refCount;
+        if (0 < it->second.refCount) {
+          ++it->second.refCount;
 
           continue;
         }
 
-        rsrcDataMapIt->second.refCount = 1;
+        it->second.refCount = 1;
 
         ++itemsToPop;
 
@@ -375,7 +354,7 @@ void ResourceContainer::loadResourceOnDemandMultiple(
 
         if (_isMultithreadTextureLoadingEnabled) {
           // dispatch the resource data into the thread safe queue
-          _resDataThreadQueue->pushWithCopy(rsrcDataMapIt->second);
+          _resDataThreadQueue->pushWithCopy(it->second);
         }
       } else  // initiate load on 'dynamic'(on_demand) resource
       {
@@ -417,23 +396,23 @@ void ResourceContainer::loadResourceOnDemandMultiple(
 }
 
 void ResourceContainer::unloadResourceOnDemandSingle(const uint64_t rsrcId) {
-  _rsrcDataMapIt rsrcDataMapIt = _rsrcDataMap.find(rsrcId);
-  if (rsrcDataMapIt == _rsrcDataMap.end()) {
+  auto it = _rsrcDataMap.find(rsrcId);
+  if (it == _rsrcDataMap.end()) {
     LOGERR(
         "Error, trying to unload rsrcId: %#16lX which is not existing", rsrcId);
     return;
   }
 
-  if (0 == rsrcDataMapIt->second.refCount) {
+  if (0 == it->second.refCount) {
     LOGERR("Error, trying to unload rsrcId: %#16lX that is not loaded", rsrcId);
     return;
   }
 
   // decrease the refCount
-  --rsrcDataMapIt->second.refCount;
+  --it->second.refCount;
 
   // when refCount goes to zero -> resource should be unloaded
-  if (0 == rsrcDataMapIt->second.refCount) {
+  if (0 == it->second.refCount) {
     _renderer->addRendererCmd_UT(RendererCmd::DESTROY_TEXTURE,
                                  reinterpret_cast<const uint8_t *>(&rsrcId),
                                  sizeof(rsrcId));
@@ -446,18 +425,17 @@ void ResourceContainer::unloadResourceOnDemandMultiple(
   //      the source code from ::unloadResourceOnDemandSingle()
   //      is copied and not invoked N times.
 
-  _rsrcDataMapIt rsrcDataMapIt;
   const uint32_t SIZE = static_cast<uint32_t>(rsrcIds.size());
 
   for (uint32_t i = 0; i < SIZE; ++i) {
-    rsrcDataMapIt = _rsrcDataMap.find(rsrcIds[i]);
-    if (rsrcDataMapIt == _rsrcDataMap.end()) {
+    auto it = _rsrcDataMap.find(rsrcIds[i]);
+    if (it == _rsrcDataMap.end()) {
       LOGERR("Error, trying to unload rsrcId: %#16lX which is not existing",
           rsrcIds[i]);
       continue;
     }
 
-    if (0 == rsrcDataMapIt->second.refCount) {
+    if (0 == it->second.refCount) {
       LOGERR("Error, trying to unload rsrcId: %#16lX that is not loaded",
              rsrcIds[i]);
 
@@ -465,10 +443,10 @@ void ResourceContainer::unloadResourceOnDemandMultiple(
     }
 
     // decrease the refCount
-    --rsrcDataMapIt->second.refCount;
+    --it->second.refCount;
 
     // when refCount goes to zero -> resource should be unloaded
-    if (0 == rsrcDataMapIt->second.refCount) {
+    if (0 == it->second.refCount) {
       _renderer->addRendererCmd_UT(
           RendererCmd::DESTROY_TEXTURE,
           reinterpret_cast<const uint8_t *>(&rsrcIds[i]), sizeof(rsrcIds[i]));
@@ -476,17 +454,10 @@ void ResourceContainer::unloadResourceOnDemandMultiple(
   }
 }
 
-#if USE_SOFTWARE_RENDERER
-void ResourceContainer::attachRsrcTexture(const uint64_t rsrcId,
-                                          const int32_t createdWidth,
-                                          const int32_t createdHeight,
-                                          SDL_Surface *createdTexture)
-#else
 void ResourceContainer::attachRsrcTexture(const uint64_t rsrcId,
                                           const int32_t createdWidth,
                                           const int32_t createdHeight,
                                           SDL_Texture *createdTexture)
-#endif /* USE_SOFTWARE_RENDERER */
 {
   // directly populate the rsrcMap with the newly created SDL_Texture
   _rsrcMap[rsrcId] = createdTexture;
@@ -494,22 +465,15 @@ void ResourceContainer::attachRsrcTexture(const uint64_t rsrcId,
   if (createdWidth || createdHeight) {
   }
 
-#if !USE_SOFTWARE_RENDERER
   // increase the occupied GPU memory usage counter for the new texture
   _gpuMemoryUsage +=
-      static_cast<uint64_t>((createdWidth * createdHeight * RGBA_BYTE_SIZE));
-#endif /* !USE_SOFTWARE_RENDERER */
+      static_cast<uint64_t>(createdWidth) * createdHeight * RGBA_BYTE_SIZE;
 }
 
-#if USE_SOFTWARE_RENDERER
-void ResourceContainer::getRsrcTexture(const uint64_t rsrcId,
-                                       SDL_Surface *&outTexture)
-#else
 void ResourceContainer::getRsrcTexture(const uint64_t rsrcId,
                                        SDL_Texture *&outTexture)
-#endif /* USE_SOFTWARE_RENDERER */
 {
-  _rsrcMapConstIt it = _rsrcMap.find(rsrcId);
+  auto it = _rsrcMap.find(rsrcId);
 
   // key found
   if (it != _rsrcMap.end()) {
@@ -521,7 +485,7 @@ void ResourceContainer::getRsrcTexture(const uint64_t rsrcId,
 }
 
 void ResourceContainer::detachRsrcTexture(const uint64_t rsrcId) {
-  _rsrcMapConstIt rsrcMapIt = _rsrcMap.find(rsrcId);
+  auto rsrcMapIt = _rsrcMap.find(rsrcId);
   if (rsrcMapIt == _rsrcMap.end()) {
     LOGERR("Error, trying to detach rsrcId: %#16lX which is not existing",
         rsrcId);
@@ -530,8 +494,7 @@ void ResourceContainer::detachRsrcTexture(const uint64_t rsrcId) {
 
   _rsrcMap.erase(rsrcMapIt);
 
-#if !USE_SOFTWARE_RENDERER
-  _rsrcDataMapConstIt rsrcDataMapIt = _rsrcDataMap.find(rsrcId);
+  auto rsrcDataMapIt = _rsrcDataMap.find(rsrcId);
   if (rsrcDataMapIt == _rsrcDataMap.end()) {
     LOGERR("Error, trying to detach rsrcId: %#16lX which is not existing",
         rsrcId);
@@ -543,7 +506,6 @@ void ResourceContainer::detachRsrcTexture(const uint64_t rsrcId) {
   _gpuMemoryUsage -= static_cast<uint64_t>(
       (rsrcDataMapIt->second.imageRect.w * rsrcDataMapIt->second.imageRect.h *
        RGBA_BYTE_SIZE));
-#endif /* !USE_SOFTWARE_RENDERER*/
 }
 
 int32_t ResourceContainer::loadSurface(const uint64_t rsrcId,
@@ -604,11 +566,7 @@ void ResourceContainer::loadAllStoredResourcesSingleCore() {
     // NOTE: if HARDWARE_RENDERER is used -> divide the load time between:
     //          > creating the SDL_Surface;
     //          > creating the SDL_Texture from the SDL_Surface;
-#if USE_SOFTWARE_RENDERER
-    const int32_t fileSize = resData.header.fileSize;
-#else
     const int32_t fileSize = resData.header.fileSize / 2;
-#endif /* USE_SOFTWARE_RENDERER */
 
     // push the newly generated SDL_Surface to the ThreadSafe Surface Queue
     _loadedSurfacesThreadQueue->push(
@@ -626,12 +584,6 @@ void ResourceContainer::loadAllStoredResourcesSingleCore() {
   std::pair<uint64_t, SDL_Surface *> currResSurface(0, nullptr);
 
   // on main thread return
-#if USE_SOFTWARE_RENDERER
-  // store the generates SDL_Surfaces into the rsrcMap
-  while (_loadedSurfacesThreadQueue->tryPop(currResSurface)) {
-    _rsrcMap[currResSurface.first] = currResSurface.second;
-  }
-#else
   SDL_Texture *newTexture = nullptr;
 
   int32_t currSurfaceWidth = 0;
@@ -670,7 +622,6 @@ void ResourceContainer::loadAllStoredResourcesSingleCore() {
     // reset the variable so it can be reused
     newTexture = nullptr;
   }
-#endif /* USE_SOFTWARE_RENDERER */
 }
 
 void ResourceContainer::loadAllStoredResourcesMultiCore(
@@ -698,24 +649,6 @@ void ResourceContainer::loadAllStoredResourcesMultiCore(
                                  _resDataThreadQueue,
                                  _loadedSurfacesThreadQueue);
 
-#if USE_SOFTWARE_RENDERER
-  // use the main thread for the same operation as the worker threads
-  loadSurfacesFromFileSystemAsync(_resDataThreadQueue,
-                                  _loadedSurfacesThreadQueue);
-
-  // store the generates SDL_Surfaces into the rsrcMap
-  while (0 != itemsToPop) {
-    if (!_loadedSurfacesThreadQueue->waitAndPop(currResSurface)) {
-      LOGERR("Warning, the pushed number of ResourceData structs does"
-             " not match the outputed number of SDL_Surfaces!");
-      break;
-    }
-
-    _rsrcMap[currResSurface.first] = currResSurface.second;
-
-    --itemsToPop;
-  }
-#else
   // temporary variables used for calculations
   SDL_Texture *newTexture = nullptr;
   int32_t currSurfaceWidth = 0;
@@ -764,7 +697,6 @@ void ResourceContainer::loadAllStoredResourcesMultiCore(
 
     --itemsToPop;
   }
-#endif /* USE_SOFTWARE_RENDERER */
 
   if (_workerThreadPool.back().joinable())  // sanity check
   {

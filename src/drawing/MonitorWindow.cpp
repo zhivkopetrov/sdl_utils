@@ -13,17 +13,10 @@
 // Own components headers
 #include "sdl_utils/drawing/defines/RendererDefines.h"
 
-#if !USE_SOFTWARE_RENDERER
 #include "sdl_utils/drawing/Texture.h"
-#endif /* !USE_SOFTWARE_RENDERER */
 
 #include "utils/ErrorCode.h"
 #include "utils/Log.h"
-
-// Window modes:
-// SDL_WINDOW_SHOWN - for windowed version
-// SDL_WINDOW_FULLSCREEN_DESKTOP - for fullscreen
-// SDL_WINDOW_OPENGL for working with OPEN_GL windows and context
 
 MonitorWindow::MonitorWindow(const int32_t windowWidth,
                              const int32_t windowHeight, const Point& windowPos)
@@ -63,9 +56,7 @@ int32_t MonitorWindow::init(const WindowDisplayMode displayMode,
   // obtain real window coordinates after creation
   SDL_GetWindowPosition(_window, &_windowRect.x, &_windowRect.y);
 
-#if !USE_SOFTWARE_RENDERER
   Texture::setMonitorRect(_windowRect);
-#endif /* USE_SOFTWARE_RENDERER */
 
   return SUCCESS;
 }

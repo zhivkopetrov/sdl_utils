@@ -12,6 +12,11 @@
 #include "utils/data_type/EnumClassUtils.hpp"
 #include "utils/Log.h"
 
+// Window modes:
+// SDL_WINDOW_SHOWN - for windowed version
+// SDL_WINDOW_FULLSCREEN_DESKTOP - for fullscreen
+// SDL_WINDOW_OPENGL for working with OPEN_GL windows and context
+
 int32_t getValue(const WindowDisplayMode displayMode,
 		const WindowBorderMode borderMode) {
 	switch (borderMode) {

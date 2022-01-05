@@ -79,17 +79,6 @@ int32_t Renderer::init(const RendererConfig& cfg) {
     return FAILURE;
   }
 
-#if USE_SOFTWARE_RENDERER
-  _sdlRenderer = SDL_GetWindowSurface(_window);
-
-  if (nullptr == _sdlRenderer) {
-    LOGERR(
-        "Software Renderer could not be created! "
-        "SDL_GetWindowSurface() failed. SDL Error: %s",
-        SDL_GetError());
-    return FAILURE;
-  }
-#else
   // Create the actual hardware renderer for window
   _sdlRenderer =
       SDL_CreateRenderer(_window, -1,
@@ -120,11 +109,8 @@ int32_t Renderer::init(const RendererConfig& cfg) {
     return FAILURE;
   }
 #endif /* ENABLE_VSYNC && DISABLE_DOUBLE_BUFFERING_SWAP_INTERVAL */
-#endif /* USE_SOFTWARE_RENDERER */
 
   Texture::setRenderer(_sdlRenderer);
-
-#if !USE_SOFTWARE_RENDERER
   LoadingScreen::setRenderer(_sdlRenderer);
 
   if (!SDL_RenderTargetSupported(_sdlRenderer)) {
@@ -132,7 +118,6 @@ int32_t Renderer::init(const RendererConfig& cfg) {
         "Warning, Render Target change is not supported on this "
         "platform. This will result in non-working SpriteBuffers.");
   }
-#endif /* !USE_SOFTWARE_RENDERER */
 
   return SUCCESS;
 }
@@ -140,13 +125,7 @@ int32_t Renderer::init(const RendererConfig& cfg) {
 void Renderer::deinit() {
   if (_sdlRenderer)  // sanity check
   {
-#if USE_SOFTWARE_RENDERER
-    // Deallocate surface
-    SDL_FreeSurface(_sdlRenderer);
-#else
-    // Destroy window
     SDL_DestroyRenderer(_sdlRenderer);
-#endif /* USE_SOFTWARE_RENDERER */
     _sdlRenderer = nullptr;
   }
 }
@@ -462,23 +441,12 @@ void Renderer::clearScreenExecution_RT() {
   LOGY("Executing clearScreenExecution_RT() (with 0 bytes of data)");
 #endif /* LOCAL_DEBUG */
 
-#if USE_SOFTWARE_RENDERER
-  if (SUCCESS !=
-      SDL_FillRect(_sdlRenderer,  // current target
-                   nullptr,       // nullptr for whole rectangle
-                   _rendererState[_renderStateIdx].clearColor.get32BitRGBA())) {
-    LOGERR("Error in SDL_FillRect, SDL Error: %s", SDL_GetError());
-
-    return;
-  }
-#else
   // clear screen
   if (SUCCESS != SDL_RenderClear(_sdlRenderer)) {
     LOGERR("Error in, SDL_RenderClear(), SDL Error: %s", SDL_GetError());
 
     return;
   }
-#endif /* USE_SOFTWARE_RENDERER */
 }
 
 void Renderer::finishFrameExecution_RT() {
@@ -533,13 +501,8 @@ void Renderer::finishFrameExecution_RT() {
   // do the actual drawing of all stored images for THIS FRAME
   drawWidgetsToBackBuffer_RT(_rendererState[IDX].widgets.data(), USED_SIZE);
 
-#if USE_SOFTWARE_RENDERER
-  // Update the surface
-  SDL_UpdateWindowSurface(_window);
-#else
   //------------- UPDATE SCREEN----------------
   SDL_RenderPresent(_sdlRenderer);
-#endif /* USE_SOFTWARE_RENDERER */
 
   // copy the total widget counter since we are in the end of a frame
   _rendererState[IDX].lastTotalWidgetCounter =
@@ -563,16 +526,12 @@ void Renderer::changeClearColor_RT() {
       clearColor.get32BitRGBA(), sizeof(clearColor));
 #endif /* LOCAL_DEBUG */
 
-#if USE_SOFTWARE_RENDERER
-  _rendererState[_renderStateIdx].clearColor = clearColor;
-#else
   // set renderer drawing color
   if (SUCCESS !=
       SDL_SetRenderDrawColor(_sdlRenderer, clearColor.rgba.r, clearColor.rgba.g,
                              clearColor.rgba.b, clearColor.rgba.a)) {
     LOGERR("Error in, SDL_SetRenderDrawColor(), SDL Error: %s", SDL_GetError());
   }
-#endif /* USE_SOFTWARE_RENDERER */
 }
 
 void Renderer::loadTextureSingle_RT() {
@@ -650,20 +609,13 @@ void Renderer::loadTextureSingle_RT() {
   const int32_t surfaceWidth = surface->w;
   const int32_t surfaceHeight = surface->h;
 
-#if USE_SOFTWARE_RENDERER
-  SDL_Surface *texture = surface;
-#else
   SDL_Texture *texture = nullptr;
-#endif /* USE_SOFTWARE_RENDERER */
-
-#if !USE_SOFTWARE_RENDERER
   if (SUCCESS != Texture::loadTextureFromSurface(surface, texture)) {
     LOGERR("Error in Texture::loadTextureFromSurface() for rsrcId: %#16lX",
            rsrcId);
 
     return;
   }
-#endif /* !USE_SOFTWARE_RENDERER */
 
   // attach newly created SDL_Surface/SDL_Texture
   _containers->attachRsrcTexture(rsrcId, surfaceWidth, surfaceHeight, texture);
@@ -694,13 +646,8 @@ void Renderer::loadTextureMultiple_RT() {
 
   int32_t currSurfaceWidth = 0;
   int32_t currSurfaceHeight = 0;
-  std::vector<uint64_t>::const_iterator it;
 
-#if USE_SOFTWARE_RENDERER
-  SDL_Surface *texture = nullptr;
-#else
   SDL_Texture *texture = nullptr;
-#endif /* USE_SOFTWARE_RENDERER */
 
   if (_isMultithreadTextureLoadingEnabled) {
     // temporary variables used for _loadedSurfacesThreadQueue::pop operation
@@ -722,7 +669,7 @@ void Renderer::loadTextureMultiple_RT() {
         break;
       }
 
-      it = std::find(rsrcIds.begin(), rsrcIds.end(), currResSurface.first);
+      auto it = std::find(rsrcIds.begin(), rsrcIds.end(), currResSurface.first);
 
       if (rsrcIds.end() == it) {
         /** The popped rsrcId does not belong to the requested 'patch'
@@ -762,9 +709,6 @@ void Renderer::loadTextureMultiple_RT() {
       currSurfaceWidth = currResSurface.second->w;
       currSurfaceHeight = currResSurface.second->h;
 
-#if USE_SOFTWARE_RENDERER
-      texture = currResSurface.second;
-#else
       if (SUCCESS !=
           Texture::loadTextureFromSurface(currResSurface.second, texture)) {
         LOGERR(
@@ -774,7 +718,6 @@ void Renderer::loadTextureMultiple_RT() {
 
         return;
       }
-#endif /* USE_SOFTWARE_RENDERER */
 
       _containers->attachRsrcTexture(currResSurface.first, currSurfaceWidth,
                                      currSurfaceHeight, texture);
@@ -804,9 +747,6 @@ void Renderer::loadTextureMultiple_RT() {
       currSurfaceWidth = surface->w;
       currSurfaceHeight = surface->h;
 
-#if USE_SOFTWARE_RENDERER
-      texture = surface;
-#else
       if (SUCCESS != Texture::loadTextureFromSurface(surface, texture)) {
         LOGERR(
             "Error in Texture::loadTextureFromSurface() for rsrcId: "
@@ -815,7 +755,6 @@ void Renderer::loadTextureMultiple_RT() {
 
         return;
       }
-#endif /* USE_SOFTWARE_RENDERER */
 
       _containers->attachRsrcTexture(rsrcIds[currIndex], currSurfaceWidth,
                                      currSurfaceHeight, texture);
@@ -845,20 +784,10 @@ void Renderer::destroyTexture_RT() {
       rsrcId, sizeof(rsrcId));
 #endif /* LOCAL_DEBUG */
 
-#if USE_SOFTWARE_RENDERER
-  SDL_Surface *texture = nullptr;
-#else
   SDL_Texture *texture = nullptr;
-#endif
-
   _containers->getRsrcTexture(rsrcId, texture);
 
-#if USE_SOFTWARE_RENDERER
-  Texture::freeSurface(texture);
-#else
   Texture::freeTexture(texture);
-#endif /* USE_SOFTWARE_RENDERER */
-
   _containers->detachRsrcTexture(rsrcId);
 }
 
@@ -877,27 +806,14 @@ void Renderer::createFBO_RT() {
       (sizeof(width) + sizeof(height) + sizeof(containerId)));
 #endif /* LOCAL_DEBUG */
 
-#if USE_SOFTWARE_RENDERER
-  SDL_Surface *texture = nullptr;
-#else
   SDL_Texture *texture = nullptr;
-#endif /* USE_SOFTWARE_RENDERER */
 
-#if USE_SOFTWARE_RENDERER
-  // allocate new empty Surface
-  if (SUCCESS != Texture::createEmptySurface(width, height, texture)) {
-    LOGERR("Texture::createEmptySurface() failed");
-
-    return;
-  }
-#else
   // allocate new empty Texture
   if (SUCCESS != Texture::createEmptyTexture(width, height, texture)) {
     LOGERR("Texture::createEmptyTexture() failed");
 
     return;
   }
-#endif /* USE_SOFTWARE_RENDERER */
 
   _containers->attachSpriteBuffer(containerId, width, height, texture);
 }
@@ -911,29 +827,15 @@ void Renderer::destroyFBO_RT() {
        containerId, sizeof(containerId));
 #endif /* LOCAL_DEBUG */
 
-#if USE_SOFTWARE_RENDERER
-  SDL_Surface *texture = nullptr;
-#else
   SDL_Texture *texture = nullptr;
-#endif
-
   _containers->getSpriteBufferTexture(containerId, texture);
 
-#if USE_SOFTWARE_RENDERER
-  Texture::freeSurface(texture);
-#else
   Texture::freeTexture(texture);
-#endif /* USE_SOFTWARE_RENDERER */
-
   _containers->detachSpriteBuffer(containerId);
 }
 
 void Renderer::changeRendererTarget_RT() {
-#if USE_SOFTWARE_RENDERER
-  SDL_Surface *texture = nullptr;
-#else
   SDL_Texture *texture = nullptr;
-#endif
 
   int32_t containerId = 0;
   _rendererState[_renderStateIdx].renderData >> containerId;
@@ -958,13 +860,7 @@ void Renderer::resetRendererTarget_RT() {
   LOGY("Executing resetRendererTarget_RT() (with 0 bytes of data)");
 #endif /* LOCAL_DEBUG */
 
-  // NOTE: Software renderer is represented by a simple window Surface
-  //      Hardware renderer default target is set by providing nullptr
-#if USE_SOFTWARE_RENDERER
-  if (SUCCESS != Texture::setRendererTarget(_sdlRenderer))
-#else
   if (SUCCESS != Texture::setRendererTarget(nullptr))
-#endif /* USE_SOFTWARE_RENDERER */
   {
     LOGERR(
         "Error, default renderer target could not be set. "
@@ -1038,11 +934,7 @@ void Renderer::changeTextureBlending_RT() {
   _rendererState[_renderStateIdx].renderData >> widgetType >> blendmode;
   parsedBytes += (sizeof(widgetType) + sizeof(blendmode));
 
-#if USE_SOFTWARE_RENDERER
-  SDL_Surface *texture = nullptr;
-#else
   SDL_Texture *texture = nullptr;
-#endif /* USE_SOFTWARE_RENDERER */
 
   if (WidgetType::IMAGE == widgetType) {
     uint64_t rsrcId = 0;
@@ -1095,11 +987,7 @@ void Renderer::changeTextureOpacity_RT() {
       getEnumValue(widgetType), opacity, parsedBytes);
 #endif /* LOCAL_DEBUG */
 
-#if USE_SOFTWARE_RENDERER
-  SDL_Surface *texture = nullptr;
-#else
   SDL_Texture *texture = nullptr;
-#endif /* USE_SOFTWARE_RENDERER */
 
   /** changeTextureOpacity_RT is only expected if widget is of type
    * WidgetType::TEXT or WidgetType::SPRITE_BUFFER.
@@ -1148,12 +1036,7 @@ void Renderer::createTTFText_RT(const bool isTextBeingReloaded) {
   // note: there is no default constructor for color, the Colors::BLACK
   // is just for initialisation
   Color textColor = Colors::BLACK;
-
-#if USE_SOFTWARE_RENDERER
-  SDL_Surface *texture = nullptr;
-#else
   SDL_Texture *texture = nullptr;
-#endif
 
   uint64_t parsedBytes = sizeof(fontId) + sizeof(textColor) +
                          sizeof(textLength) + textLength;
@@ -1228,20 +1111,10 @@ int32_t Renderer::destroyTTFText_RT() {
       containerId, sizeof(containerId));
 #endif /* LOCAL_DEBUG */
 
-#if USE_SOFTWARE_RENDERER
-  SDL_Surface *texture = nullptr;
-#else
   SDL_Texture *texture = nullptr;
-#endif
 
   _containers->getTextTexture(containerId, texture);
-
-#if USE_SOFTWARE_RENDERER
-  Texture::freeSurface(texture);
-#else
   Texture::freeTexture(texture);
-#endif /* USE_SOFTWARE_RENDERER */
-
   _containers->detachText(containerId);
 
   return containerId;
@@ -1249,11 +1122,7 @@ int32_t Renderer::destroyTTFText_RT() {
 
 void Renderer::drawWidgetsToBackBuffer_RT(const DrawParams drawParamsArr[],
                                           const uint32_t size) {
-#if USE_SOFTWARE_RENDERER
-  SDL_Surface *texture = nullptr;
-#else
   SDL_Texture *texture = nullptr;
-#endif /* USE_SOFTWARE_RENDERER */
 
   for (uint32_t i = 0; i < size; ++i) {
     if (WidgetType::IMAGE == drawParamsArr[i].widgetType) {

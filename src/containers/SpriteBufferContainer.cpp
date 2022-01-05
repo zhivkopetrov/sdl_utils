@@ -17,11 +17,7 @@
 #include "utils/Log.h"
 
 // basically anything different than nullptr
-#if USE_SOFTWARE_RENDERER
-#define RESERVE_SLOT_VALUE (reinterpret_cast<SDL_Surface *>(1))
-#else
 #define RESERVE_SLOT_VALUE (reinterpret_cast<SDL_Texture *>(1))
-#endif /* USE_SOFTWARE_RENDERER */
 
 #define RGBA_BYTE_SIZE 4
 
@@ -32,10 +28,7 @@ SpriteBufferContainer::SpriteBufferContainer()
 int32_t SpriteBufferContainer::init(const int32_t maxRuntimeSpriteBuffers) {
   _sbSize = maxRuntimeSpriteBuffers;
   _spriteBuffers.resize(maxRuntimeSpriteBuffers, nullptr);
-#if !USE_SOFTWARE_RENDERER
   _sbMemoryUsage.resize(maxRuntimeSpriteBuffers, 0);
-#endif /* !USE_SOFTWARE_RENDERER */
-
   return SUCCESS;
 }
 
@@ -44,17 +37,11 @@ void SpriteBufferContainer::deinit() {
     // free index found
     if ((nullptr != _spriteBuffers[i]) &&
         (RESERVE_SLOT_VALUE != _spriteBuffers[i])) {
-#if USE_SOFTWARE_RENDERER
-      Texture::freeSurface(_spriteBuffers[i]);
-#else
       Texture::freeTexture(_spriteBuffers[i]);
-#endif /* USE_SOFTWARE_RENDERER */
     }
   }
 
-#if !USE_SOFTWARE_RENDERER
   _sbMemoryUsage.clear();
-#endif //!USE_SOFTWARE_RENDERER
 }
 
 void SpriteBufferContainer::createSpriteBuffer(const int32_t width,
@@ -121,38 +108,23 @@ void SpriteBufferContainer::destroySpriteBuffer(
       reinterpret_cast<const uint8_t *>(&uniqueContainerId),
       sizeof(uniqueContainerId));
 }
-#if USE_SOFTWARE_RENDERER
-void SpriteBufferContainer::attachSpriteBuffer(
-    const int32_t containerId,
-    [[maybe_unused]]const int32_t createdWidth,
-    [[maybe_unused]]const int32_t createdHeight,
-    SDL_Surface *createdTexture)
-#else
 void SpriteBufferContainer::attachSpriteBuffer(const int32_t containerId,
                                                const int32_t createdWidth,
                                                const int32_t createdHeight,
                                                SDL_Texture *createdTexture)
-#endif /* USE_SOFTWARE_RENDERER */
 {
   _spriteBuffers[containerId] = createdTexture;
 
-#if !USE_SOFTWARE_RENDERER
   // calculate how much GPU VRAM will be used
   _sbMemoryUsage[containerId] =
       static_cast<uint64_t>((createdWidth * createdHeight * RGBA_BYTE_SIZE));
 
   // increase the occupied GPU memory usage counter for the new texture
   _gpuMemoryUsage += _sbMemoryUsage[containerId];
-#endif /* !USE_SOFTWARE_RENDERER */
 }
 
-#if USE_SOFTWARE_RENDERER
-void SpriteBufferContainer::getSpriteBufferTexture(const int32_t uniqueId,
-                                                   SDL_Surface *&outTexture)
-#else
 void SpriteBufferContainer::getSpriteBufferTexture(const int32_t uniqueId,
                                                    SDL_Texture *&outTexture)
-#endif /* USE_SOFTWARE_RENDERER */
 {
   // sanity check - check if such index exists
   if (uniqueId < _sbSize) {
@@ -166,10 +138,8 @@ void SpriteBufferContainer::getSpriteBufferTexture(const int32_t uniqueId,
 void SpriteBufferContainer::detachSpriteBuffer(const int32_t containerId) {
   _spriteBuffers[containerId] = nullptr;
 
-#if !USE_SOFTWARE_RENDERER
   // decrease the occupied GPU memory usage counter for the old texture
   _gpuMemoryUsage -= _sbMemoryUsage[containerId];
 
   _sbMemoryUsage[containerId] = 0;
-#endif /* USE_SOFTWARE_RENDERER */
 }

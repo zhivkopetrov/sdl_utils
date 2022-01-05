@@ -16,13 +16,9 @@
 #include "utils/ErrorCode.h"
 #include "utils/Log.h"
 
-#if USE_SOFTWARE_RENDERER
-SDL_Surface *Texture::_renderer = nullptr;
-#else
 SDL_Renderer *Texture::_renderer = nullptr;
 
 Rectangle *Texture::_monitorRect = nullptr;
-#endif /* USE_SOFTWARE_RENDERER */
 
 void Texture::freeSurface(SDL_Surface *&surface) {
   if (surface) { // sanity check
@@ -38,13 +34,8 @@ void Texture::freeTexture(SDL_Texture *&texture) {
   }
 }
 
-void Texture::setMonitorRect([[maybe_unused]]Rectangle &monitorRect) {
-#if USE_SOFTWARE_RENDERER
-  LOGERR("Warning, setMonitorRect is not supported for Software renderer.");
-  return;
-#else
+void Texture::setMonitorRect(Rectangle &monitorRect) {
   _monitorRect = &monitorRect;
-#endif /* USE_SOFTWARE_RENDERER */
 }
 
 int32_t Texture::getTextDimensions(const char *text, TTF_Font *font,
@@ -78,28 +69,14 @@ int32_t Texture::loadSurfaceFromFile(const char *path,
   return SUCCESS;
 }
 
-#if USE_SOFTWARE_RENDERER
-int32_t Texture::loadFromText(const char *text,
-                              TTF_Font *font,
-                              const Color &color,
-                              SDL_Surface *&outTexture,
-                              int32_t &outTextWidth,
-                              int32_t &outTextHeight)
-#else
 int32_t Texture::loadFromText(const char *text,
                               TTF_Font *font,
                               const Color &color,
                               SDL_Texture *&outTexture,
                               int32_t &outTextWidth,
                               int32_t &outTextHeight)
-#endif /* USE_SOFTWARE_RENDERER */
 {
-  // free the existing texture
-#if USE_SOFTWARE_RENDERER
-  freeSurface(outTexture);
-#else
   freeTexture(outTexture);
-#endif /* USE_SOFTWARE_RENDERER */
 
 #if USE_ANTI_ALIASING_ON_TEXT
   SDL_Surface *loadedSurface = TTF_RenderText_Blended(font, text,
@@ -116,24 +93,17 @@ int32_t Texture::loadFromText(const char *text,
   outTextWidth = loadedSurface->w;
   outTextHeight = loadedSurface->h;
 
-#if USE_SOFTWARE_RENDERER
-  outTexture = loadedSurface;
-#else
   //create hardware accelerated texture
-  if (SUCCESS !=
-      Texture::loadTextureFromSurface(loadedSurface, outTexture)) {
+  if (SUCCESS != Texture::loadTextureFromSurface(loadedSurface, outTexture)) {
     LOGERR("Unable to create text texture");
     return FAILURE;
   }
-#endif
 
   return SUCCESS;
 }
 
 int32_t Texture::loadTextureFromSurface(
-    [[maybe_unused]]SDL_Surface *&surface,
-    [[maybe_unused]]SDL_Texture *&outTexture) {
-#if !USE_SOFTWARE_RENDERER
+    SDL_Surface *&surface, SDL_Texture *&outTexture) {
   if (nullptr == surface) {
     LOGERR("Nullptr surface detected. Unable to loadFromSurface()");
     return FAILURE;
@@ -156,11 +126,6 @@ int32_t Texture::loadTextureFromSurface(
 
   // Get rid of old loaded surface
   freeSurface(surface);
-#else
-  LOGERR("Error, loadTextureFromSurface is designed to be used by hardware "
-         "accelerated Texture. You can not them with software renderer");
-  return FAILURE;
-#endif /* USE_SOFTWARE_RENDERER */
 
   return SUCCESS;
 }
@@ -212,7 +177,6 @@ int32_t Texture::createEmptySurface(const int32_t width, const int32_t height,
   return SUCCESS;
 }
 
-#if !USE_SOFTWARE_RENDERER
 int32_t Texture::createEmptyTexture(const int32_t width, const int32_t height,
                                     SDL_Texture *&outTexture) {
   if (nullptr != outTexture) {
@@ -243,17 +207,8 @@ int32_t Texture::createEmptyTexture(const int32_t width, const int32_t height,
 
   return SUCCESS;
 }
-#endif /* !USE_SOFTWARE_RENDERER */
 
 int32_t Texture::clearCurrentRendererTarget(const Color &clearColor) {
-#if USE_SOFTWARE_RENDERER
-  if (SUCCESS != SDL_FillRect(_renderer,  // current target
-                                   nullptr,    // nullptr for whole rectangle
-                                   clearColor.get32BitRGBA())) {
-    LOGERR("Error in SDL_FillRect");
-    return FAILURE;
-  }
-#else
   Color currRendererColor = Colors::BLACK;
   bool isSameColorAsOld = true;
 
@@ -301,16 +256,11 @@ int32_t Texture::clearCurrentRendererTarget(const Color &clearColor) {
       return FAILURE;
     }
   }
-#endif /* USE_SOFTWARE_RENDERER */
 
   return SUCCESS;
 }
 
-#if USE_SOFTWARE_RENDERER
-int32_t Texture::setRendererTarget(SDL_Surface *target)
-#else
 int32_t Texture::setRendererTarget(SDL_Texture *target)
-#endif /* USE_SOFTWARE_RENDERER */
 {
   if (nullptr == _renderer) {
     LOGERR("Error, renderer is still not set for Texture. You are missing "
@@ -318,38 +268,29 @@ int32_t Texture::setRendererTarget(SDL_Texture *target)
     return FAILURE;
   }
 
-#if USE_SOFTWARE_RENDERER
-  _renderer = target;
-#else
   if (SUCCESS != SDL_SetRenderTarget(_renderer, target)) {
     LOGERR("Error, default renderer target could not be set. "
            "SDL_SetRenderTarget() failed, SDL Error: %s", SDL_GetError());
     return FAILURE;
   }
-#endif /* USE_SOFTWARE_RENDERER */
 
   return SUCCESS;
 }
 
-#if USE_SOFTWARE_RENDERER
-void Texture::draw(SDL_Surface *texture, const DrawParams &drawParams)
-#else
 void Texture::draw(SDL_Texture *texture, const DrawParams &drawParams)
-#endif /* USE_SOFTWARE_RENDERER */
 {
   const SDL_Rect *SDLFrameRect =
       reinterpret_cast<const SDL_Rect *>(&drawParams.frameRect);
 
   SDL_Rect renderQuad = { 0, 0, 0, 0 };
 
-  [[maybe_unused]] bool rendererClipped = false;
+  bool rendererClipped = false;
 
   if (drawParams.hasCrop) { // has crop and no scaling
     renderQuad = {drawParams.frameCropRect.x, drawParams.frameCropRect.y,
                   drawParams.frameCropRect.w, drawParams.frameCropRect.h};
 
     if (drawParams.hasScaling) { // has crop and scaling
-#if !USE_SOFTWARE_RENDERER
       // Empty renderQuad rectangle -> do not make a render call
       // additional check is needed here, because scaledWidth/scaledHeight
       // will be overridden by the applyScaledCrop() calculations ->
@@ -381,11 +322,6 @@ void Texture::draw(SDL_Texture *texture, const DrawParams &drawParams)
 
         renderQuad.h = drawParams.scaledHeight;
       }
-#else
-      LOGERR("Crop + scaling is not supported for software renderer."
-             "Scaling will be ignored. Problem came from widget "
-             "with rsrcId: %#16lX", drawParams.rsrcId);
-#endif /* !USE_SOFTWARE_RENDERER */
     }
   } else if (drawParams.hasScaling) { // has no crop and scaling
     renderQuad = {drawParams.pos.x, drawParams.pos.y, drawParams.scaledWidth,
@@ -400,17 +336,6 @@ void Texture::draw(SDL_Texture *texture, const DrawParams &drawParams)
     return;
   }
 
-#if USE_SOFTWARE_RENDERER
-  // Apply the image
-  if (SUCCESS != SDL_BlitSurface(texture,        // source surface
-                                      SDLFrameRect,   // source rectangle
-                                      _renderer,      // destination surface
-                                      &renderQuad)) { // destination rectangle
-    LOGERR("Error in SDL_BlitSurface(), SDL Error: %s from widget with "
-           "rsrcId: %#16lX ", SDL_GetError(), drawParams.rsrcId);
-    return;
-  }
-#else
   // Render to screen
   if (SUCCESS != SDL_RenderCopyEx(
       _renderer,         // the hardware renderer
@@ -437,32 +362,14 @@ void Texture::draw(SDL_Texture *texture, const DrawParams &drawParams)
       return;
     }
   }
-#endif /* USE_SOFTWARE_RENDERER */
 }
 
-#if USE_SOFTWARE_RENDERER
-void Texture::setRenderer(SDL_Surface *renderer)
-#else
 void Texture::setRenderer(SDL_Renderer *renderer)
-#endif /* USE_SOFTWARE_RENDERER */
 {
   _renderer = renderer;
 }
 
-#if USE_SOFTWARE_RENDERER
-void Texture::setAlpha([[maybe_unused]]SDL_Surface *texture,
-                       [[maybe_unused]]const int32_t alpha) {
-  LOGERR("Warning, alpha channel (widget transparency) is not supported "
-         "for Software renderer. Alpha will not be changed.");
-}
-#else
 void Texture::setAlpha(SDL_Texture *texture, const int32_t alpha) {
-  if (SUCCESS != SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND)) {
-    LOGERR("Warning, SDL_SetTextureBlendMode() failed. Reason: "
-           "invalid texture or alpha modulation is not supported. The "
-           "closest supported mode will be used. SDL Error: %s",SDL_GetError());
-  }
-
   if (SUCCESS !=
       SDL_SetTextureAlphaMod(texture, static_cast<uint8_t>(alpha))) {
     LOGERR("Warning, .setAlpha() method will not take effect. Reason: "
@@ -471,16 +378,7 @@ void Texture::setAlpha(SDL_Texture *texture, const int32_t alpha) {
     return;
   }
 }
-#endif /* USE_SOFTWARE_RENDERER */
 
-#if USE_SOFTWARE_RENDERER
-int32_t Texture::setBlendMode([[maybe_unused]]SDL_Surface *texture,
-                              [[maybe_unused]]const BlendMode blendMode) {
-  LOGR("Warning, .setBlendMode() is not supported for Software renderer. "
-       "Blend mode will not be changed.");
-  return SUCCESS;
-}
-#else
 int32_t Texture::setBlendMode(SDL_Texture *texture, const BlendMode blendMode) {
   if (SUCCESS !=
       SDL_SetTextureBlendMode(texture, static_cast<SDL_BlendMode>(blendMode))) {
@@ -492,4 +390,3 @@ int32_t Texture::setBlendMode(SDL_Texture *texture, const BlendMode blendMode) {
 
   return SUCCESS;
 }
-#endif /* USE_SOFTWARE_RENDERER */

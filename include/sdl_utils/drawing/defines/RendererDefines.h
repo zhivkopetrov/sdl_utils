@@ -11,37 +11,6 @@
 // Own components headers
 
 /* Values:
- * USE_SOFTWARE_RENDERER 0 - use Hardware renderer
- * USE_SOFTWARE_RENDERER 1 - use Software renderer
- *
- * Software renderer means Image/Text Surface's are processed via the
- * Central Processor Unit (CPU).
- *
- * Benefits:
- *      - GPU is not needed to perform draw calls;
- *      - The Graphical User Interface (GUI) will work in a virtual machine;
- * Virtual machines can not use the GPU since the host machine is using it.
- *
- * Drawbacks:
- *      - Performance is painfully slow;
- *
- *
- *
- * Hardware renderer means hardware acceleration is used.
- *
- * Benefits:
- *      - Surfaces are not longer used. Instead Textures are created from them,
- * which are processed by the GPU.
- *      - Performance is much faster;
- *
- * Drawbacks:
- *      - GUI could not be displayed when working on virtual machines
- *                  (at least on older VMs that does not use the physical GPU);
- * */
-
-#define USE_SOFTWARE_RENDERER 0
-
-/* Values:
  *
  * USE_ANTI_ALIASING_ON_TEXT 1
  * Text quality is better, because Anti-Aliasing is applied. What this means is

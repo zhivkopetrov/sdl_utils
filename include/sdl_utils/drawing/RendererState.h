@@ -14,20 +14,11 @@
 #include "sdl_utils/drawing/DrawParams.h"
 #include "utils/common/CircularBuffer.h"
 
-#if USE_SOFTWARE_RENDERER
-#include "utils/drawing/Color.h"
-#endif /* USE_SOFTWARE_RENDERER*/
 
 // Forward declarations
 struct RendererConfig;
 
 struct RendererState {
-  RendererState()
-#if USE_SOFTWARE_RENDERER
-      : clearColor(Colors::BLACK)
-#endif /* USE_SOFTWARE_RENDERER*/
-  { }
-
   int32_t init(const RendererConfig &cfg);
 
   /** Holds stored number of widgets for the current frame
@@ -79,10 +70,6 @@ struct RendererState {
    *                                     (usually owned by SpriteBuffer);
    * */
   bool isLocked = true;
-
-#if USE_SOFTWARE_RENDERER
-  Color clearColor;
-#endif /* USE_SOFTWARE_RENDERER*/
 };
 
 #endif //SDL_UTILS_RENDERERSTATE_H_

@@ -94,27 +94,6 @@ class TextContainer {
    * */
   void unloadText(const int32_t textUniqueId);
 
-#if USE_SOFTWARE_RENDERER
-  /** @brief used to attach a newly generated SDL_Surface by the renderer
-   *         to the TextContainer and increase the used GPU VRAM
-   *
-   *  @param const int32_t - uniqueContainerId
-   *  @param const int32_t - created width of the SDL_Surface
-   *  @param const int32_t - created height of the SDL_Surface
-   *  @param SDL_Surface * - pointer to memory of the created SDL_Surface
-   **/
-  void attachText(const int32_t containerId, const int32_t createdWidth,
-                  const int32_t createdHeight, SDL_Surface *createdTexture);
-
-  /** @brief used to acquire previously stored pre-created SDL_Surface
-   *                                       for a given unique resource ID
-   *  This function does not return error code for performance reasons
-   *
-   *  @param const int32_t  - unique text resource ID
-   *  @param SDL_Surface *& - pre-created SDL_Surface
-   * */
-  void getTextTexture(const int32_t uniqueId, SDL_Surface *&outTexture);
-#else
   /** @brief used to attach a newly generated SDL_Texture by the renderer
    *         to the TextContainer and increase the used GPU VRAM
    *
@@ -134,7 +113,6 @@ class TextContainer {
    *  @param SDL_Texture *& - pre-created SDL_Texture
    * */
   void getTextTexture(const int32_t uniqueId, SDL_Texture *&outTexture);
-#endif /* USE_SOFTWARE_RENDERER */
 
   /** @brief used to detach(free the slot in the container) for
    *         successfully destroyed SDL_Surface/SDL_Texture by the
@@ -170,14 +148,10 @@ class TextContainer {
    *        When new text is added - simply linearly scan the array and
    *        search for a free position (nullptr value).
    **/
-#if USE_SOFTWARE_RENDERER
-  std::vector<SDL_Surface*> _texts;
-#else
   std::vector<SDL_Texture*> _texts;
 
   // holds holds many bytes the current text occupied in GPU VRAM
   std::vector<uint64_t> _textMemoryUsage;
-#endif /* USE_SOFTWARE_RENDERER */
 
   // a reference to the fonts container (used for text creation)
   std::unordered_map<uint64_t, TTF_Font *> *_fontsMapPtr;
