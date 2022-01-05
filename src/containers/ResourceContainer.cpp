@@ -462,9 +462,6 @@ void ResourceContainer::attachRsrcTexture(const uint64_t rsrcId,
   // directly populate the rsrcMap with the newly created SDL_Texture
   _rsrcMap[rsrcId] = createdTexture;
 
-  if (createdWidth || createdHeight) {
-  }
-
   // increase the occupied GPU memory usage counter for the new texture
   _gpuMemoryUsage +=
       static_cast<uint64_t>(createdWidth) * createdHeight * RGBA_BYTE_SIZE;
@@ -503,9 +500,8 @@ void ResourceContainer::detachRsrcTexture(const uint64_t rsrcId) {
 
   // decrease the occupied GPU memory usage counter for the
   // destroyed texture
-  _gpuMemoryUsage -= static_cast<uint64_t>(
-      (rsrcDataMapIt->second.imageRect.w * rsrcDataMapIt->second.imageRect.h *
-       RGBA_BYTE_SIZE));
+  _gpuMemoryUsage -= static_cast<uint64_t>(rsrcDataMapIt->second.imageRect.w)
+      * rsrcDataMapIt->second.imageRect.h * RGBA_BYTE_SIZE;
 }
 
 int32_t ResourceContainer::loadSurface(const uint64_t rsrcId,
@@ -602,8 +598,8 @@ void ResourceContainer::loadAllStoredResourcesSingleCore() {
     }
 
     // increase the occupied GPU memory usage counter for the new texture
-    _gpuMemoryUsage += static_cast<uint64_t>(
-        (currSurfaceWidth * currSurfaceHeight * RGBA_BYTE_SIZE));
+    _gpuMemoryUsage += static_cast<uint64_t>(currSurfaceWidth)
+        * currSurfaceHeight * RGBA_BYTE_SIZE;
 
     // store the generates SDL_Texture into the rsrcMap
     _rsrcMap[currResSurface.first] = newTexture;
@@ -680,8 +676,8 @@ void ResourceContainer::loadAllStoredResourcesMultiCore(
       return;
     } else {
       // increase the occupied GPU memory usage counter for the new texture
-      _gpuMemoryUsage += static_cast<uint64_t>(
-          (currSurfaceWidth * currSurfaceHeight * RGBA_BYTE_SIZE));
+      _gpuMemoryUsage += static_cast<uint64_t>(currSurfaceWidth)
+          * currSurfaceHeight * RGBA_BYTE_SIZE;
 
       // emplace GPU Texture to the rsrcMap
       _rsrcMap[currResSurface.first] = newTexture;

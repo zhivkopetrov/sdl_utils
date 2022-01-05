@@ -14,18 +14,6 @@
 #include "utils/ErrorCode.h"
 #include "utils/Log.h"
 
-typedef std::unordered_map<uint64_t, Mix_Music *>::iterator _musicMapIt;
-typedef std::unordered_map<uint64_t, Mix_Music *>::const_iterator
-    _musicMapConstIt;
-
-typedef std::unordered_map<uint64_t, Mix_Chunk *>::iterator _chunkMapIt;
-typedef std::unordered_map<uint64_t, Mix_Chunk *>::const_iterator
-    _chunkMapConstIt;
-
-typedef std::unordered_map<uint64_t, SoundData>::iterator _soundsDataMapIt;
-typedef std::unordered_map<uint64_t, SoundData>::const_iterator
-    _soundsDataMapConstIt;
-
 int32_t SoundContainer::init(const uint64_t musicsCount,
                              const uint64_t chunksCount) {
   _soundsDataMap.reserve(musicsCount + chunksCount);
@@ -39,9 +27,8 @@ int32_t SoundContainer::init(const uint64_t musicsCount,
 
 void SoundContainer::deinit() {
   // free Music sounds
-  for (_musicMapIt it = _musicMap.begin(); it != _musicMap.end(); ++it) {
+  for (auto it = _musicMap.begin(); it != _musicMap.end(); ++it) {
     SoundMixer::freeMusic(it->second);
-
     it->second = nullptr;
   }
 
@@ -49,9 +36,8 @@ void SoundContainer::deinit() {
   _musicMap.clear();
 
   // free Chunk sounds
-  for (_chunkMapIt it = _chunkMap.begin(); it != _chunkMap.end(); ++it) {
+  for (auto it = _chunkMap.begin(); it != _chunkMap.end(); ++it) {
     SoundMixer::freeChunk(it->second);
-
     it->second = nullptr;
   }
 
@@ -66,9 +52,7 @@ void SoundContainer::loadAllStoredSounds() {
   Mix_Chunk *newChunk = nullptr;
   Mix_Music *newMusic = nullptr;
 
-  _soundsDataMapConstIt it;
-
-  for (it = _soundsDataMap.begin(); it != _soundsDataMap.end(); ++it) {
+  for (auto it = _soundsDataMap.begin(); it != _soundsDataMap.end(); ++it) {
     if (SoundType::CHUNK == it->second.soundType) {
       if (SUCCESS != loadChunk(it->second.header.path.c_str(),
                                     it->second.soundLevel, newChunk)) {
@@ -88,7 +72,7 @@ void SoundContainer::loadAllStoredSounds() {
     } else  // SoundType::MUSIC == it->second.soundType
     {
       if (SUCCESS != loadMusic(it->second.header.path.c_str(),
-                                    it->second.soundLevel, newMusic)) {
+                               it->second.soundLevel, newMusic)) {
         LOGERR("Error in loadMusic() for soundId: %#16lX",
                it->second.header.hashValue);
       } else {
@@ -108,8 +92,7 @@ void SoundContainer::loadAllStoredSounds() {
 
 int32_t SoundContainer::getSoundData(const uint64_t soundId,
                                      const SoundData *&outData) {
-  _soundsDataMapConstIt it = _soundsDataMap.find(soundId);
-
+  auto it = _soundsDataMap.find(soundId);
   // key not found
   if (it == _soundsDataMap.end()) {
     LOGERR("Error, soundData for rsrcId: %#16lX not found", soundId);
@@ -122,8 +105,7 @@ int32_t SoundContainer::getSoundData(const uint64_t soundId,
 
 void SoundContainer::getMusicSound(const uint64_t rsrcId,
                                    Mix_Music *&outMusic) {
-  _musicMapConstIt it = _musicMap.find(rsrcId);
-
+  auto it = _musicMap.find(rsrcId);
   // key not found
   if (it == _musicMap.end()) {
     LOGERR("Error, Mix_Music for rsrcId: %#16lX not found", rsrcId);
@@ -135,8 +117,7 @@ void SoundContainer::getMusicSound(const uint64_t rsrcId,
 
 void SoundContainer::getChunkSound(const uint64_t rsrcId,
                                    Mix_Chunk *&outChunk) {
-  _chunkMapConstIt it = _chunkMap.find(rsrcId);
-
+  auto it = _chunkMap.find(rsrcId);
   // key not found
   if (it == _chunkMap.end()) {
     LOGERR("Error, Mix_Chunk for rsrcId: %#16lX not found", rsrcId);
