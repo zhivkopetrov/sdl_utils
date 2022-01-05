@@ -64,8 +64,7 @@ static void loadSurfacesFromFileSystemAsyncUntilShutdown(
     }
 
     // push the newly generated SDL_Surface to the ThreadSafe Surface Queue
-    outSurfQueue->push(
-        std::move(std::make_pair(resData.header.hashValue, surface)));
+    outSurfQueue->push(std::make_pair(resData.header.hashValue, surface));
 
     // reset the variable so it can be reused
     surface = nullptr;
@@ -106,8 +105,7 @@ static void loadSurfacesFromFileSystemAsync(
     }
 
     // push the newly generated SDL_Surface to the ThreadSafe Surface Queue
-    outSurfQueue->push(
-        std::move(std::make_pair(resData.header.hashValue, surface)));
+    outSurfQueue->push(std::make_pair(resData.header.hashValue, surface));
 
     // reset the variable so it can be reused
     surface = nullptr;
@@ -614,7 +612,7 @@ void ResourceContainer::loadAllStoredResourcesSingleCore() {
 
     // push the newly generated SDL_Surface to the ThreadSafe Surface Queue
     _loadedSurfacesThreadQueue->push(
-        std::move(std::make_pair(resData.header.hashValue, newSurface)));
+    		std::make_pair(resData.header.hashValue, newSurface));
 
     // send message to loading screen for
     // successfully loaded resource

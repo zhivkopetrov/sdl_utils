@@ -13,7 +13,7 @@
 
 // Forward declarations
 class Color;
-class Rectangle;
+struct Rectangle;
 struct SDL_Rect;
 struct SDL_Point;
 struct SDL_Surface;
