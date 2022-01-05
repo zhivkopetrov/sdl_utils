@@ -15,7 +15,7 @@ endif()
 project(sdl_utils)
   
 set(_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include/sdl_utils)         
-set(_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/sdl_utils)
+set(_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 add_library(
     ${PROJECT_NAME} 

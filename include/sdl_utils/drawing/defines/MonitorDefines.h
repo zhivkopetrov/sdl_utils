@@ -13,18 +13,14 @@
 // Forward declarations
 
 enum class WindowDisplayMode {
-  UNKNOWN,
-  FULL_SCREEN,
-  WINDOWED
+	UNKNOWN, FULL_SCREEN, WINDOWED
 };
 
 enum class WindowBorderMode {
-  UNKNOWN,
-  WITH_BORDER,
-  BORDERLESS
+	UNKNOWN, WITH_BORDER, BORDERLESS
 };
 
-int getValue(const WindowDisplayMode displayMode,
-             const WindowBorderMode borderMode);
+int32_t getValue(const WindowDisplayMode displayMode,
+		const WindowBorderMode borderMode);
 
 #endif /* SDL_UTILS_MONITORDEFINES_H_ */
