@@ -10,7 +10,7 @@ set(_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 add_library(
     ${PROJECT_NAME} 
     STATIC
-        ${_INC_DIR}/containers/config/SDLContainersConfig.hpp
+        ${_INC_DIR}/containers/config/SDLContainersConfig.h
         ${_INC_DIR}/containers/FontContainer.h
         ${_INC_DIR}/containers/ResourceContainer.h
         ${_INC_DIR}/containers/SDLContainers.h
@@ -19,8 +19,8 @@ add_library(
         ${_INC_DIR}/containers/TextContainer.h
         ${_INC_DIR}/drawing/defines/DrawConstants.h
         ${_INC_DIR}/drawing/defines/MonitorDefines.h
-        ${_INC_DIR}/drawing/config/LoadingScreenConfig.hpp
-        ${_INC_DIR}/drawing/config/RendererConfig.hpp
+        ${_INC_DIR}/drawing/config/LoadingScreenConfig.h
+        ${_INC_DIR}/drawing/config/RendererConfig.h
         ${_INC_DIR}/drawing/DrawParams.h
         ${_INC_DIR}/drawing/GeometryUtils.h
         ${_INC_DIR}/drawing/LoadingScreen.h
