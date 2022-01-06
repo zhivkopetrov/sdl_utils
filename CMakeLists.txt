@@ -93,11 +93,13 @@ target_include_directories(
         ${SDL2_MIXER_INCLUDE_DIR}
 )
 
-target_link_libraries(
-    ${PROJECT_NAME}
-    PRIVATE
-        -lX11
-)
+if(UNIX)
+    target_link_libraries(
+        ${PROJECT_NAME}
+        PRIVATE
+            -lX11
+    )
+endif()
 
 if(NOT TARGET resource_utils)
     add_subdirectory(resource_utils)
