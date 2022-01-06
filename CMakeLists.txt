@@ -2,16 +2,6 @@
 
 cmake_minimum_required(VERSION 3.10.2)
 
-if(TARGET sdl_utils)
-  return()
-endif()
-
-if(NOT CMAKE_HELPERS_INCLUDED)
-    include(${CMAKE_CURRENT_SOURCE_DIR}/cmake_helpers/helpers.cmake)
-    set(CMAKE_MODULE_PATH 
-      ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake_helpers/find_modules)
-endif()
-
 project(sdl_utils)
   
 set(_INC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include/sdl_utils)         
@@ -72,7 +62,7 @@ find_package(SDL2_image REQUIRED)
 find_package(SDL2_ttf REQUIRED)
 find_package(SDL2_mixer REQUIRED)
 
-set_target_cpp_standard(${PROJECT_NAME} 17)
+set_target_cpp_standard(${PROJECT_NAME} 20)
 enable_target_warnings(${PROJECT_NAME})
 set_target_visibility(${PROJECT_NAME})
 
@@ -101,14 +91,9 @@ if(UNIX)
     )
 endif()
 
-if(NOT TARGET resource_utils)
-    add_subdirectory(resource_utils)
-endif()
-
 target_link_libraries(
     ${PROJECT_NAME}
     PUBLIC
-        utils
         resource_utils
     PRIVATE
         ${SDL2_LIBRARY}       # -lSDL2 flag
