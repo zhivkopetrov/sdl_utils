@@ -14,37 +14,37 @@ endif()
 
 project(sdl_utils)
   
-set(_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include/sdl_utils)         
+set(_INC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include/sdl_utils)         
 set(_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 add_library(
     ${PROJECT_NAME} 
     STATIC
-        ${_INCLUDE_DIR}/containers/config/SDLContainersConfig.hpp
-        ${_INCLUDE_DIR}/containers/FontContainer.h
-        ${_INCLUDE_DIR}/containers/ResourceContainer.h
-        ${_INCLUDE_DIR}/containers/SDLContainers.h
-        ${_INCLUDE_DIR}/containers/SoundContainer.h
-        ${_INCLUDE_DIR}/containers/SpriteBufferContainer.h
-        ${_INCLUDE_DIR}/containers/TextContainer.h
-        ${_INCLUDE_DIR}/drawing/defines/DrawConstants.h
-        ${_INCLUDE_DIR}/drawing/defines/MonitorDefines.h
-        ${_INCLUDE_DIR}/drawing/config/LoadingScreenConfig.hpp
-        ${_INCLUDE_DIR}/drawing/config/RendererConfig.hpp
-        ${_INCLUDE_DIR}/drawing/DrawParams.h
-        ${_INCLUDE_DIR}/drawing/GeometryUtils.h
-        ${_INCLUDE_DIR}/drawing/LoadingScreen.h
-        ${_INCLUDE_DIR}/drawing/MonitorWindow.h
-        ${_INCLUDE_DIR}/drawing/Renderer.h
-        ${_INCLUDE_DIR}/drawing/RendererState.h
-        ${_INCLUDE_DIR}/drawing/Texture.h
-        ${_INCLUDE_DIR}/input/defines/EventDefines.h
-        ${_INCLUDE_DIR}/input/InputEvent.h
-        ${_INCLUDE_DIR}/input/MouseUtils.h
-        ${_INCLUDE_DIR}/input/TouchEntity.h
-        ${_INCLUDE_DIR}/sound/defines/SoundMixerDefines.h
-        ${_INCLUDE_DIR}/sound/SoundMixer.h
-        ${_INCLUDE_DIR}/SDLLoader.h
+        ${_INC_DIR}/containers/config/SDLContainersConfig.hpp
+        ${_INC_DIR}/containers/FontContainer.h
+        ${_INC_DIR}/containers/ResourceContainer.h
+        ${_INC_DIR}/containers/SDLContainers.h
+        ${_INC_DIR}/containers/SoundContainer.h
+        ${_INC_DIR}/containers/SpriteBufferContainer.h
+        ${_INC_DIR}/containers/TextContainer.h
+        ${_INC_DIR}/drawing/defines/DrawConstants.h
+        ${_INC_DIR}/drawing/defines/MonitorDefines.h
+        ${_INC_DIR}/drawing/config/LoadingScreenConfig.hpp
+        ${_INC_DIR}/drawing/config/RendererConfig.hpp
+        ${_INC_DIR}/drawing/DrawParams.h
+        ${_INC_DIR}/drawing/GeometryUtils.h
+        ${_INC_DIR}/drawing/LoadingScreen.h
+        ${_INC_DIR}/drawing/MonitorWindow.h
+        ${_INC_DIR}/drawing/Renderer.h
+        ${_INC_DIR}/drawing/RendererState.h
+        ${_INC_DIR}/drawing/Texture.h
+        ${_INC_DIR}/input/defines/EventDefines.h
+        ${_INC_DIR}/input/InputEvent.h
+        ${_INC_DIR}/input/MouseUtils.h
+        ${_INC_DIR}/input/TouchEntity.h
+        ${_INC_DIR}/sound/defines/SoundMixerDefines.h
+        ${_INC_DIR}/sound/SoundMixer.h
+        ${_INC_DIR}/SDLLoader.h
         
         ${_SRC_DIR}/containers/FontContainer.cpp
         ${_SRC_DIR}/containers/ResourceContainer.cpp
