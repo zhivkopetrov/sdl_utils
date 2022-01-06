@@ -7,11 +7,11 @@
 
 // Other libraries headers
 #include <SDL_mixer.h>
+#include "utils/ErrorCode.h"
+#include "utils/Log.h"
 
 // Own components headers
 #include "sdl_utils/sound/defines/SoundMixerDefines.h"
-#include "utils/ErrorCode.h"
-#include "utils/Log.h"
 
 int32_t SoundMixer::allocateSoundChannels(const int32_t requestedChannels) {
   if (requestedChannels != Mix_AllocateChannels(requestedChannels)) {

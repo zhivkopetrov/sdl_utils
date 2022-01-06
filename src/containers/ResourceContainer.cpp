@@ -8,17 +8,16 @@
 
 // Other libraries headers
 #include <SDL_surface.h>
+#include "resource_utils/defines/ResourceDefines.h"
+#include "utils/concurrency/ThreadSafeQueue.h"
+#include "utils/ErrorCode.h"
+#include "utils/Log.h"
 
 // Own components headers
 #include "sdl_utils/drawing/LoadingScreen.h"
 #include "sdl_utils/drawing/Renderer.h"
 #include "sdl_utils/drawing/Texture.h"
 
-#include "resource_utils/defines/ResourceDefines.h"
-
-#include "utils/concurrency/ThreadSafeQueue.hpp"
-#include "utils/ErrorCode.h"
-#include "utils/Log.h"
 
 #define RGBA_BYTE_SIZE 4
 

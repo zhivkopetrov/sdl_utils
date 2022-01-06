@@ -7,10 +7,10 @@
 #include <cstdint>
 
 // Other libraries headers
+#include "utils/drawing/Point.h"
 
 // Own components headers
 #include "sdl_utils/input/defines/EventDefines.h"
-#include "utils/drawing/Point.h"
 
 // Forward Declarations
 class TouchEntity;

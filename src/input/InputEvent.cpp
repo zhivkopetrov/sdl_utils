@@ -7,15 +7,15 @@
 
 // Other libraries headers
 #include <SDL_events.h>
+#include "utils/data_type/EnumClassUtils.h"
+#include "utils/drawing/Rectangle.h"
+#include "utils/ErrorCode.h"
+#include "utils/Log.h"
 
 // Own components headers
 #include "sdl_utils/input/MouseUtils.h"
 #include "sdl_utils/input/TouchEntity.h"
 #include "sdl_utils/drawing/defines/RendererDefines.h"
-#include "utils/data_type/EnumClassUtils.hpp"
-#include "utils/drawing/Rectangle.h"
-#include "utils/ErrorCode.h"
-#include "utils/Log.h"
 
 InputEvent::InputEvent()
     : pos(Point::UNDEFINED), key(Keyboard::KEY_UNKNOWN),

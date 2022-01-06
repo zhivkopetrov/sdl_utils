@@ -9,17 +9,17 @@
 // Other libraries headers
 #include <SDL_hints.h>
 #include <SDL_render.h>
+#include "utils/concurrency/ThreadSafeQueue.h"
+#include "utils/data_type/EnumClassUtils.h"
+#include "utils/drawing/Color.h"
+#include "utils/ErrorCode.h"
+#include "utils/Log.h"
 
 // Own components headers
 #include "sdl_utils/containers/SDLContainers.h"
 #include "sdl_utils/drawing/LoadingScreen.h"
 #include "sdl_utils/drawing/Texture.h"
-#include "sdl_utils/drawing/config/RendererConfig.hpp"
-#include "utils/concurrency/ThreadSafeQueue.hpp"
-#include "utils/data_type/EnumClassUtils.hpp"
-#include "utils/drawing/Color.h"
-#include "utils/ErrorCode.h"
-#include "utils/Log.h"
+#include "sdl_utils/drawing/config/RendererConfig.h"
 
 #define LOCAL_DEBUG 0
 

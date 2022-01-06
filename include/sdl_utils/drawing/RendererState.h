@@ -8,11 +8,11 @@
 #include <vector>
 
 // Other libraries headers
+#include "utils/common/CircularBuffer.h"
 
 // Own components headers
 #include "sdl_utils/drawing/defines/RendererDefines.h"
 #include "sdl_utils/drawing/DrawParams.h"
-#include "utils/common/CircularBuffer.h"
 
 
 // Forward declarations

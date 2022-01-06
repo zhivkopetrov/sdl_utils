@@ -1,5 +1,5 @@
-#ifndef SDL_UTILS_SDLCONTAINERSCONFIG_HPP_
-#define SDL_UTILS_SDLCONTAINERSCONFIG_HPP_
+#ifndef SDL_UTILS_SDLCONTAINERSCONFIG_H_
+#define SDL_UTILS_SDLCONTAINERSCONFIG_H_
 
 //C system headers
 
@@ -8,7 +8,7 @@
 //Other libraries headers
 
 //Own components headers
-#include "sdl_utils/drawing/config/LoadingScreenConfig.hpp"
+#include "sdl_utils/drawing/config/LoadingScreenConfig.h"
 
 //Forward declarations
 
@@ -20,4 +20,4 @@ struct SDLContainersConfig {
   int32_t maxRuntimeSpriteBuffers = 0;
 };
 
-#endif /* SDL_UTILS_INCLUDE_SDL_UTILS_CONTAINERS_CONFIG_SDLCONTAINERSCONFIG_HPP_ */
+#endif /* SDL_UTILS_INCLUDE_SDL_UTILS_CONTAINERS_CONFIG_SDLCONTAINERSCONFIG_H_ */

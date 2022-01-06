@@ -7,11 +7,11 @@
 #include <cstdint>
 
 // Other libraries headers
+#include "utils/drawing/Point.h"
+#include "utils/drawing/Rectangle.h"
 
 // Own components headers
 #include "sdl_utils/drawing/defines/MonitorDefines.h"
-#include "utils/drawing/Point.h"
-#include "utils/drawing/Rectangle.h"
 
 // Forward declarations
 struct SDL_Window;

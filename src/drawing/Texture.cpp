@@ -6,15 +6,14 @@
 // C++ system headers
 
 // Other libraries headers
-#include <SDL.h>
 #include <SDL_image.h>
 #include <SDL_ttf.h>
-
-// Own components headers
-#include "sdl_utils/drawing/DrawParams.h"
 #include "utils/drawing/Color.h"
 #include "utils/ErrorCode.h"
 #include "utils/Log.h"
+
+// Own components headers
+#include "sdl_utils/drawing/DrawParams.h"
 
 SDL_Renderer *Texture::_renderer = nullptr;
 

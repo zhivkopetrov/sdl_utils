@@ -9,10 +9,10 @@
 #include <mutex>
 
 // Other libraries headers
-#include "sdl_utils/drawing/defines/RendererDefines.h"
-#include "sdl_utils/drawing/RendererState.h"
 
 // Own components headers
+#include "sdl_utils/drawing/defines/RendererDefines.h"
+#include "sdl_utils/drawing/RendererState.h"
 
 // Forward declarations
 class SDLContainers;

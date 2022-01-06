@@ -8,10 +8,10 @@
 // Other libraries headers
 #include <SDL_mouse.h>
 #include <SDL_image.h>
-
-// Own components headers
 #include "utils/ErrorCode.h"
 #include "utils/Log.h"
+
+// Own components headers
 
 static SDL_Cursor *cursor = nullptr;
 

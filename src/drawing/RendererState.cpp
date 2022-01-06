@@ -6,11 +6,11 @@
 // C++ system headers
 
 // Other libraries headers
-
-// Own components headers
-#include "sdl_utils/drawing/config/RendererConfig.hpp"
 #include "utils/ErrorCode.h"
 #include "utils/Log.h"
+
+// Own components headers
+#include "sdl_utils/drawing/config/RendererConfig.h"
 
 int32_t RendererState::init(const RendererConfig &cfg) {
   if (SUCCESS != renderData.init(cfg.maxRendererBackBufferDataSize)) {

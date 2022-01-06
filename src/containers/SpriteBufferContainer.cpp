@@ -7,14 +7,14 @@
 #include <cstring>
 
 // Other libraries headers
+#include "utils/LimitValues.h"
+#include "utils/drawing/Color.h"
+#include "utils/ErrorCode.h"
+#include "utils/Log.h"
 
 // Own components headers
 #include "sdl_utils/drawing/Renderer.h"
 #include "sdl_utils/drawing/Texture.h"
-#include "utils/LimitValues.hpp"
-#include "utils/drawing/Color.h"
-#include "utils/ErrorCode.h"
-#include "utils/Log.h"
 
 // basically anything different than nullptr
 #define RESERVE_SLOT_VALUE (reinterpret_cast<SDL_Texture *>(1))

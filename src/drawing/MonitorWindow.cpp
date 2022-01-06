@@ -9,14 +9,12 @@
 // Other libraries headers
 #include <SDL_video.h>
 #include <SDL_image.h>
+#include "utils/ErrorCode.h"
+#include "utils/Log.h"
 
 // Own components headers
 #include "sdl_utils/drawing/defines/RendererDefines.h"
-
 #include "sdl_utils/drawing/Texture.h"
-
-#include "utils/ErrorCode.h"
-#include "utils/Log.h"
 
 MonitorWindow::MonitorWindow(const int32_t windowWidth,
                              const int32_t windowHeight, const Point& windowPos)

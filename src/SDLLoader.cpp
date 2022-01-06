@@ -15,13 +15,12 @@
 #include <SDL_image.h>
 #include <SDL_mixer.h>
 #include <SDL_ttf.h>
-#include <SDL_video.h>
+#include "utils/debug/FunctionTracer.h"
+#include "utils/ErrorCode.h"
+#include "utils/Log.h"
 
 // Own components headers
 #include "sdl_utils/sound/defines/SoundMixerDefines.h"
-#include "utils/debug/FunctionTracer.hpp"
-#include "utils/ErrorCode.h"
-#include "utils/Log.h"
 
 int32_t SDLLoader::init() {
   TRACE_ENTRY_EXIT;

@@ -7,19 +7,12 @@
 
 // Other libraries headers
 #include <SDL_ttf.h>
-
-// Own components headers
-#include "sdl_utils/drawing/LoadingScreen.h"
 #include "utils/ErrorCode.h"
 #include "utils/Log.h"
 
-typedef std::unordered_map<uint64_t, TTF_Font*>::iterator _fontsMapIt;
-typedef std::unordered_map<uint64_t, TTF_Font*>::const_iterator
-    _fontsMapConstIt;
+// Own components headers
+#include "sdl_utils/drawing/LoadingScreen.h"
 
-typedef std::unordered_map<uint64_t, FontData>::iterator _fontsDataMapIt;
-typedef std::unordered_map<uint64_t, FontData>::const_iterator
-    _fontsDataMapConstIt;
 
 int32_t FontContainer::init(const uint64_t fontsCount) {
   _fontsDataMap.reserve(fontsCount);
@@ -30,9 +23,8 @@ int32_t FontContainer::init(const uint64_t fontsCount) {
 
 void FontContainer::deinit() {
   // free Font Textures
-  for (_fontsMapIt it = _fontsMap.begin(); it != _fontsMap.end(); ++it) {
+  for (auto it = _fontsMap.begin(); it != _fontsMap.end(); ++it) {
     TTF_CloseFont(it->second);
-
     it->second = nullptr;
   }
 
@@ -45,10 +37,7 @@ void FontContainer::deinit() {
 
 void FontContainer::loadAllStoredFonts() {
   TTF_Font* font = nullptr;
-
-  _fontsDataMapConstIt it;
-
-  for (it = _fontsDataMap.begin(); it != _fontsDataMap.end(); ++it) {
+  for (auto it = _fontsDataMap.begin(); it != _fontsDataMap.end(); ++it) {
     if (SUCCESS != loadTtfFont(it->second.header.path.c_str(),
                                it->second.fontSize, font)) {
       LOGERR("Failed to load %s font! SDL_ttf Error: %s",

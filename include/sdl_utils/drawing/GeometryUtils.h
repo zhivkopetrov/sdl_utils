@@ -6,9 +6,9 @@
 // C++ system headers
 
 // Other libraries headers
+#include "utils/drawing/Rectangle.h"
 
 // Own components headers
-#include "utils/drawing/Rectangle.h"
 
 // Forward declarations
 

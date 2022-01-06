@@ -7,13 +7,13 @@
 #include <thread>
 
 // Other libraries headers
+#include "resource_utils/resource_loader/ResourceLoader.h"
+#include "utils/debug/FunctionTracer.h"
+#include "utils/ErrorCode.h"
+#include "utils/Log.h"
 
 // Own components headers
 #include "sdl_utils/drawing/LoadingScreen.h"
-#include "resource_utils/resource_loader/ResourceLoader.h"
-#include "utils/debug/FunctionTracer.hpp"
-#include "utils/ErrorCode.h"
-#include "utils/Log.h"
 
 SDLContainers::SDLContainers(const SDLContainersConfig &cfg) : _config(cfg) {
 }

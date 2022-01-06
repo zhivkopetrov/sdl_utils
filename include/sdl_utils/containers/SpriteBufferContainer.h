@@ -8,9 +8,9 @@
 #include <vector>
 
 // Other libraries headers
-#include "sdl_utils/drawing/defines/RendererDefines.h"
 
 // Own components headers
+#include "sdl_utils/drawing/defines/RendererDefines.h"
 
 // Forward declarations
 class Renderer;

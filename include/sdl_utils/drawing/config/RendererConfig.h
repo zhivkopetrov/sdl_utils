@@ -1,5 +1,5 @@
-#ifndef SDL_UTILS_RENDERERCONFIG_HPP_
-#define SDL_UTILS_RENDERERCONFIG_HPP_
+#ifndef SDL_UTILS_RENDERERCONFIG_H_
+#define SDL_UTILS_RENDERERCONFIG_H_
 
 // C system headers
 
@@ -26,4 +26,4 @@ struct RendererConfig {
 
 
 
-#endif /* SDL_UTILS_RENDERERCONFIG_HPP_ */
+#endif /* SDL_UTILS_RENDERERCONFIG_H_ */

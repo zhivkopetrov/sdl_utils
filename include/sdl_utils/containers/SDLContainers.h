@@ -40,7 +40,7 @@
 #include "sdl_utils/containers/SoundContainer.h"
 #include "sdl_utils/containers/SpriteBufferContainer.h"
 #include "sdl_utils/containers/TextContainer.h"
-#include "sdl_utils/containers/config/SDLContainersConfig.hpp"
+#include "sdl_utils/containers/config/SDLContainersConfig.h"
 
 // Forward declarations
 class ResourceLoader;

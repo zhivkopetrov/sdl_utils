@@ -8,9 +8,9 @@
 #include <unordered_map>
 
 // Other libraries headers
+#include "resource_utils/structs/FontData.h"
 
 // Own components headers
-#include "resource_utils/structs/FontData.h"
 
 // Forward declarations
 typedef struct _TTF_Font TTF_Font;

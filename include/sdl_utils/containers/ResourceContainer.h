@@ -10,10 +10,10 @@
 #include <vector>
 
 // Other libraries headers
+#include "resource_utils/structs/ResourceData.h"
 
 // Own components headers
 #include "sdl_utils/drawing/defines/RendererDefines.h"
-#include "resource_utils/structs/ResourceData.h"
 
 // Forward declarations
 

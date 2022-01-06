@@ -8,14 +8,14 @@
 
 // Other libraries headers
 #include <SDL_render.h>
+#include "utils/drawing/Color.h"
+#include "utils/ErrorCode.h"
+#include "utils/Log.h"
 
 // Own components headers
 #include "sdl_utils/drawing/Texture.h"
 #include "sdl_utils/drawing/defines/RendererDefines.h"
-#include "sdl_utils/drawing/config/LoadingScreenConfig.hpp"
-#include "utils/drawing/Color.h"
-#include "utils/ErrorCode.h"
-#include "utils/Log.h"
+#include "sdl_utils/drawing/config/LoadingScreenConfig.h"
 
 SDL_Renderer* LoadingScreen::_renderer = nullptr;
 

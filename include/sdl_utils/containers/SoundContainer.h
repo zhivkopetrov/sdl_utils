@@ -8,9 +8,9 @@
 #include <unordered_map>
 
 // Other libraries headers
+#include "resource_utils/structs/SoundData.h"
 
 // Own components headers
-#include "resource_utils/structs/SoundData.h"
 
 // Forward declarations
 typedef struct _Mix_Music Mix_Music;

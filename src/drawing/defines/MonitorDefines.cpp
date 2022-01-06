@@ -7,10 +7,10 @@
 
 //Other libraries headers
 #include <SDL_video.h>
+#include "utils/data_type/EnumClassUtils.h"
+#include "utils/Log.h"
 
 //Own components headers
-#include "utils/data_type/EnumClassUtils.hpp"
-#include "utils/Log.h"
 
 // Window modes:
 // SDL_WINDOW_SHOWN - for windowed version
