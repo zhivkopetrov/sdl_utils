@@ -23,7 +23,6 @@
 // C system headers
 
 // C++ system headers
-#include <cstdint>
 
 // Other libraries headers
 

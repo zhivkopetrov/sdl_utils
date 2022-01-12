@@ -2,9 +2,23 @@
 
 cmake_minimum_required(VERSION 3.10.2)
 
-project(sdl_utils)
-  
-set(_INC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include/sdl_utils)         
+project(
+    sdl_utils
+    LANGUAGES CXX
+    VERSION 1.0.0
+)
+
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake_helpers/find_modules)
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake_helpers/helpers.cmake)
+
+find_package(resource_utils REQUIRED)
+find_package(SDL2 REQUIRED)
+find_package(SDL2_image REQUIRED)
+find_package(SDL2_ttf REQUIRED)
+find_package(SDL2_mixer REQUIRED)
+
+set(_INC_FOLDER_NAME include)
+set(_INC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/${_INC_FOLDER_NAME}/sdl_utils)         
 set(_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 add_library(
@@ -57,30 +71,29 @@ add_library(
         ${_SRC_DIR}/SDLLoader.cpp
 )
 
-find_package(SDL2 REQUIRED)
-find_package(SDL2_image REQUIRED)
-find_package(SDL2_ttf REQUIRED)
-find_package(SDL2_mixer REQUIRED)
-
-set_target_cpp_standard(${PROJECT_NAME} 20)
-enable_target_warnings(${PROJECT_NAME})
-set_target_visibility(${PROJECT_NAME})
-
-set_target_properties(
-    ${PROJECT_NAME}
-    PROPERTIES
-        VERSION 1.0.0
-)
+add_library(sdl_utils::sdl_utils ALIAS sdl_utils)
 
 target_include_directories(
-    ${PROJECT_NAME}
+    ${PROJECT_NAME} 
     PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}/include
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/${_INC_FOLDER_NAME}>
+        $<INSTALL_INTERFACE:${_INC_FOLDER_NAME}>
     PRIVATE 
         ${SDL2_INCLUDE_DIR}
         ${SDL2_IMAGE_INCLUDE_DIR}
         ${SDL2_TTF_INCLUDE_DIR}
         ${SDL2_MIXER_INCLUDE_DIR}
+)
+
+target_link_libraries(
+    ${PROJECT_NAME}
+    PUBLIC
+        resource_utils::resource_utils
+    PRIVATE
+        ${SDL2_LIBRARY}       # -lSDL2 flag
+        ${SDL2_IMAGE_LIBRARY} # -lSDL2_image flag
+        ${SDL2_TTF_LIBRARY}   # -lSDL2_ttf flag
+        ${SDL2_MIXER_LIBRARY} # -lSDL2_mixer flag  
 )
 
 if(UNIX)
@@ -91,16 +104,11 @@ if(UNIX)
     )
 endif()
 
-target_link_libraries(
-    ${PROJECT_NAME}
-    PUBLIC
-        resource_utils
-    PRIVATE
-        ${SDL2_LIBRARY}       # -lSDL2 flag
-        ${SDL2_IMAGE_LIBRARY} # -lSDL2_image flag
-        ${SDL2_TTF_LIBRARY}   # -lSDL2_ttf flag
-        ${SDL2_MIXER_LIBRARY} # -lSDL2_mixer flag  
-)
+set_target_cpp_standard(${PROJECT_NAME} 20)
+enable_target_warnings(${PROJECT_NAME})
+set_target_visibility(${PROJECT_NAME})
+install_and_export_target(${PROJECT_NAME} ${_INC_FOLDER_NAME})
+enable_ros_tooling_for_target(${PROJECT_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/package.xml)
 
 #invoke include-what-you-use (if it's enabled) for the current project
 if(USE_IWYU)
