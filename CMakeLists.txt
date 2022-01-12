@@ -18,7 +18,7 @@ find_package(SDL2_ttf REQUIRED)
 find_package(SDL2_mixer REQUIRED)
 
 set(_INC_FOLDER_NAME include)
-set(_INC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/${_INC_FOLDER_NAME}/sdl_utils)         
+set(_INC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/${_INC_FOLDER_NAME}/${PROJECT_NAME})         
 set(_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 add_library(
