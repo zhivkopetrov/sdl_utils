@@ -28,19 +28,22 @@
  *  @param outSurfQueue          - the loaded surfaces queue (output)
  *  @param threadsLeftToComplete - number of threads still working on the async
  *                                 surface load from the file system
+ *  @param resourceBinLocation   - absolute location for the resources bin
  *  */
 static void loadSurfacesFromFileSystemAsyncUntilShutdown(
     ThreadSafeQueue<ResourceData> *resQueue,
-    ThreadSafeQueue<std::pair<uint64_t, SDL_Surface *>> *outSurfQueue) {
+    ThreadSafeQueue<std::pair<uint64_t, SDL_Surface *>> *outSurfQueue,
+    const std::string& resourceBinLocation) {
   ResourceData resData;
-
+  std::string widgetPath;
   SDL_Surface *surface = nullptr;
 
   // NOTE: the while loop can be broken with inner ThreadSafeQueue signal
   //      for shutdown
   while (resQueue->waitAndPop(resData)) {
-    if (SUCCESS !=
-        Texture::loadSurfaceFromFile(resData.header.path.c_str(), surface)) {
+    widgetPath = resourceBinLocation;
+    widgetPath.append(resData.header.path);
+    if (SUCCESS != Texture::loadSurfaceFromFile(widgetPath.c_str(), surface)) {
       LOGERR(
           "Warning, error in loadSurfaceFromFile() for file %s. "
           "Terminating other resourceLoading",
@@ -63,6 +66,7 @@ static void loadSurfacesFromFileSystemAsyncUntilShutdown(
  *  @param outSurfQueue          - the loaded surfaces queue (output)
  *  @param threadsLeftToComplete - number of threads still working on the async
  *                                 surface load from the file system
+ *  @param resourceBinLocation   - absolute location for the resources bin
  *
  *  NOTE: this is the same method as ::loadSurfacesFromFileSystemAsync()
  *        but when resQueue is empty the function will exit
@@ -74,14 +78,16 @@ static void loadSurfacesFromFileSystemAsyncUntilShutdown(
  *  */
 static void loadSurfacesFromFileSystemAsync(
     ThreadSafeQueue<ResourceData> *resQueue,
-    ThreadSafeQueue<std::pair<uint64_t, SDL_Surface *>> *outSurfQueue) {
+    ThreadSafeQueue<std::pair<uint64_t, SDL_Surface *>> *outSurfQueue,
+    const std::string& resourceBinLocation) {
   ResourceData resData;
-
+  std::string widgetPath;
   SDL_Surface *surface = nullptr;
 
   while (resQueue->tryPop(resData)) {
-    if (SUCCESS !=
-        Texture::loadSurfaceFromFile(resData.header.path.c_str(), surface)) {
+    widgetPath = resourceBinLocation;
+    widgetPath.append(resData.header.path);
+    if (SUCCESS != Texture::loadSurfaceFromFile(widgetPath.c_str(), surface)) {
       LOGERR(
           "Warning, error in loadSurfaceFromFile() for file %s. "
           "Terminating other resourceLoading",
@@ -105,8 +111,11 @@ ResourceContainer::ResourceContainer()
       _gpuMemoryUsage(0),
       _isMultithreadTextureLoadingEnabled(false) {}
 
-int32_t ResourceContainer::init(const uint64_t staticWidgetsCount,
+int32_t ResourceContainer::init(const std::string &resourcesFolderLocation,
+                                const uint64_t staticWidgetsCount,
                                 const uint64_t dynamicWidgetsCount) {
+  _resourcesFolderLocation = resourcesFolderLocation;
+
   /** IMPORTANT NOTE:
    *  Since _rsrcDataMap holds information about all possible resources
    *  (static + dynamic) we want to rehash the hashtable to it's actual used
@@ -143,8 +152,8 @@ int32_t ResourceContainer::init(const uint64_t staticWidgetsCount,
 
 void ResourceContainer::deinit() {
   // free Image/Sprite Textures
-  for (auto it = _rsrcMap.begin(); it != _rsrcMap.end(); ++it) {
-    Texture::freeTexture(it->second);
+  for (auto& resourceWidgetPair : _rsrcMap) {
+    Texture::freeTexture(resourceWidgetPair.second);
   }
 
   // clear rsrcMap unordered_map and shrink size
@@ -173,9 +182,8 @@ void ResourceContainer::deinit() {
   }
 
   // all worker threads are done with their work - join them
-  const size_t THREAD_POOL_SIZE = _workerThreadPool.size();
-  for (size_t i = 0; i < THREAD_POOL_SIZE; ++i) {
-    _workerThreadPool[i].join();
+  for (auto& thread : _workerThreadPool) {
+    thread.join();
   }
   _workerThreadPool.clear();
 }
@@ -291,7 +299,8 @@ void ResourceContainer::loadResourceOnDemandSingle(const uint64_t rsrcId) {
     return;
   }
 
-  if (ResourceDefines::TextureLoadType::ON_INIT == it->second.textureLoadType) {
+  auto& resWidget = it->second;
+  if (ResourceDefines::TextureLoadType::ON_INIT == resWidget.textureLoadType) {
     LOGERR(
         "Warning, invoking dynamic load on a resource with ID: "
         "%#16lX that has TextureLoadType::ON_INIT. "
@@ -303,12 +312,12 @@ void ResourceContainer::loadResourceOnDemandSingle(const uint64_t rsrcId) {
 
   // if refCount is bigger than zero -> resource is already loaded
   // increase the refCount and return
-  if (0 < it->second.refCount) {
+  if (0 < resWidget.refCount) {
     ++it->second.refCount;
     return;
   }
 
-  it->second.refCount = 1;
+  resWidget.refCount = 1;
 
   if (_isMultithreadTextureLoadingEnabled) {
     // dispatch the resource data into the thread safe queue
@@ -330,25 +339,22 @@ void ResourceContainer::loadResourceOnDemandMultiple(
   rsrcIdsToSend.reserve(RSRC_SIZE);
 
   uint32_t itemsToPop = 0;
-
   for (uint32_t i = 0; i < RSRC_SIZE; ++i) {
     auto it = _rsrcDataMap.find(rsrcIds[i]);
+    auto& resWidget = it->second;
 
     if (_rsrcDataMap.end() != it) {
       if (ResourceDefines::TextureLoadType::ON_INIT !=
-          it->second.textureLoadType) {
+          resWidget.textureLoadType) {
         // if refCount is bigger than zero -> resource is already loaded
         // increase the refCount and continue
-        if (0 < it->second.refCount) {
-          ++it->second.refCount;
-
+        if (0 < resWidget.refCount) {
+          ++(resWidget.refCount);
           continue;
         }
 
-        it->second.refCount = 1;
-
+        resWidget.refCount = 1;
         ++itemsToPop;
-
         rsrcIdsToSend.emplace_back(rsrcIds[i]);
 
         if (_isMultithreadTextureLoadingEnabled) {
@@ -402,16 +408,17 @@ void ResourceContainer::unloadResourceOnDemandSingle(const uint64_t rsrcId) {
     return;
   }
 
-  if (0 == it->second.refCount) {
+  auto& resWidget = it->second;
+  if (0 == resWidget.refCount) {
     LOGERR("Error, trying to unload rsrcId: %#16lX that is not loaded", rsrcId);
     return;
   }
 
   // decrease the refCount
-  --it->second.refCount;
+  --(resWidget.refCount);
 
   // when refCount goes to zero -> resource should be unloaded
-  if (0 == it->second.refCount) {
+  if (0 == resWidget.refCount) {
     _renderer->addRendererCmd_UT(RendererCmd::DESTROY_TEXTURE,
                                  reinterpret_cast<const uint8_t *>(&rsrcId),
                                  sizeof(rsrcId));
@@ -434,7 +441,8 @@ void ResourceContainer::unloadResourceOnDemandMultiple(
       continue;
     }
 
-    if (0 == it->second.refCount) {
+    auto& resWidget = it->second;
+    if (0 == resWidget.refCount) {
       LOGERR("Error, trying to unload rsrcId: %#16lX that is not loaded",
              rsrcIds[i]);
 
@@ -442,10 +450,10 @@ void ResourceContainer::unloadResourceOnDemandMultiple(
     }
 
     // decrease the refCount
-    --it->second.refCount;
+    --(resWidget.refCount);
 
     // when refCount goes to zero -> resource should be unloaded
-    if (0 == it->second.refCount) {
+    if (0 == resWidget.refCount) {
       _renderer->addRendererCmd_UT(
           RendererCmd::DESTROY_TEXTURE,
           reinterpret_cast<const uint8_t *>(&rsrcIds[i]), sizeof(rsrcIds[i]));
@@ -545,12 +553,14 @@ void ResourceContainer::loadAllStoredResourcesSingleCore() {
   // the overhead is minimal and the source will be reused.
 
   ResourceData resData;
-
+  std::string widgetPath;
   SDL_Surface *newSurface = nullptr;
 
   while (_resDataThreadQueue->tryPop(resData)) {
+    widgetPath = _resourcesFolderLocation;
+    widgetPath.append(resData.header.path);
     if (SUCCESS !=
-        Texture::loadSurfaceFromFile(resData.header.path.c_str(), newSurface)) {
+        Texture::loadSurfaceFromFile(widgetPath.c_str(), newSurface)) {
       LOGERR(
           "Warning, error in loadSurfaceFromFile() for file %s. "
           "Terminating other resourceLoading",
@@ -636,13 +646,15 @@ void ResourceContainer::loadAllStoredResourcesMultiCore(
     // spawn the worker threads
     _workerThreadPool.emplace_back(loadSurfacesFromFileSystemAsyncUntilShutdown,
                                    _resDataThreadQueue,
-                                   _loadedSurfacesThreadQueue);
+                                   _loadedSurfacesThreadQueue,
+                                   std::ref(_resourcesFolderLocation));
   }
 
   // spawn the secondary(update) thread only while in ::init() stage
   _workerThreadPool.emplace_back(loadSurfacesFromFileSystemAsync,
                                  _resDataThreadQueue,
-                                 _loadedSurfacesThreadQueue);
+                                 _loadedSurfacesThreadQueue,
+                                 std::ref(_resourcesFolderLocation));
 
   // temporary variables used for calculations
   SDL_Texture *newTexture = nullptr;

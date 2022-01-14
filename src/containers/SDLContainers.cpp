@@ -20,7 +20,7 @@ SDLContainers::SDLContainers(const SDLContainersConfig &cfg) : _config(cfg) {
 
 int32_t SDLContainers::init() {
   ResourceLoader rsrcLoader;
-  if (SUCCESS != rsrcLoader.init(_config.resourcesBinLocation)) {
+  if (SUCCESS != rsrcLoader.init(_config.resourcesFolderLocation)) {
     LOGERR("Error in _rsrcLoader.init() -> Terminating ...");
     return FAILURE;
   }
@@ -31,19 +31,22 @@ int32_t SDLContainers::init() {
     return FAILURE;
   }
 
-  if (SUCCESS != SoundContainer::init(binHeaderData.musicsCount,
-                                           binHeaderData.chunksCount)) {
+  if (SUCCESS != SoundContainer::init(_config.resourcesFolderLocation,
+                                      binHeaderData.musicsCount,
+                                      binHeaderData.chunksCount)) {
     LOGERR("Error in SoundContainer::init() -> Terminating ...");
     return FAILURE;
   }
 
-  if (SUCCESS != FontContainer::init(binHeaderData.fontsCount)) {
+  if (SUCCESS != FontContainer::init(_config.resourcesFolderLocation,
+                                     binHeaderData.fontsCount)) {
     LOGERR("Error in FontContainer::init() -> Terminating ...");
     return FAILURE;
   }
 
   if (SUCCESS !=
-      ResourceContainer::init(binHeaderData.staticWidgetsCount,
+      ResourceContainer::init(_config.resourcesFolderLocation,
+                              binHeaderData.staticWidgetsCount,
                               binHeaderData.dynamicWidgetsCount)) {
     LOGERR("Error in ResourceContainer::init() -> Terminating ...");
     return FAILURE;

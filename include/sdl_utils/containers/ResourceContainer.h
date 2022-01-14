@@ -34,13 +34,15 @@ class ResourceContainer {
 
   /** @brief used to initialise the Resource container
    *
-   *  @param const uint64_t - number of static widgets to be loaded
-   *  @param const uint64_t - number of dynamic widgets
+   *  @param const std::string & - absolute file path to resource folder
+   *  @param const uint64_t      - number of static widgets to be loaded
+   *  @param const uint64_t      - number of dynamic widgets
    *                                    (they are not loaded at ::init())
    *
-   *  @return int32_t       - error code
+   *  @return int32_t            - error code
    * */
-  int32_t init(const uint64_t staticWidgetsCount,
+  int32_t init(const std::string &resourcesFolderLocation,
+               const uint64_t staticWidgetsCount,
                const uint64_t dynamicWidgetsCount);
 
   /** @brief used to deinitialize
@@ -301,6 +303,8 @@ class ResourceContainer {
    * The threads will be shutdown and join-ed at deinit();
    * */
   std::vector<std::thread> _workerThreadPool;
+
+  std::string _resourcesFolderLocation;
 
   // holds the currently occupied GPU VRAM in bytes
   uint64_t _gpuMemoryUsage;

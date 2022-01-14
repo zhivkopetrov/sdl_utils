@@ -14,7 +14,9 @@
 #include "sdl_utils/drawing/LoadingScreen.h"
 
 
-int32_t FontContainer::init(const uint64_t fontsCount) {
+int32_t FontContainer::init(const std::string &resourcesFolderLocation,
+                            const uint64_t fontsCount) {
+  _resourcesFolderLocation = resourcesFolderLocation;
   _fontsDataMap.reserve(fontsCount);
   _fontsMap.reserve(fontsCount);
 
@@ -23,9 +25,8 @@ int32_t FontContainer::init(const uint64_t fontsCount) {
 
 void FontContainer::deinit() {
   // free Font Textures
-  for (auto it = _fontsMap.begin(); it != _fontsMap.end(); ++it) {
-    TTF_CloseFont(it->second);
-    it->second = nullptr;
+  for (auto& fontsMapPair : _fontsMap) {
+    TTF_CloseFont(fontsMapPair.second);
   }
 
   // clear TTF_Font unordered_map and shrink size
@@ -37,17 +38,22 @@ void FontContainer::deinit() {
 
 void FontContainer::loadAllStoredFonts() {
   TTF_Font* font = nullptr;
-  for (auto it = _fontsDataMap.begin(); it != _fontsDataMap.end(); ++it) {
-    if (SUCCESS != loadTtfFont(it->second.header.path.c_str(),
-                               it->second.fontSize, font)) {
+  std::string widgetPath;
+
+  for (const auto& fontsWidgetPair : _fontsDataMap) {
+    const auto& fontWidget = fontsWidgetPair.second;
+    widgetPath = _resourcesFolderLocation;
+    widgetPath.append(fontWidget.header.path);
+
+    if (SUCCESS != loadTtfFont(widgetPath.c_str(), fontWidget.fontSize, font)) {
       LOGERR("Failed to load %s font! SDL_ttf Error: %s",
-             it->second.header.path.c_str(), TTF_GetError());
+          widgetPath.c_str(), TTF_GetError());
     } else {
       // populate _fontsMap with the newly created font
-      _fontsMap[it->second.header.hashValue] = font;
+      _fontsMap[fontWidget.header.hashValue] = font;
 
       // send message to loading screen for successfully loaded resource
-      LoadingScreen::onNewResourceLoaded(it->second.header.fileSize);
+      LoadingScreen::onNewResourceLoaded(fontWidget.header.fileSize);
 
       // reset font variable so it can be reused
       font = nullptr;

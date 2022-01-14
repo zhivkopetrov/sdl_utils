@@ -20,12 +20,15 @@ class SoundContainer {
  public:
   /** @brief used to initialise the Sound container
    *
-   *  @param const uint64_t - number of musics to be loaded
-   *  @param const uint64_t - number of sound chunks to be loaded
+   *  @param const std::string & - absolute file path to resource folder
+   *  @param const uint64_t      - number of musics to be loaded
+   *  @param const uint64_t      - number of sound chunks to be loaded
    *
    *  @return int32_t       - error code
    * */
-  int32_t init(const uint64_t musicsCount, const uint64_t chunksCount);
+  int32_t init(const std::string &resourcesFolderLocation,
+               const uint64_t musicsCount,
+               const uint64_t chunksCount);
 
   /** @brief used to deinitialize
    *                           (free memory occupied by Sound container)
@@ -109,6 +112,8 @@ class SoundContainer {
   //_soundsDataMap holds font specific information for
   // every sound(music + chunk)
   std::unordered_map<uint64_t, SoundData> _soundsDataMap;
+
+  std::string _resourcesFolderLocation;
 };
 
 #endif /* SDL_UTILS_SOUNDCONTAINER_H_ */

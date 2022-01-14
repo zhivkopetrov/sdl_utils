@@ -14,12 +14,12 @@
 #include "sdl_utils/drawing/LoadingScreen.h"
 #include "sdl_utils/sound/SoundMixer.h"
 
-int32_t SoundContainer::init(const uint64_t musicsCount,
+int32_t SoundContainer::init(const std::string &resourcesFolderLocation,
+                             const uint64_t musicsCount,
                              const uint64_t chunksCount) {
+  _resourcesFolderLocation = resourcesFolderLocation;
   _soundsDataMap.reserve(musicsCount + chunksCount);
-
   _musicMap.reserve(musicsCount);
-
   _chunkMap.reserve(chunksCount);
 
   return SUCCESS;
@@ -27,18 +27,16 @@ int32_t SoundContainer::init(const uint64_t musicsCount,
 
 void SoundContainer::deinit() {
   // free Music sounds
-  for (auto it = _musicMap.begin(); it != _musicMap.end(); ++it) {
-    SoundMixer::freeMusic(it->second);
-    it->second = nullptr;
+  for (auto& musicWidgetPair : _musicMap) {
+    SoundMixer::freeMusic(musicWidgetPair.second);
   }
 
   // clear Music unordered_map and shrink size
   _musicMap.clear();
 
   // free Chunk sounds
-  for (auto it = _chunkMap.begin(); it != _chunkMap.end(); ++it) {
-    SoundMixer::freeChunk(it->second);
-    it->second = nullptr;
+  for (auto& soundWidgetPair : _chunkMap) {
+    SoundMixer::freeChunk(soundWidgetPair.second);
   }
 
   // clear Chunk unordered_map and shrink size
@@ -51,37 +49,41 @@ void SoundContainer::deinit() {
 void SoundContainer::loadAllStoredSounds() {
   Mix_Chunk *newChunk = nullptr;
   Mix_Music *newMusic = nullptr;
+  std::string widgetPath;
 
-  for (auto it = _soundsDataMap.begin(); it != _soundsDataMap.end(); ++it) {
-    if (SoundType::CHUNK == it->second.soundType) {
-      if (SUCCESS != loadChunk(it->second.header.path.c_str(),
-                                    it->second.soundLevel, newChunk)) {
+  for (const auto& soundWidgetPair : _soundsDataMap) {
+    const auto& soundWidget = soundWidgetPair.second;
+    widgetPath = _resourcesFolderLocation;
+    widgetPath.append(soundWidget.header.path);
+
+    if (SoundType::CHUNK == soundWidget.soundType) {
+      if (SUCCESS !=
+          loadChunk(widgetPath.c_str(), soundWidget.soundLevel, newChunk)) {
         LOGERR("Error in loadChunk() for soundId: %#16lX",
-               it->second.header.hashValue);
+                soundWidget.header.hashValue);
       } else {
         // populate the chunk map
-        _chunkMap[it->second.header.hashValue] = newChunk;
+        _chunkMap[soundWidget.header.hashValue] = newChunk;
 
         // send message to loading screen for
         // successfully loaded resource
-        LoadingScreen::onNewResourceLoaded(it->second.header.fileSize);
+        LoadingScreen::onNewResourceLoaded(soundWidget.header.fileSize);
 
         // reset the variable so it can be reused
         newChunk = nullptr;
       }
-    } else  // SoundType::MUSIC == it->second.soundType
-    {
-      if (SUCCESS != loadMusic(it->second.header.path.c_str(),
-                               it->second.soundLevel, newMusic)) {
+    } else { // SoundType::MUSIC == soundWidget.soundType
+      if (SUCCESS !=
+          loadMusic(widgetPath.c_str(), soundWidget.soundLevel, newMusic)) {
         LOGERR("Error in loadMusic() for soundId: %#16lX",
-               it->second.header.hashValue);
+               soundWidget.header.hashValue);
       } else {
         // populate the _musicMap map
-        _musicMap[it->second.header.hashValue] = newMusic;
+        _musicMap[soundWidget.header.hashValue] = newMusic;
 
         // send message to loading screen for
         // successfully loaded resource
-        LoadingScreen::onNewResourceLoaded(it->second.header.fileSize);
+        LoadingScreen::onNewResourceLoaded(soundWidget.header.fileSize);
 
         // reset the variable so it can be reused
         newMusic = nullptr;

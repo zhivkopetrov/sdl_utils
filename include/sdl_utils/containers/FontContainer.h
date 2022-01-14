@@ -19,11 +19,13 @@ class FontContainer {
  public:
   /** @brief used to initialise the Font container
    *
+   *  @param const std::string & - absolute file path to resouces follder
    *  @param const uint64_t - number of fonts to be loaded
    *
    *  @return int32_t       - error code
    * */
-  int32_t init(const uint64_t fontsCount);
+  int32_t init(const std::string &resourcesFolderLocation,
+               const uint64_t fontsCount);
 
   /** @brief used to deinitialize (free memory occupied by Font container)
    * */
@@ -85,6 +87,8 @@ class FontContainer {
 
   //_rsrcDataMap holds font specific information for every font
   std::unordered_map<uint64_t, FontData> _fontsDataMap;
+
+  std::string _resourcesFolderLocation;
 };
 
 #endif /* SDL_UTILS_FONTCONTAINER_H_ */
