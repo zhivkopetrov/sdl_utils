@@ -147,7 +147,7 @@ void Renderer::finishFrame_UT(const bool overrideRendererLockCheck) {
   swapBackBuffers_UT();
 }
 
-void Renderer::addDrawCmd_UT(DrawParams *drawParams) {
+void Renderer::addDrawCmd_UT(const DrawParams& drawParams) const {
   const int32_t IDX = _updateStateIdx;
 
 #ifndef NDEBUG
@@ -162,7 +162,7 @@ void Renderer::addDrawCmd_UT(DrawParams *drawParams) {
 #endif //!NDEBUG
 
   _rendererState[IDX].widgets[_rendererState[IDX].currWidgetCounter] =
-      *drawParams;
+      drawParams;
 
   // increment the total widget count for this frame
   ++_rendererState[IDX].currWidgetCounter;

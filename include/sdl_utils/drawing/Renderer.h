@@ -134,9 +134,9 @@ class Renderer {
    *         via a thread-safe mechanism on a different thread that
    *         will perform all the draw calls
    *
-   *  @param DrawParams * - draw specific data for a single Widget
+   *  @param const DrawParams & - draw specific data for a single Widget
    * */
-  void addDrawCmd_UT(DrawParams* drawParams);
+  void addDrawCmd_UT(const DrawParams& drawParams) const;
 
   /* @brief used to store draw specific rendering commands populated by
    *                                              the main(update) thread
@@ -440,7 +440,7 @@ class Renderer {
    * triple buffering is needed -> this number can be increased here
    * from 2 to 3.
    */
-  RendererState _rendererState[SUPPORTED_BACK_BUFFERS];
+  mutable RendererState _rendererState[SUPPORTED_BACK_BUFFERS];
 
   /** a synchronisation flag used to determine whether the renderer
    *  thread is busy.
