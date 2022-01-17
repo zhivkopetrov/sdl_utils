@@ -35,6 +35,7 @@ add_library(
         ${_INC_DIR}/drawing/defines/MonitorDefines.h
         ${_INC_DIR}/drawing/config/LoadingScreenConfig.h
         ${_INC_DIR}/drawing/config/RendererConfig.h
+        ${_INC_DIR}/drawing/config/MonitorWindowConfig.h
         ${_INC_DIR}/drawing/DrawParams.h
         ${_INC_DIR}/drawing/GeometryUtils.h
         ${_INC_DIR}/drawing/LoadingScreen.h

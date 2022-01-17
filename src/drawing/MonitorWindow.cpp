@@ -16,18 +16,13 @@
 #include "sdl_utils/drawing/defines/RendererDefines.h"
 #include "sdl_utils/drawing/Texture.h"
 
-MonitorWindow::MonitorWindow(const int32_t windowWidth,
-                             const int32_t windowHeight, const Point& windowPos)
-    : _window(nullptr),
-      _windowRect(windowPos.x, windowPos.y, windowWidth, windowHeight) {}
+MonitorWindow::~MonitorWindow() {
+  deinit();
+}
 
-MonitorWindow::MonitorWindow(const Rectangle& rect)
-    : _window(nullptr), _windowRect(rect) {}
+int32_t MonitorWindow::init(const MonitorWindowConfig& cfg) {
+  _windowRect = Rectangle(cfg.pos, cfg.width, cfg.height);
 
-MonitorWindow::~MonitorWindow() { deinit(); }
-
-int32_t MonitorWindow::init(const WindowDisplayMode displayMode,
-                            const WindowBorderMode borderMode) {
   int32_t initWindowX = 0;
   int32_t initWindowY = 0;
 
@@ -42,9 +37,9 @@ int32_t MonitorWindow::init(const WindowDisplayMode displayMode,
   }
 
   // Create window
-  _window = SDL_CreateWindow("GameWindow", initWindowX, initWindowY,
+  _window = SDL_CreateWindow(cfg.name.c_str(), initWindowX, initWindowY,
                              _windowRect.w, _windowRect.h,
-                             getValue(displayMode, borderMode));
+                             getValue(cfg.displayMode, cfg.borderMode));
 
   if (nullptr == _window) {
     LOGERR("Window could not be created! SDL Error: %s", SDL_GetError());
@@ -56,19 +51,25 @@ int32_t MonitorWindow::init(const WindowDisplayMode displayMode,
 
   Texture::setMonitorRect(_windowRect);
 
+  if (!cfg.iconPath.empty()) {
+    if (SUCCESS != loadWindowIcon(cfg.iconPath)) {
+      LOGERR("loadWindowIcon() failed!");
+      return FAILURE;
+    }
+  }
+
   return SUCCESS;
 }
 
 void MonitorWindow::deinit() {
-  if (_window)  // sanity check
-  {
+  if (_window) { // sanity check
     SDL_DestroyWindow(_window);
     _window = nullptr;
   }
 }
 
-int32_t MonitorWindow::loadWindowIcon(const char *iconPath) {
-  SDL_Surface* windowIcon = IMG_Load(iconPath);
+int32_t MonitorWindow::loadWindowIcon(const std::string& iconPath) {
+  SDL_Surface* windowIcon = IMG_Load(iconPath.c_str());
   if (nullptr == windowIcon) {
     LOGERR("Unable to create window Image from file! SDL Error: %s",
            SDL_GetError());

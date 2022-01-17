@@ -7,37 +7,17 @@
 #include <cstdint>
 
 // Other libraries headers
-#include "utils/drawing/Point.h"
 #include "utils/drawing/Rectangle.h"
 
 // Own components headers
-#include "sdl_utils/drawing/defines/MonitorDefines.h"
+#include "sdl_utils/drawing/config/MonitorWindowConfig.h"
 
 // Forward declarations
 struct SDL_Window;
 
 class MonitorWindow {
  public:
-  /** @brief used to create window rectangle from provided
-   *                                              individual dimensions
-   *
-   *  @param const int32_t - the width of the new window
-   *  @param const int32_t - the height of the new window
-   *  @param const Point   - the position of the new window
-   *                         NOTE: the provided position has absolute
-   *                         monitor coordinates.
-   * */
-  explicit MonitorWindow(const int32_t windowWidth, const int32_t windowHeight,
-                         const Point& windowPos = Point::UNDEFINED);
-
-  /** @brief used to create window rectangle from provided
-   *                                               Rectangle dimensions
-   *
-   *  @param const Rectangle - the window Rectangle dimensions
-   *                         NOTE: the provided position has absolute
-   *                         monitor coordinates.
-   * */
-  explicit MonitorWindow(const Rectangle& rect);
+  MonitorWindow() = default;
 
   // forbid the copy and move constructors
   MonitorWindow(const MonitorWindow& other) = delete;
@@ -49,18 +29,7 @@ class MonitorWindow {
 
   ~MonitorWindow();
 
-  /** @brief used to create window from previously set _windowRect
-   *
-   *   If not coordinates for the windows were provided (Point::UNDEFINED)
-   *   the new windows is created as CENTERED to the hardware monitor.
-   *
-   *  @param const WindowDisplayMode - full screen or windowed
-   *  @param const WindowBorderMode  - borderless or not
-   *
-   *  @returns int32_t               - error code
-   * */
-  int32_t init(const WindowDisplayMode displayMode,
-               const WindowBorderMode borderMode);
+  int32_t init(const MonitorWindowConfig& cfg);
 
   /** @brief used to deinitialize the created window
    * */
@@ -68,22 +37,22 @@ class MonitorWindow {
 
   /** @brief used to get access to the the actual created window
    * */
-  SDL_Window* getWindow() const { return _window; }
+  SDL_Window* getNativeWindow() const { return _window; }
 
   /** @brief loads window icon (on the dash bar) for the application window
    *
-   *  @param const char * - path to image
+   *  @param const std::string& - path to image
    *
-   *  @return int32_t     - error code
+   *  @return int32_t           - error code
    * */
-  int32_t loadWindowIcon(const char *iconPath);
+  int32_t loadWindowIcon(const std::string& iconPath);
 
  private:
   // The actual window
-  SDL_Window* _window;
+  SDL_Window* _window = nullptr;
 
   // Holds window position and dimensions
-  Rectangle _windowRect;
+  Rectangle _windowRect = Rectangle::UNDEFINED;
 };
 
 #endif /* SDL_UTILS_MONITORWINDOW_H_ */
