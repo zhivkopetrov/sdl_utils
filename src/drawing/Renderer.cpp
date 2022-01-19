@@ -1056,7 +1056,7 @@ void Renderer::createTTFText_RT(const bool isTextBeingReloaded) {
   //+1 to leave space for manually populating the terminating null character
   char *textContent = new char[textLength + 1];
   if (nullptr == textContent) {
-    LOGERR("Error, bad alloc for textContent")
+    LOGERR("Error, bad alloc for textContent");
     return;
   }
 
