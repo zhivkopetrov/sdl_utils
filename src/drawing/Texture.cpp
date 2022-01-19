@@ -343,7 +343,7 @@ void Texture::draw(SDL_Texture *texture, const DrawParams &drawParams)
       &renderQuad,       // destination rectangle
       drawParams.angle,  // rotation angles
       reinterpret_cast<const SDL_Point *>(
-           drawParams.center),  // rotation center
+           &drawParams.rotCenter),  // rotation center
       static_cast<SDL_RendererFlip>(
           drawParams.widgetFlipType))) { // flip mode
     LOGERR("Error in SDL_RenderCopyEx(), SDL Error: %s from widget with "

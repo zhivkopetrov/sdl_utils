@@ -15,7 +15,6 @@
 
 // Forward declarations
 
-
 struct DrawParams {
   DrawParams();
 
@@ -36,7 +35,7 @@ struct DrawParams {
   Point pos;
 
   // Position for center of rotation
-  Point centerPos;
+  Point rotCenter;
 
   // Scaled Widget single frame dimensions
   int32_t scaledWidth;
@@ -44,9 +43,6 @@ struct DrawParams {
 
   // Angle of rotation
   double angle;
-
-  // Center for rotation
-  Point* center;
 
   // Rectangle for bounding the currently set frame
   Rectangle frameRect;

@@ -33,6 +33,12 @@ enum class BlendMode : uint8_t {
   ADD = 2
 };
 
+enum class RotationCenterType : uint8_t {
+  TOP_LEFT,
+  ORIG_CENTER,
+  SCALED_CENTER
+};
+
 constexpr inline int32_t ZERO_OPACITY = 0;
 constexpr inline int32_t FULL_OPACITY = 255;
 

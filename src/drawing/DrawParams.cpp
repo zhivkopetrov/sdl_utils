@@ -14,7 +14,6 @@ DrawParams::DrawParams() :
   scaledWidth(0),
   scaledHeight(0),
   angle(0.0),
-  center(&centerPos),
   opacity(FULL_OPACITY),
   widgetType(WidgetType::UNKNOWN),
   widgetFlipType(WidgetFlipType::NONE),
@@ -25,11 +24,8 @@ DrawParams::DrawParams() :
 
 void DrawParams::reset() {
     rsrcId = 0;
-    pos.x = 0;
-    pos.y = 0;
-    centerPos.x = 0;
-    centerPos.y = 0;
-    center = &centerPos;
+    pos = Point::ZERO;
+    rotCenter = Point::ZERO;
     scaledWidth = 0;
     scaledHeight = 0;
     angle = 0.0;
