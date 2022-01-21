@@ -51,14 +51,21 @@ void TextContainer::deinit() {
   _textMemoryUsage.clear();
 }
 
-void TextContainer::loadText(const uint64_t fontId, const char *text,
+int32_t TextContainer::loadText(const uint64_t fontId, const char *text,
                              const Color &color, int32_t &outUniqueId,
                              int32_t &outTextWidth, int32_t &outTextHeight) {
+  auto fontIt = _fontsMapPtr->find(fontId);
+  if (fontIt == _fontsMapPtr->end()) {
+    LOGERR("Error, non-existent fontId: %#16lX for text: [%s]. "
+        "Text will not be created", fontId, text);
+    return FAILURE;
+  }
+
   if (SUCCESS != Texture::getTextDimensions(text, (*_fontsMapPtr)[fontId],
                                                  outTextWidth, outTextHeight)) {
     LOGERR("Error in getTextDimensions() for fontId: %#16lX", fontId);
 
-    return;
+    return FAILURE;
   }
 
   int32_t chosenIndex = INIT_INT32_VALUE;
@@ -77,7 +84,7 @@ void TextContainer::loadText(const uint64_t fontId, const char *text,
            "Increase it's value from the configuration! or reduce the number of"
            " active texts. Text with content: %s will not be created in order "
            "to save the system from crashing", _textsSize, text);
-    return;
+    return FAILURE;
   }
 #endif //!NDEBUG
 
@@ -107,6 +114,8 @@ void TextContainer::loadText(const uint64_t fontId, const char *text,
 
   _renderer->addRendererCmd_UT(RendererCmd::CREATE_TTF_TEXT, data,
                                populatedBytes);
+
+  return SUCCESS;
 }
 
 void TextContainer::reloadText(const uint64_t fontId, const char *text,
@@ -201,3 +210,4 @@ void TextContainer::detachText(const int32_t containerId) {
 
   _textMemoryUsage[containerId] = 0;
 }
+

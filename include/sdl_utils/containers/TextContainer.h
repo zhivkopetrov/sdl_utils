@@ -63,9 +63,9 @@ class TextContainer {
    *
    *  @returns int32_t      - error code
    * */
-  void loadText(const uint64_t fontId, const char *text, const Color &color,
-                int32_t &outUniqueId, int32_t &outTextWidth,
-                int32_t &outTextHeight);
+  int32_t loadText(const uint64_t fontId, const char *text, const Color &color,
+                   int32_t &outUniqueId, int32_t &outTextWidth,
+                   int32_t &outTextHeight);
 
   /** @brief used to reload text resource on demand on the SAME position
    *                in the _textsVec (new Text has the same uniqueTextId).
