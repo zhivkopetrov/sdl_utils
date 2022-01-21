@@ -29,7 +29,7 @@ add_library(
         ${_INC_DIR}/containers/ResourceContainer.h
         ${_INC_DIR}/containers/SDLContainers.h
         ${_INC_DIR}/containers/SoundContainer.h
-        ${_INC_DIR}/containers/SpriteBufferContainer.h
+        ${_INC_DIR}/containers/FboContainer.h
         ${_INC_DIR}/containers/TextContainer.h
         ${_INC_DIR}/drawing/defines/DrawConstants.h
         ${_INC_DIR}/drawing/defines/MonitorDefines.h
@@ -55,7 +55,7 @@ add_library(
         ${_SRC_DIR}/containers/ResourceContainer.cpp
         ${_SRC_DIR}/containers/SDLContainers.cpp
         ${_SRC_DIR}/containers/SoundContainer.cpp
-        ${_SRC_DIR}/containers/SpriteBufferContainer.cpp
+        ${_SRC_DIR}/containers/FboContainer.cpp
         ${_SRC_DIR}/containers/TextContainer.cpp
         ${_SRC_DIR}/drawing/defines/MonitorDefines.cpp
         ${_SRC_DIR}/drawing/DrawParams.cpp

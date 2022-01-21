@@ -38,7 +38,7 @@
 #include "sdl_utils/containers/FontContainer.h"
 #include "sdl_utils/containers/ResourceContainer.h"
 #include "sdl_utils/containers/SoundContainer.h"
-#include "sdl_utils/containers/SpriteBufferContainer.h"
+#include "sdl_utils/containers/FboContainer.h"
 #include "sdl_utils/containers/TextContainer.h"
 #include "sdl_utils/containers/config/SDLContainersConfig.h"
 
@@ -49,7 +49,7 @@ class SDLContainers : public ResourceContainer,
                       public TextContainer,
                       public FontContainer,
                       public SoundContainer,
-                      public SpriteBufferContainer {
+                      public FboContainer {
  public:
   explicit SDLContainers(const SDLContainersConfig &cfg);
 

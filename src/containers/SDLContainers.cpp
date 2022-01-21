@@ -58,9 +58,8 @@ int32_t SDLContainers::init() {
     return FAILURE;
   }
 
-  if (SUCCESS !=
-      SpriteBufferContainer::init(_config.maxRuntimeSpriteBuffers)) {
-    LOGERR("Error in SpriteBufferContainer::init() -> Terminating ...");
+  if (SUCCESS != FboContainer::init(_config.maxRuntimeSpriteBuffers)) {
+    LOGERR("Error in FboContainer::init() -> Terminating ...");
     return FAILURE;
   }
 
@@ -85,20 +84,16 @@ int32_t SDLContainers::init() {
 
 void SDLContainers::deinit() {
   ResourceContainer::deinit();
-
   TextContainer::deinit();
-
   FontContainer::deinit();
-
   SoundContainer::deinit();
-
-  SpriteBufferContainer::deinit();
+  FboContainer::deinit();
 }
 
 void SDLContainers::setRenderer(Renderer * renderer) {
   ResourceContainer::setRenderer(renderer);
   TextContainer::setRenderer(renderer);
-  SpriteBufferContainer::setRenderer(renderer);
+  FboContainer::setRenderer(renderer);
 }
 
 int32_t SDLContainers::populateSDLContainers(ResourceLoader &rsrcLoader) {

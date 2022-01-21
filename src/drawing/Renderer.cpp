@@ -815,7 +815,7 @@ void Renderer::createFBO_RT() {
     return;
   }
 
-  _containers->attachSpriteBuffer(containerId, width, height, texture);
+  _containers->attachFbo(containerId, width, height, texture);
 }
 
 void Renderer::destroyFBO_RT() {
@@ -828,10 +828,10 @@ void Renderer::destroyFBO_RT() {
 #endif /* LOCAL_DEBUG */
 
   SDL_Texture *texture = nullptr;
-  _containers->getSpriteBufferTexture(containerId, texture);
+  _containers->getFboTexture(containerId, texture);
 
   Texture::freeTexture(texture);
-  _containers->detachSpriteBuffer(containerId);
+  _containers->detachFbo(containerId);
 }
 
 void Renderer::changeRendererTarget_RT() {
@@ -847,7 +847,7 @@ void Renderer::changeRendererTarget_RT() {
       containerId, sizeof(containerId));
 #endif /* LOCAL_DEBUG */
 
-  _containers->getSpriteBufferTexture(containerId, texture);
+  _containers->getFboTexture(containerId, texture);
 
   // set SpriteBuffer texture as renderer target
   if (SUCCESS != Texture::setRendererTarget(texture)) {
@@ -953,7 +953,7 @@ void Renderer::changeTextureBlending_RT() {
     _rendererState[_renderStateIdx].renderData >> containerId;
     parsedBytes += sizeof(containerId);
 
-    _containers->getSpriteBufferTexture(containerId, texture);
+    _containers->getFboTexture(containerId, texture);
   }
 
 #if LOCAL_DEBUG
@@ -1012,7 +1012,7 @@ void Renderer::changeTextureOpacity_RT() {
   if (WidgetType::TEXT == widgetType) {
     _containers->getTextTexture(containerId, texture);
   } else if (WidgetType::SPRITE_BUFFER == widgetType) {
-    _containers->getSpriteBufferTexture(containerId, texture);
+    _containers->getFboTexture(containerId, texture);
   } else  // WidgetType::IMAGE == widgetType
   {
     LOGERR(
@@ -1157,7 +1157,7 @@ void Renderer::drawWidgetsToBackBuffer_RT(const DrawParams drawParamsArr[],
     } else  // WidgetType::SPRITE_BUFFER ==
             //         _rendererState[_renderStateIdx].widgets[i].widgetType)
     {
-      _containers->getSpriteBufferTexture(
+      _containers->getFboTexture(
           drawParamsArr[i].spriteBufferId, texture);
 
       Texture::draw(texture, drawParamsArr[i]);

@@ -1,5 +1,5 @@
-#ifndef SDL_UTILS_SPRITEBUFFERCONTAINER_H_
-#define SDL_UTILS_SPRITEBUFFERCONTAINER_H_
+#ifndef SDL_UTILS_FBOCONTAINER_H_
+#define SDL_UTILS_FBOCONTAINER_H_
 
 // C system headers
 
@@ -18,11 +18,11 @@ class Color;
 struct SDL_Surface;
 struct SDL_Texture;
 
-class SpriteBufferContainer {
+class FboContainer {
  public:
-  SpriteBufferContainer();
+  FboContainer();
 
-  /** @brief used to initialise the SpriteBufferContainer
+  /** @brief used to initialise the FboContainer
    *
    *  @param const int32_t - max runtime Sprite Buffers
    *
@@ -49,18 +49,18 @@ class SpriteBufferContainer {
    *  @param const int32_t - width for the generated Texture/Surface
    *  @param const int32_t - height for the generated Texture/Surface
    *  @param int32_t &     - out unique container Id (used to determine
-   *                                       unique _spriteBufferVec index)
+   *                                       unique _fboVec index)
    * */
-  void createSpriteBuffer(const int32_t width, const int32_t height,
-                          int32_t& outContainerId);
+  void createFbo(const int32_t width, const int32_t height,
+                 int32_t& outContainerId);
 
   /** @brief used to deallocate memory for selected sprite buffer's
    *                                                      surface/texture
    *
    *  @param const int32_t - unique container Id
-   *                    (used to determine unique _spriteBufferVec index)
+   *                    (used to determine unique _fboVec index)
    * */
-  void destroySpriteBuffer(const int32_t uniqueContainerId);
+  void destroyFbo(const int32_t uniqueContainerId);
 
   /** @brief used to attach a newly generated SDL_Texture by the renderer
    *         to the SpriteBufferContainer and increase the used GPU VRAM
@@ -70,9 +70,8 @@ class SpriteBufferContainer {
    *  @param const int32_t - created height of the SDL_Texture
    *  @param SDL_Texture * - pointer to memory of the created SDL_Texture
    **/
-  void attachSpriteBuffer(const int32_t containerId, const int32_t createdWidth,
-                          const int32_t createdHeight,
-                          SDL_Texture* createdTexture);
+  void attachFbo(const int32_t containerId, const int32_t createdWidth,
+                 const int32_t createdHeight, SDL_Texture* createdTexture);
 
   /** @brief used to acquire previously stored pre-created SDL_Texture
    *                                       for a given unique resource ID
@@ -81,7 +80,7 @@ class SpriteBufferContainer {
    *  @param const int32_t  - unique text resource ID
    *  @param SDL_Texture *& - pre-created SDL_Texture
    * */
-  void getSpriteBufferTexture(const int32_t uniqueId, SDL_Texture*& outTexture);
+  void getFboTexture(const int32_t uniqueId, SDL_Texture*& outTexture);
 
   /** @brief used to detach(free the slot in the container) for
    *         successfully destroyed SDL_Surface/SDL_Texture by the
@@ -89,10 +88,9 @@ class SpriteBufferContainer {
    *
    *  @param const int32_t - uniqueContainerId
    **/
-  void detachSpriteBuffer(const int32_t containerId);
+  void detachFbo(const int32_t containerId);
 
-  /** @brief used to acquire the occupied GPU VRAM from
-   *                                            the SpriteBufferContainer
+  /** @brief used to acquire the occupied GPU VRAM from the FboContainer
    *
    *  @return uint64_t - occupied VRAM in bytes
    * */
@@ -118,16 +116,16 @@ class SpriteBufferContainer {
    *        search for a free position (nullptr value).
    **/
   //_textsVec holds all Texts
-  std::vector<SDL_Texture*> _spriteBuffers;
+  std::vector<SDL_Texture*> _textures;
 
   // holds holds many bytes the current text occupied in GPU VRAM
-  std::vector<uint64_t> _sbMemoryUsage;
+  std::vector<uint64_t> _fboMemoryUsage;
 
   // holds the currently occupied GPU VRAM in bytes
   uint64_t _gpuMemoryUsage;
 
-  // holds the _spriteBuffers.size() count
+  // holds the _textures.size() count
   int32_t _sbSize;
 };
 
-#endif /* SDL_UTILS_SPRITEBUFFERCONTAINER_H_ */
+#endif /* SDL_UTILS_FBOCONTAINER_H_ */

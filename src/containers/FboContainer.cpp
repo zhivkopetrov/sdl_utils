@@ -1,5 +1,5 @@
 // Corresponding header
-#include "sdl_utils/containers/SpriteBufferContainer.h"
+#include "sdl_utils/containers/FboContainer.h"
 
 // C system headers
 
@@ -21,37 +21,36 @@
 
 #define RGBA_BYTE_SIZE 4
 
-SpriteBufferContainer::SpriteBufferContainer()
+FboContainer::FboContainer()
   : _renderer(nullptr), _gpuMemoryUsage(0), _sbSize(0) {
 }
 
-int32_t SpriteBufferContainer::init(const int32_t maxRuntimeSpriteBuffers) {
+int32_t FboContainer::init(const int32_t maxRuntimeSpriteBuffers) {
   _sbSize = maxRuntimeSpriteBuffers;
-  _spriteBuffers.resize(maxRuntimeSpriteBuffers, nullptr);
-  _sbMemoryUsage.resize(maxRuntimeSpriteBuffers, 0);
+  _textures.resize(maxRuntimeSpriteBuffers, nullptr);
+  _fboMemoryUsage.resize(maxRuntimeSpriteBuffers, 0);
   return SUCCESS;
 }
 
-void SpriteBufferContainer::deinit() {
+void FboContainer::deinit() {
   for (int32_t i = 0; i < _sbSize; ++i) {
     // free index found
-    if ((nullptr != _spriteBuffers[i]) &&
-        (RESERVE_SLOT_VALUE != _spriteBuffers[i])) {
-      Texture::freeTexture(_spriteBuffers[i]);
+    if ((nullptr != _textures[i]) &&
+        (RESERVE_SLOT_VALUE != _textures[i])) {
+      Texture::freeTexture(_textures[i]);
     }
   }
 
-  _sbMemoryUsage.clear();
+  _fboMemoryUsage.clear();
 }
 
-void SpriteBufferContainer::createSpriteBuffer(const int32_t width,
-                                               const int32_t height,
-                                               int32_t &outContainerId) {
+void FboContainer::createFbo(const int32_t width, const int32_t height,
+                             int32_t &outContainerId) {
   int32_t chosenIndex = INIT_INT32_VALUE;
 
   for (int32_t i = 0; i < _sbSize; ++i) {
     // free index found, occupy it
-    if (nullptr == _spriteBuffers[i]) {
+    if (nullptr == _textures[i]) {
       chosenIndex = i;
       break;
     }
@@ -67,7 +66,7 @@ void SpriteBufferContainer::createSpriteBuffer(const int32_t width,
   }
 #endif //!NDEBUG
 
-  _spriteBuffers[chosenIndex] = RESERVE_SLOT_VALUE;
+  _textures[chosenIndex] = RESERVE_SLOT_VALUE;
   outContainerId = chosenIndex;
 
   uint8_t data[sizeof(width) + sizeof(height) + sizeof(chosenIndex)];
@@ -85,9 +84,8 @@ void SpriteBufferContainer::createSpriteBuffer(const int32_t width,
   _renderer->addRendererCmd_UT(RendererCmd::CREATE_FBO, data, populatedBytes);
 }
 
-void SpriteBufferContainer::destroySpriteBuffer(
-    const int32_t uniqueContainerId) {
-  // textUniqueId has default value -> is not set at all
+void FboContainer::destroyFbo(const int32_t uniqueContainerId) {
+  // uniqueContainerId has default value -> is not set at all
   if (-1 == uniqueContainerId) {
     LOGERR("Warning, trying to destroy sprite buffer with non-existent "
            "uniqueContainerId: %d", uniqueContainerId);
@@ -108,38 +106,38 @@ void SpriteBufferContainer::destroySpriteBuffer(
       reinterpret_cast<const uint8_t *>(&uniqueContainerId),
       sizeof(uniqueContainerId));
 }
-void SpriteBufferContainer::attachSpriteBuffer(const int32_t containerId,
-                                               const int32_t createdWidth,
-                                               const int32_t createdHeight,
-                                               SDL_Texture *createdTexture)
+void FboContainer::attachFbo(const int32_t containerId,
+                             const int32_t createdWidth,
+                             const int32_t createdHeight,
+                             SDL_Texture *createdTexture)
 {
-  _spriteBuffers[containerId] = createdTexture;
+  _textures[containerId] = createdTexture;
 
   // calculate how much GPU VRAM will be used
-  _sbMemoryUsage[containerId] =
+  _fboMemoryUsage[containerId] =
       static_cast<uint64_t>((createdWidth * createdHeight * RGBA_BYTE_SIZE));
 
   // increase the occupied GPU memory usage counter for the new texture
-  _gpuMemoryUsage += _sbMemoryUsage[containerId];
+  _gpuMemoryUsage += _fboMemoryUsage[containerId];
 }
 
-void SpriteBufferContainer::getSpriteBufferTexture(const int32_t uniqueId,
-                                                   SDL_Texture *&outTexture)
+void FboContainer::getFboTexture(const int32_t uniqueId,
+                                 SDL_Texture *&outTexture)
 {
   // sanity check - check if such index exists
   if (uniqueId < _sbSize) {
-    outTexture = _spriteBuffers[uniqueId];
+    outTexture = _textures[uniqueId];
   } else {
     LOGERR("Warning, trying to destroy sprite buffer with non-existent "
            "uniqueContainerId: %d", uniqueId);
   }
 }
 
-void SpriteBufferContainer::detachSpriteBuffer(const int32_t containerId) {
-  _spriteBuffers[containerId] = nullptr;
+void FboContainer::detachFbo(const int32_t containerId) {
+  _textures[containerId] = nullptr;
 
   // decrease the occupied GPU memory usage counter for the old texture
-  _gpuMemoryUsage -= _sbMemoryUsage[containerId];
+  _gpuMemoryUsage -= _fboMemoryUsage[containerId];
 
-  _sbMemoryUsage[containerId] = 0;
+  _fboMemoryUsage[containerId] = 0;
 }
