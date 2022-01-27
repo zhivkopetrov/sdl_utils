@@ -17,7 +17,7 @@
 
 SDL_Renderer *Texture::_renderer = nullptr;
 
-Rectangle *Texture::_monitorRect = nullptr;
+Rectangle Texture::_monitorRect;
 
 void Texture::freeSurface(SDL_Surface *&surface) {
   if (surface) { // sanity check
@@ -33,8 +33,10 @@ void Texture::freeTexture(SDL_Texture *&texture) {
   }
 }
 
-void Texture::setMonitorRect(Rectangle &monitorRect) {
-  _monitorRect = &monitorRect;
+void Texture::setMonitorRect(const Rectangle &monitorRect) {
+  //the X and Y should remain 0
+  _monitorRect.w = monitorRect.w;
+  _monitorRect.h = monitorRect.h;
 }
 
 int32_t Texture::getTextDimensions(const char *text, TTF_Font *font,
@@ -355,7 +357,7 @@ void Texture::draw(SDL_Texture *texture, const DrawParams &drawParams)
   // monitor rectangle
   if (rendererClipped) {
     if (SUCCESS != SDL_RenderSetClipRect(
-            _renderer, reinterpret_cast<const SDL_Rect *>(_monitorRect))) {
+            _renderer, reinterpret_cast<const SDL_Rect *>(&_monitorRect))) {
       LOGERR("Error in SDL_RenderSetClipRect(), SDL Error: %s", SDL_GetError());
 
       return;

@@ -22,8 +22,6 @@ struct LoadingScreenConfig {
   std::string backgroundImagePath;
   std::string progressBarOnImagePath;
   std::string progressBarOffImagePath;
-  int32_t monitorWidth = 0;
-  int32_t monitorHeight = 0;
   LoadingScreenUsage loadingScreenUsage = LoadingScreenUsage::DISABLED;
 };
 

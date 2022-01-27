@@ -15,6 +15,7 @@
 // Own components headers
 #include "sdl_utils/drawing/defines/RendererDefines.h"
 #include "sdl_utils/drawing/Texture.h"
+#include "sdl_utils/drawing/LoadingScreen.h"
 
 MonitorWindow::~MonitorWindow() {
   deinit();
@@ -50,6 +51,7 @@ int32_t MonitorWindow::init(const MonitorWindowConfig& cfg) {
   SDL_GetWindowPosition(_window, &_windowRect.x, &_windowRect.y);
 
   Texture::setMonitorRect(_windowRect);
+  LoadingScreen::setMonitorRect(_windowRect);
 
   if (!cfg.iconPath.empty()) {
     if (SUCCESS != loadWindowIcon(cfg.iconPath)) {

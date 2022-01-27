@@ -52,9 +52,9 @@ class Texture {
    *         is performed, the clip could be reset back to
    *                                  normal(monitor rectangle) boundary
    *
-   *  @param Rectangle & - the monitor window rectangle
+   *  @param const Rectangle & - the monitor window rectangle
    *  */
-  static void setMonitorRect(Rectangle& monitorRect);
+  static void setMonitorRect(const Rectangle& monitorRect);
 
   /** @brief used acquire the TTF text dimension without the need of the
    *         text to actually be renderer.
@@ -217,7 +217,7 @@ class Texture {
    * */
   static SDL_Renderer* _renderer;
 
-  static Rectangle* _monitorRect;
+  static Rectangle _monitorRect;
 };
 
 #endif /* SDL_UTILS_TEXTURE_H_ */

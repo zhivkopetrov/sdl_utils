@@ -5,11 +5,11 @@
 
 // C++ system headers
 #include <cstdint>
-#include <string>
 
 // Other libraries headers
 
 // Own components headers
+#include "utils/drawing/Rectangle.h"
 
 // Forward declarations
 struct SDL_Texture;
@@ -51,6 +51,14 @@ class LoadingScreen {
    * */
   static void setRenderer(SDL_Renderer* renderer);
 
+  /** @brief used to set monitor rectangle -> so when renderer clipping
+   *         is performed, the clip could be reset back to
+   *                                  normal(monitor rectangle) boundary
+   *
+   *  @param const Rectangle & - the monitor window rectangle
+   *  */
+  static void setMonitorRect(const Rectangle& monitorRect);
+
  private:
   /** @brief used to visualise on the screen
    *                                    the loading screen + progress bar
@@ -87,8 +95,7 @@ class LoadingScreen {
    * */
   static int32_t _lastLoadedPercent;
 
-  static int32_t _monitorWidth;
-  static int32_t _monitorHeight;
+  static Rectangle _monitorRect;
 
   static bool _isUsed;
 };

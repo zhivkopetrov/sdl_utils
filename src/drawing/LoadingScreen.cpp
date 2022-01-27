@@ -31,8 +31,7 @@ int32_t LoadingScreen::_currLoadedFileSize = 0;
 
 int32_t LoadingScreen::_lastLoadedPercent = 0;
 
-int32_t LoadingScreen::_monitorWidth = 0;
-int32_t LoadingScreen::_monitorHeight = 0;
+Rectangle LoadingScreen::_monitorRect;
 
 bool LoadingScreen::_isUsed = false;
 
@@ -47,8 +46,6 @@ int32_t LoadingScreen::init(const LoadingScreenConfig &cfg,
   }
 
   _totalFileSize = totalFileSize;
-  _monitorWidth = cfg.monitorWidth;
-  _monitorHeight = cfg.monitorHeight;
   _isUsed = true;
 
   SDL_Surface* surface = nullptr;
@@ -128,6 +125,12 @@ void LoadingScreen::onNewResourceLoaded(const int32_t loadedSize) {
   }
 }
 
+void LoadingScreen::setMonitorRect(const Rectangle& monitorRect) {
+  //the X and Y should remain 0
+  _monitorRect.w = monitorRect.w;
+  _monitorRect.h = monitorRect.h;
+}
+
 void LoadingScreen::draw(const int32_t percentLoaded) {
   if (!_isUsed) {
     return;
@@ -140,15 +143,18 @@ void LoadingScreen::draw(const int32_t percentLoaded) {
     return;
   }
 
+
+
 #if USE_LOADING_BACKGROUND_IMAGE
-  const SDL_Rect backgroundRenderQuad { 0, 0, _monitorWidth, _monitorHeight };
+  const SDL_Rect* backgroundRenderQuad =
+      reinterpret_cast<const SDL_Rect*>(&_monitorRect);
 
   // Render to screen
   if (SUCCESS !=
       SDL_RenderCopyEx(_renderer,           // the hardware renderer
                        _loadingBackground,  // source texture
                        nullptr,  // source rectangle (nullptr for whole rect)
-                       &backgroundRenderQuad,  // destination rectangle
+                       backgroundRenderQuad,   // destination rectangle
                        0.0,                    // rotation angles
                        nullptr,                // rotation center
                        SDL_FLIP_NONE)) {       // flip mode
