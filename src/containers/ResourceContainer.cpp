@@ -30,52 +30,6 @@
  *                                 surface load from the file system
  *  @param resourceBinLocation   - absolute location for the resources bin
  *  */
-static void loadSurfacesFromFileSystemAsyncUntilShutdown(
-    ThreadSafeQueue<ResourceData> *resQueue,
-    ThreadSafeQueue<std::pair<uint64_t, SDL_Surface *>> *outSurfQueue,
-    const std::string& resourceBinLocation) {
-  ResourceData resData;
-  std::string widgetPath;
-  SDL_Surface *surface = nullptr;
-
-  // NOTE: the while loop can be broken with inner ThreadSafeQueue signal
-  //      for shutdown
-  while (resQueue->waitAndPop(resData)) {
-    widgetPath = resourceBinLocation;
-    widgetPath.append(resData.header.path);
-    if (SUCCESS != Texture::loadSurfaceFromFile(widgetPath.c_str(), surface)) {
-      LOGERR(
-          "Warning, error in loadSurfaceFromFile() for file %s. "
-          "Terminating other resourceLoading",
-          resData.header.path.c_str());
-
-      return;
-    }
-
-    // push the newly generated SDL_Surface to the ThreadSafe Surface Queue
-    outSurfQueue->push(std::make_pair(resData.header.hashValue, surface));
-
-    // reset the variable so it can be reused
-    surface = nullptr;
-  }
-}
-
-/** @brief used to load SDL_Surface's from file system async
- *
- *  @param resQueue              - the resource Data queue (input)
- *  @param outSurfQueue          - the loaded surfaces queue (output)
- *  @param threadsLeftToComplete - number of threads still working on the async
- *                                 surface load from the file system
- *  @param resourceBinLocation   - absolute location for the resources bin
- *
- *  NOTE: this is the same method as ::loadSurfacesFromFileSystemAsync()
- *        but when resQueue is empty the function will exit
- *        so it's resources can be collected.
- *
- *        This is needed, because on ::init() we can use the
- *        secondary(update) thread to all work on loading images
- *                                          with Texture::loadSurfaceFromFile()
- *  */
 static void loadSurfacesFromFileSystemAsync(
     ThreadSafeQueue<ResourceData> *resQueue,
     ThreadSafeQueue<std::pair<uint64_t, SDL_Surface *>> *outSurfQueue,
@@ -84,7 +38,15 @@ static void loadSurfacesFromFileSystemAsync(
   std::string widgetPath;
   SDL_Surface *surface = nullptr;
 
-  while (resQueue->tryPop(resData)) {
+  while (true) {
+    const auto [isShutdowned, hasTimedOut] = resQueue->waitAndPop(resData);
+    if (isShutdowned) {
+      return;
+    }
+    if (hasTimedOut) {
+      continue;
+    }
+
     widgetPath = resourceBinLocation;
     widgetPath.append(resData.header.path);
     if (SUCCESS != Texture::loadSurfaceFromFile(widgetPath.c_str(), surface)) {
@@ -93,6 +55,8 @@ static void loadSurfacesFromFileSystemAsync(
           "Terminating other resourceLoading",
           resData.header.path.c_str());
 
+      LOGR("Failure in loading surface from file");
+      resQueue->shutdown();
       return;
     }
 
@@ -255,10 +219,10 @@ void ResourceContainer::loadAllStoredResources(
 
   /** If threads are <= 1 no need to spawn second thread,
    *  because there will be a performance
-   *  lost from the constant threads context switches
+   *  loss from the constant threads context switches
    * */
   /* Generate THREAD_NUM - 1 worker CPU threads and leave the main
-   * thread to operate ot GPU + CPU operations
+   * thread to operate on GPU + CPU operations
    * */
   const uint32_t WORKER_THREAD_NUM = hardwareThreadNumber - 1;
 
@@ -642,19 +606,13 @@ void ResourceContainer::loadAllStoredResourcesMultiCore(
 
   //-1, because we will used the secondary(update) thread only for
   //                                                           ::init() stage
-  for (uint32_t i = 0; i < workerThreadsNum - 1; ++i) {
+  for (uint32_t i = 0; i < workerThreadsNum; ++i) {
     // spawn the worker threads
-    _workerThreadPool.emplace_back(loadSurfacesFromFileSystemAsyncUntilShutdown,
+    _workerThreadPool.emplace_back(loadSurfacesFromFileSystemAsync,
                                    _resDataThreadQueue,
                                    _loadedSurfacesThreadQueue,
                                    std::ref(_resourcesFolderLocation));
   }
-
-  // spawn the secondary(update) thread only while in ::init() stage
-  _workerThreadPool.emplace_back(loadSurfacesFromFileSystemAsync,
-                                 _resDataThreadQueue,
-                                 _loadedSurfacesThreadQueue,
-                                 std::ref(_resourcesFolderLocation));
 
   // temporary variables used for calculations
   SDL_Texture *newTexture = nullptr;
@@ -666,12 +624,14 @@ void ResourceContainer::loadAllStoredResourcesMultiCore(
     /** Block main thread and wait resources to be pushed
      * into the _loadedSurfacesThreadQueue
      * */
-    if (!_loadedSurfacesThreadQueue->waitAndPop(currResSurface)) {
-      LOGERR(
-          "Warning, the pushed number of ResourceData structs does"
-          " not match the outputed number of SDL_Surfaces!");
-
-      break;
+    const auto [isShutdowned, hasTimedOut] =
+        _loadedSurfacesThreadQueue->waitAndPop(currResSurface);
+    if (isShutdowned) {
+      LOG("loadedSurfacesThreadQueue shutdowned");
+      return;
+    }
+    if (hasTimedOut) {
+      continue;
     }
 
     currSurfaceWidth = currResSurface.second->w;
@@ -703,14 +663,5 @@ void ResourceContainer::loadAllStoredResourcesMultiCore(
     }
 
     --itemsToPop;
-  }
-
-  if (_workerThreadPool.back().joinable())  // sanity check
-  {
-    // collect thread resources
-    _workerThreadPool.back().join();
-
-    // remove the slot - it is no longer needed
-    _workerThreadPool.pop_back();
   }
 }

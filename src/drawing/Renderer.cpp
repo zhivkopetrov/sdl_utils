@@ -559,18 +559,19 @@ void Renderer::loadTextureSingle_RT() {
       /** Block rendering thread and wait resources to be pushed
        * into the _loadedSurfacesThreadQueue
        * */
-      if (!surfaceQueue->waitAndPop(currResSurface)) {
-        LOGERR(
-            "Warning, the pushed number of ResourceData structs does"
-            " not match the outputed number of SDL_Surfaces!");
-
-        break;
+      const auto [isShutdowned, hasTimedOut] =
+          surfaceQueue->waitAndPop(currResSurface);
+      if (isShutdowned) {
+        LOG("surfaceQueue shutdowned");
+        return;
+      }
+      if (hasTimedOut) {
+        continue;
       }
 
       if (rsrcId == currResSurface.first) {
         surface = currResSurface.second;
-
-        break;  // correct rsrcId found -> stop the search
+        break; // correct rsrcId found -> stop the search
       } else {
         /** The popped rsrcId does not follow the request order of the
          * resource -> return it back to the surfaceQueue and extract
@@ -596,11 +597,8 @@ void Renderer::loadTextureSingle_RT() {
   } else  // single thread approach
   {
     if (SUCCESS != _containers->loadSurface(rsrcId, surface)) {
-      LOGERR(
-          "Error, gRsrcMgrBase->loadSurface() failed for rsrcId: "
-          "%#16lX",
-          rsrcId);
-
+      LOGERR("Error, gRsrcMgrBase->loadSurface() failed for rsrcId: "
+             "%#16lX", rsrcId);
       return;
     }
   }
@@ -613,7 +611,6 @@ void Renderer::loadTextureSingle_RT() {
   if (SUCCESS != Texture::loadTextureFromSurface(surface, texture)) {
     LOGERR("Error in Texture::loadTextureFromSurface() for rsrcId: %#16lX",
            rsrcId);
-
     return;
   }
 
@@ -661,12 +658,14 @@ void Renderer::loadTextureMultiple_RT() {
       /** Block rendering thread and wait resources to be pushed
        * into the _loadedSurfacesThreadQueue
        * */
-      if (!surfaceQueue->waitAndPop(currResSurface)) {
-        LOGERR(
-            "Warning, the pushed number of ResourceData structs does"
-            " not match the outputed number of SDL_Surfaces!");
-
-        break;
+      const auto [isShutdowned, hasTimedOut] =
+          surfaceQueue->waitAndPop(currResSurface);
+      if (isShutdowned) {
+        LOG("surfaceQueue shutdowned");
+        return;
+      }
+      if (hasTimedOut) {
+        continue;
       }
 
       auto it = std::find(rsrcIds.begin(), rsrcIds.end(), currResSurface.first);
