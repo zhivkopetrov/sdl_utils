@@ -34,7 +34,6 @@ struct Rectangle;
 
 class TouchEntity {
  public:
-  TouchEntity();
   virtual ~TouchEntity() = default;
 
   /** @brief used to check whether event is inside or not
@@ -82,10 +81,10 @@ class TouchEntity {
   /** Points to button's event rectangle in order to check whether
    *  InputEvent is inside or not.
    * */
-  const Rectangle* touchEntityEventRect;
+  const Rectangle* touchEntityEventRect = nullptr;
 
  protected:
-  bool _isInputUnlocked;
+  bool _isInputUnlocked = true;
 };
 
 #endif /* SDL_UTILS_TOUCHENTITY_H_ */

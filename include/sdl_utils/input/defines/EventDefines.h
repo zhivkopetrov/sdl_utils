@@ -10,6 +10,8 @@
 
 // Own components headers
 
+// Forward Declarations
+
 #define KMODE_CTRL (Keyboard::KMODE_LCTRL | Keyboard::KMODE_RCTRL)
 #define KMODE_SHIFT (Keyboard::KMODE_LSHIFT | Keyboard::KMODE_RSHIFT)
 #define KMODE_ALT (Keyboard::KMODE_LALT | Keyboard::KMODE_RALT)
