@@ -8,7 +8,10 @@ project(
     VERSION 1.0.0
 )
 
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake_helpers/find_modules)
+list(
+    APPEND CMAKE_MODULE_PATH
+    ${CMAKE_CURRENT_SOURCE_DIR}/cmake_helpers/find_modules
+)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake_helpers/helpers.cmake)
 
 find_package(resource_utils REQUIRED)
@@ -74,7 +77,7 @@ add_library(
         ${_SRC_DIR}/SDLLoader.cpp
 )
 
-add_library(sdl_utils::sdl_utils ALIAS sdl_utils)
+add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
 target_include_directories(
     ${PROJECT_NAME} 
@@ -113,7 +116,10 @@ set_target_visibility(${PROJECT_NAME})
 install_and_export_target(${PROJECT_NAME} ${_INC_FOLDER_NAME})
 
 if(NOT DISABLE_ROS_TOOLING)
-    enable_ros_tooling_for_target(${PROJECT_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/package.xml)
+    enable_ros_tooling_for_target(
+        ${PROJECT_NAME}
+        ${CMAKE_CURRENT_SOURCE_DIR}/package.xml
+    )
 endif()
 
 #invoke include-what-you-use (if it's enabled) for the current project

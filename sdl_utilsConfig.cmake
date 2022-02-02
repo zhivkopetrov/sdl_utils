@@ -10,5 +10,10 @@ endif()
 
 # This is for catkin compatibility.
 set(sdl_utils_LIBRARIES sdl_utils::sdl_utils)
-get_target_property(sdl_utils_INCLUDE_DIRS sdl_utils::sdl_utils INTERFACE_INCLUDE_DIRECTORIES)
+
+get_target_property(
+    sdl_utils_INCLUDE_DIRS
+    sdl_utils::sdl_utils
+    INTERFACE_INCLUDE_DIRECTORIES
+)
 
