@@ -7,6 +7,8 @@
 #include <cstdint>
 
 // Other libraries headers
+#include "utils/class/NonCopyable.h"
+#include "utils/class/NonMoveable.h"
 #include "utils/drawing/Rectangle.h"
 
 // Own components headers
@@ -15,18 +17,9 @@
 // Forward declarations
 struct SDL_Window;
 
-class MonitorWindow {
+class MonitorWindow : public NonCopyable, public NonMoveable {
  public:
   MonitorWindow() = default;
-
-  // forbid the copy and move constructors
-  MonitorWindow(const MonitorWindow& other) = delete;
-  MonitorWindow(MonitorWindow&& other) = delete;
-
-  // forbid the copy and move assignment operators
-  MonitorWindow& operator=(const MonitorWindow& other) = delete;
-  MonitorWindow& operator=(MonitorWindow&& other) = delete;
-
   ~MonitorWindow();
 
   int32_t init(const MonitorWindowConfig& cfg);

@@ -33,16 +33,7 @@ typedef struct Mix_Chunk Mix_Chunk;
 
 class SoundMixer {
  public:
-  // forbid the default constructor and destructor
   SoundMixer() = delete;
-
-  // forbid the copy and move constructors
-  SoundMixer(const SoundMixer& other) = delete;
-  SoundMixer(SoundMixer&& other) = delete;
-
-  // forbid the copy and move assignment operators
-  SoundMixer& operator=(const SoundMixer& other) = delete;
-  SoundMixer& operator=(SoundMixer&& other) = delete;
 
   //=================== START Common Sound functions =====================
 

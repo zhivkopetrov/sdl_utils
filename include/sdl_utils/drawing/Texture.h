@@ -28,14 +28,6 @@ class Texture {
   // forbid the default constructor and destructor
   Texture() = delete;
 
-  // forbid the copy and move constructors
-  Texture(const Texture& other) = delete;
-  Texture(Texture&& other) = delete;
-
-  // forbid the copy and move assignment operators
-  Texture& operator=(const Texture& other) = delete;
-  Texture& operator=(Texture&& other) = delete;
-
   /** @brief used to free SDL_Surface
    *
    *  @param SDL_Surface *& the surface to be freed

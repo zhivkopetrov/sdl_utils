@@ -9,6 +9,8 @@
 #include <mutex>
 
 // Other libraries headers
+#include "utils/class/NonCopyable.h"
+#include "utils/class/NonMoveable.h"
 
 // Own components headers
 #include "sdl_utils/drawing/defines/RendererDefines.h"
@@ -21,17 +23,9 @@ struct SDL_Window;
 struct SDL_Surface;
 struct SDL_Renderer;
 
-class Renderer {
+class Renderer : public NonCopyable, public NonMoveable {
  public:
   Renderer();
-
-  // forbid the copy and move constructors
-  Renderer(const Renderer& other) = delete;
-  Renderer(Renderer&& other) = delete;
-
-  // forbid the copy and move assignment operators
-  Renderer& operator=(const Renderer& other) = delete;
-  Renderer& operator=(Renderer&& other) = delete;
 
   /** @brief used to initialise the actual SDL_Renderer in the
    *                                          renderer(secondary) thread.
