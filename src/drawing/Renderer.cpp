@@ -116,7 +116,7 @@ int32_t Renderer::init(const RendererConfig& cfg) {
   if (!SDL_RenderTargetSupported(_sdlRenderer)) {
     LOGERR(
         "Warning, Render Target change is not supported on this "
-        "platform. This will result in non-working SpriteBuffers.");
+        "platform. This will result in non-working FBOs.");
   }
 
   return SUCCESS;
