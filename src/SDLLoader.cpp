@@ -1,5 +1,3 @@
-#define TRACING_ENABLED 1
-
 // Corresponding header
 #include "sdl_utils/SDLLoader.h"
 

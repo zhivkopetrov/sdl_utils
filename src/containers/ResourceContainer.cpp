@@ -166,7 +166,7 @@ void ResourceContainer::storeRsrcData(ResourceData &resourceData) {
 void ResourceContainer::loadAllStoredResources(
     const uint32_t maxResourceLoadingThreads) {
   if (1 == maxResourceLoadingThreads) {
-    LOGG("Starting Single Core resource loading ");
+    LOG("Starting Single Core resource loading ");
     loadAllStoredResourcesSingleCore();
     return;
   }
@@ -213,7 +213,7 @@ void ResourceContainer::loadAllStoredResources(
 
   if (1 == hardwareThreadNumber) {
     LOGR("Multi Threading is not supported on this hardware. ");
-    LOGG("Starting Single Core resource loading ");
+    LOG("Starting Single Core resource loading ");
     loadAllStoredResourcesSingleCore();
   }
 
@@ -226,7 +226,7 @@ void ResourceContainer::loadAllStoredResources(
    * */
   const uint32_t WORKER_THREAD_NUM = hardwareThreadNumber - 1;
 
-  LOGG("Starting Multi Core resource loading on %u threads",
+  LOG("Starting Multi Core resource loading on %u threads",
        hardwareThreadNumber);
 
   if (WORKER_THREAD_NUM > 1)  // for the lifetime of the program
