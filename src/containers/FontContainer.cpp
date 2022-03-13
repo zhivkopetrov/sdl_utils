@@ -1,26 +1,23 @@
 // Corresponding header
 #include "sdl_utils/containers/FontContainer.h"
 
-// C system headers
-
-// C++ system headers
+// System headers
 
 // Other libraries headers
 #include <SDL_ttf.h>
-#include "utils/ErrorCode.h"
 #include "utils/Log.h"
 
 // Own components headers
 #include "sdl_utils/drawing/LoadingScreen.h"
 
 
-int32_t FontContainer::init(const std::string &resourcesFolderLocation,
-                            const uint64_t fontsCount) {
+ErrorCode FontContainer::init(const std::string &resourcesFolderLocation,
+                              const uint64_t fontsCount) {
   _resourcesFolderLocation = resourcesFolderLocation;
   _fontsDataMap.reserve(fontsCount);
   _fontsMap.reserve(fontsCount);
 
-  return SUCCESS;
+  return ErrorCode::SUCCESS;
 }
 
 void FontContainer::deinit() {
@@ -45,7 +42,8 @@ void FontContainer::loadAllStoredFonts() {
     widgetPath = _resourcesFolderLocation;
     widgetPath.append(fontWidget.header.path);
 
-    if (SUCCESS != loadTtfFont(widgetPath.c_str(), fontWidget.fontSize, font)) {
+    if (ErrorCode::SUCCESS !=
+        loadTtfFont(widgetPath.c_str(), fontWidget.fontSize, font)) {
       LOGERR("Failed to load %s font! SDL_ttf Error: %s",
           widgetPath.c_str(), TTF_GetError());
     } else {
@@ -61,14 +59,14 @@ void FontContainer::loadAllStoredFonts() {
   }
 }
 
-int32_t FontContainer::loadTtfFont(const char* path, const int32_t fontSize,
+ErrorCode FontContainer::loadTtfFont(const char* path, const int32_t fontSize,
                                    TTF_Font*& outFont) {
   // Open the font
   outFont = TTF_OpenFont(path, fontSize);
   if (nullptr == outFont) {
     LOGERR("Failed to load %s font! SDL_ttf Error: %s", path, TTF_GetError());
-    return FAILURE;
+    return ErrorCode::FAILURE;
   }
 
-  return SUCCESS;
+  return ErrorCode::SUCCESS;
 }

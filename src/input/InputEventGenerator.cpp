@@ -1,29 +1,26 @@
 // Corresponding header
 #include "sdl_utils/input/InputEventGenerator.h"
 
-// C system headers
-
-// C++ system headers
+// System headers
 
 // Other libraries headers
 #include <SDL_events.h>
 #include "utils/drawing/Rectangle.h"
-#include "utils/ErrorCode.h"
 #include "utils/Log.h"
 
 // Own components headers
 #include "sdl_utils/input/defines/EventDefines.h"
 #include "sdl_utils/input/TouchEntity.h"
 
-int32_t InputEventGenerator::init() {
+ErrorCode InputEventGenerator::init() {
   _sdlEvent = new SDL_Event;
 
   if (nullptr == _sdlEvent) {
     LOGERR("Error, bad alloc for SDL_Event");
-    return FAILURE;
+    return ErrorCode::FAILURE;
   }
 
-  return SUCCESS;
+  return ErrorCode::SUCCESS;
 }
 
 void InputEventGenerator::deinit() {

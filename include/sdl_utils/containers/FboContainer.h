@@ -1,13 +1,12 @@
 #ifndef SDL_UTILS_FBOCONTAINER_H_
 #define SDL_UTILS_FBOCONTAINER_H_
 
-// C system headers
-
-// C++ system headers
+// System headers
 #include <cstdint>
 #include <vector>
 
 // Other libraries headers
+#include "utils/ErrorCode.h"
 
 // Own components headers
 #include "sdl_utils/drawing/defines/RendererDefines.h"
@@ -26,9 +25,9 @@ class FboContainer {
    *
    *  @param const int32_t - max runtime Sprite Buffers
    *
-   *  @return int32_t      - error code
+   *  @return ErrorCode    - error code
    * */
-  int32_t init(const int32_t maxRuntimeSpriteBuffers);
+  ErrorCode init(const int32_t maxRuntimeSpriteBuffers);
 
   /** @brief used to deinitialize (free memory occupied by Text container)
    * */

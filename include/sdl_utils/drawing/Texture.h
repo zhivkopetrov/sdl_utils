@@ -1,15 +1,14 @@
 #ifndef SDL_UTILS_TEXTURE_H_
 #define SDL_UTILS_TEXTURE_H_
 
-// C system headers
-
-// C++ system headers
+// System headers
 #include <cstdint>
 
 // Other libraries headers
 
 // Own components headers
 #include "sdl_utils/drawing/defines/RendererDefines.h"
+#include "utils/ErrorCode.h"
 
 // Forward declarations
 class Color;
@@ -60,21 +59,21 @@ class Texture {
    *  @param int32_t &    - width of the text if it would have been rendered
    *  @param int32_t &    - height of the if it would have been rendered
    *
-   *  @returns int32_t    - error code
+   *  @returns ErrorCode  - error code
    * */
-  static int32_t getTextDimensions(const char* text, TTF_Font* font,
-                                   int32_t& outTextWidth,
-                                   int32_t& outTextHeight);
+  static ErrorCode getTextDimensions(const char* text, TTF_Font* font,
+                                     int32_t& outTextWidth,
+                                     int32_t& outTextHeight);
 
   /** @brief used to load SDL_Surface from file on the hard drive
    *
    *  @param const char *   - absolute path to file
    *  @param SDL_Surface *& - dynamically created SDL_Surface
    *
-   *  @returns int32_t      - error code
+   *  @returns ErrorCode    - error code
    * */
-  static int32_t loadSurfaceFromFile(const char* path,
-                                     SDL_Surface*& outSurface);
+  static ErrorCode loadSurfaceFromFile(const char* path,
+                                       SDL_Surface*& outSurface);
 
   /** @brief used to create SDL_Texture from provided SDL_Surface
    *         NOTE: if SDL_Texture is successful - the input SDL_Surface
@@ -83,10 +82,10 @@ class Texture {
    *  @param SDL_Surface *& - input SDL_Surface
    *  @param SDL_Texture *& - dynamically created SDL_Texture
    *
-   *  @returns int32_t     - error code
+   *  @returns int32_t      - error code
    * */
-  static int32_t loadTextureFromSurface(SDL_Surface*& surface,
-                                        SDL_Texture*& outTexture);
+  static ErrorCode loadTextureFromSurface(SDL_Surface*& surface,
+                                          SDL_Texture*& outTexture);
 
   /** @brief used to create a 32-bit surface with the bytes of each pixel
    *         in R,G,B,A order, as expected by OpenGL for textures
@@ -102,10 +101,10 @@ class Texture {
    *                  done dealing with the memory. Otherwise memory leak
    *                  will occur.
    *
-   *  @return int32_t       - error code
+   *  @return ErrorCode     - error code
    * */
-  static int32_t createEmptySurface(const int32_t width, const int32_t height,
-                                    SDL_Surface*& outSurface);
+  static ErrorCode createEmptySurface(const int32_t width, const int32_t height,
+                                      SDL_Surface*& outSurface);
 
   /** @brief used to clear (wipe out) current renderer target with
    *         currently set draw color for the main renderer
@@ -114,9 +113,9 @@ class Texture {
    *
    *  @param const Color & - the clear color for the hardware renderer
    *
-   *  @return int32_t - error code
+   *  @return ErrorCode - error code
    * */
-  static int32_t clearCurrentRendererTarget(const Color& clearColor);
+  static ErrorCode clearCurrentRendererTarget(const Color& clearColor);
 
   /** @brief used to change the target for main graphical renderer.
    *
@@ -126,9 +125,9 @@ class Texture {
    *                          (use nullptr as target param in order
    *                                 to reset to default renderer target)
    *
-   *  @return int32_t       - error code
+   *  @return ErrorCode     - error code
    * */
-  static int32_t setRendererTarget(SDL_Texture* target);
+  static ErrorCode setRendererTarget(SDL_Texture* target);
 
   /** @brief used to load SDL_Texture from provided user text
    *
@@ -139,9 +138,9 @@ class Texture {
    *  @param int32_t &      - width of the created SDL_Surface text
    *  @param int32_t &      - height of the created SDL_Surface text
    *
-   *  @returns int32_t      - error code
+   *  @returns ErrorCode    - error code
    * */
-  static int32_t loadFromText(const char* text,
+  static ErrorCode loadFromText(const char* text,
                               TTF_Font* font,
                               const Color& color,
                               SDL_Texture*& outTexture,
@@ -180,9 +179,10 @@ class Texture {
    *  @param SDL_Texture *   - texture to be modified
    *  @param const BlendMode - new blend mode value
    *
-   *  @return int32_t        - error code
+   *  @return ErrorCode      - error code
    * */
-  static int32_t setBlendMode(SDL_Texture* texture, const BlendMode blendMode);
+  static ErrorCode setBlendMode(SDL_Texture* texture,
+                                const BlendMode blendMode);
 
   /** @brief to create a texture for the current rendering context.
    *
@@ -197,10 +197,10 @@ class Texture {
    *                  done dealing with the memory. Otherwise memory leak
    *                  will occur.
    *
-   *  @return int32_t       - error code
+   *  @return ErrorCode     - error code
    * */
-  static int32_t createEmptyTexture(const int32_t width, const int32_t height,
-                                    SDL_Texture*& outTexture);
+  static ErrorCode createEmptyTexture(const int32_t width, const int32_t height,
+                                      SDL_Texture*& outTexture);
 
  private:
   /** Keep pointer to the actual renderer,

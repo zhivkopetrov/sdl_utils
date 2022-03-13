@@ -27,12 +27,11 @@
 #ifndef SDL_UTILS_SDLCONTAINERS_H_
 #define SDL_UTILS_SDLCONTAINERS_H_
 
-// C system headers
-
-// C++ system headers
+// System headers
 #include <cstdint>
 
 // Other libraries headers
+#include "utils/ErrorCode.h"
 
 // Own components headers
 #include "sdl_utils/containers/FontContainer.h"
@@ -55,9 +54,9 @@ class SDLContainers : public ResourceContainer,
 
   /** @brief used to initialise the SDL containers
    *
-   *  @return int32_t - error code
+   *  @return ErrorCode - error code
    * */
-  int32_t init();
+  ErrorCode init();
 
   /** @brief used to deinitialize (free memory occupied by SDL containers)
    * */
@@ -72,9 +71,9 @@ class SDLContainers : public ResourceContainer,
  private:
   /** @brief used to load initiate all SDL containers at program start up
    *
-   *  @returns int32_t - error code
+   *  @returns ErrorCode - error code
    * */
-  int32_t populateSDLContainers(ResourceLoader &rsrcLoader);
+  ErrorCode populateSDLContainers(ResourceLoader &rsrcLoader);
 
   SDLContainersConfig _config;
 };

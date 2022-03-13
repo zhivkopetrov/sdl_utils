@@ -1,25 +1,23 @@
 #ifndef SDL_UTILS_RENDERERSTATE_H_
 #define SDL_UTILS_RENDERERSTATE_H_
 
-// C system headers
-
-// C++ system headers
+// System headers
 #include <cstdint>
 #include <vector>
 
 // Other libraries headers
 #include "utils/common/CircularBuffer.h"
+#include "utils/ErrorCode.h"
 
 // Own components headers
 #include "sdl_utils/drawing/defines/RendererDefines.h"
 #include "sdl_utils/drawing/DrawParams.h"
 
-
 // Forward declarations
 struct RendererConfig;
 
 struct RendererState {
-  int32_t init(const RendererConfig &cfg);
+  ErrorCode init(const RendererConfig &cfg);
 
   /** Holds stored number of widgets for the current frame
    * */

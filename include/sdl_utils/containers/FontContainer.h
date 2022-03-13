@@ -1,14 +1,13 @@
 #ifndef SDL_UTILS_FONTCONTAINER_H_
 #define SDL_UTILS_FONTCONTAINER_H_
 
-// C system headers
-
-// C++ system headers
+// System headers
 #include <cstdint>
 #include <unordered_map>
 
 // Other libraries headers
 #include "resource_utils/structs/FontData.h"
+#include "utils/ErrorCode.h"
 
 // Own components headers
 
@@ -20,12 +19,12 @@ class FontContainer {
   /** @brief used to initialise the Font container
    *
    *  @param const std::string & - absolute file path to resouces follder
-   *  @param const uint64_t - number of fonts to be loaded
+   *  @param const uint64_t      - number of fonts to be loaded
    *
-   *  @return int32_t       - error code
+   *  @return ErrorCode          - error code
    * */
-  int32_t init(const std::string &resourcesFolderLocation,
-               const uint64_t fontsCount);
+  ErrorCode init(const std::string &resourcesFolderLocation,
+                 const uint64_t fontsCount);
 
   /** @brief used to deinitialize (free memory occupied by Font container)
    * */
@@ -77,10 +76,10 @@ class FontContainer {
    *  @param const int32_t  - input font size
    *  @param SDL_Texture *& - created SDL_Texture
    *
-   *  @returns int32_t      - error code
+   *  @returns ErrorCode    - error code
    * */
-  int32_t loadTtfFont(const char *path, const int32_t fontSize,
-                      TTF_Font *&outFont);
+   ErrorCode loadTtfFont(const char *path, const int32_t fontSize,
+                         TTF_Font *&outFont);
 
   //_fontsMap holds all fonts
   std::unordered_map<uint64_t, TTF_Font *> _fontsMap;

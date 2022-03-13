@@ -1,9 +1,7 @@
 #ifndef SDL_UTILS_RESOURCECONTAINER_H_
 #define SDL_UTILS_RESOURCECONTAINER_H_
 
-// C system headers
-
-// C++ system headers
+// System headers
 #include <cstdint>
 #include <thread>
 #include <unordered_map>
@@ -11,14 +9,14 @@
 
 // Other libraries headers
 #include "resource_utils/structs/ResourceData.h"
+#include "utils/ErrorCode.h"
 
 // Own components headers
 #include "sdl_utils/drawing/defines/RendererDefines.h"
 
 // Forward declarations
 
-// Since ThreadSafeQueue is a very heavy include -> use forward declaration to
-// it
+// Since ThreadSafeQueue is a very heavy include -> use forward declaration to it
 template <typename T>
 class ThreadSafeQueue;
 class Renderer;
@@ -39,11 +37,11 @@ class ResourceContainer {
    *  @param const uint64_t      - number of dynamic widgets
    *                                    (they are not loaded at ::init())
    *
-   *  @return int32_t            - error code
+   *  @return ErrorCode          - error code
    * */
-  int32_t init(const std::string &resourcesFolderLocation,
-               const uint64_t staticWidgetsCount,
-               const uint64_t dynamicWidgetsCount);
+  ErrorCode init(const std::string &resourcesFolderLocation,
+                 const uint64_t staticWidgetsCount,
+                 const uint64_t dynamicWidgetsCount);
 
   /** @brief used to deinitialize
    *                          (free memory occupied by Resource container)
@@ -165,12 +163,12 @@ class ResourceContainer {
   /** @brief used to acquire previously stored resource data
    *                                       for a given unique rsrc ID
    *
-   *  @param const uint64_t     - unique sound ID
+   *  @param const uint64_t        - unique sound ID
    *  @param const ResourceData *& - resource specific data
    *
-   *  @returns int32_t          - error code
+   *  @returns ErrorCode           - error code
    * */
-  int32_t getRsrcData(const uint64_t rsrcId, const ResourceData *&outData);
+  ErrorCode getRsrcData(const uint64_t rsrcId, const ResourceData *&outData);
 
   /** @brief used to attach a newly generated SDL_Texture by the renderer
    *         to the ResourceContainer and increase the used GPU VRAM
@@ -207,9 +205,9 @@ class ResourceContainer {
    *                                                 Widget specific data
    *  @param SDL_Surface *&       - created SDL_Surface
    *
-   *  @returns int32_t            - error code
+   *  @returns ErrorCode          - error code
    * */
-  int32_t loadSurface(const uint64_t rsrcId, SDL_Surface *&outSurface);
+  ErrorCode loadSurface(const uint64_t rsrcId, SDL_Surface *&outSurface);
 
   /** @brief uses to expose the stored surfaces/into a thread safe queue/
    *         to the renderer API.
@@ -254,10 +252,10 @@ class ResourceContainer {
    *                                                 Widget specific data
    *  @param SDL_Surface *&       - created SDL_Surface
    *
-   *  @returns int32_t            - error code
+   *  @returns ErrorCode          - error code
    * */
-  int32_t loadSurfaceInternal(const ResourceData *rsrcData,
-                              SDL_Surface *&outSurface);
+  ErrorCode loadSurfaceInternal(const ResourceData *rsrcData,
+                                SDL_Surface *&outSurface);
 
   /** @brief used to internally load all stored resources
    *                                          only using the main thread

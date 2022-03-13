@@ -1,9 +1,7 @@
 #ifndef SDL_UTILS_GEOMETRYUTILS_H_
 #define SDL_UTILS_GEOMETRYUTILS_H_
 
-// C system headers
-
-// C++ system headers
+// System headers
 
 // Other libraries headers
 #include "utils/drawing/Rectangle.h"

@@ -1,14 +1,13 @@
 #ifndef SDL_UTILS_SOUNDCONTAINER_H_
 #define SDL_UTILS_SOUNDCONTAINER_H_
 
-// C system headers
-
-// C++ system headers
+// System headers
 #include <cstdint>
 #include <unordered_map>
 
 // Other libraries headers
 #include "resource_utils/structs/SoundData.h"
+#include "utils/ErrorCode.h"
 
 // Own components headers
 
@@ -24,11 +23,11 @@ class SoundContainer {
    *  @param const uint64_t      - number of musics to be loaded
    *  @param const uint64_t      - number of sound chunks to be loaded
    *
-   *  @return int32_t       - error code
+   *  @return ErrorCode         - error code
    * */
-  int32_t init(const std::string &resourcesFolderLocation,
-               const uint64_t musicsCount,
-               const uint64_t chunksCount);
+  ErrorCode init(const std::string &resourcesFolderLocation,
+                 const uint64_t musicsCount,
+                 const uint64_t chunksCount);
 
   /** @brief used to deinitialize
    *                           (free memory occupied by Sound container)
@@ -56,9 +55,9 @@ class SoundContainer {
    *  @param const uint64_t     - unique sound ID
    *  @param const SoundData *& - resource specific data
    *
-   *  @returns int32_t          - error code
+   *  @returns ErrorCode        - error code
    * */
-  int32_t getSoundData(const uint64_t soundId, const SoundData *&outData);
+  ErrorCode getSoundData(const uint64_t soundId, const SoundData *&outData);
 
   /** @brief used to acquire previously stored pre-created Mix_Music
    *                                       for a given unique resource ID
@@ -86,10 +85,10 @@ class SoundContainer {
    *  @param const SoundLevel - the input sound level
    *  @param Mix_Music *&     - created Mix_Music
    *
-   *  @returns int32_t        - error code
+   *  @returns ErrorCode      - error code
    * */
-  int32_t loadMusic(const char *path, const SoundLevel soundLevel,
-                    Mix_Music *&outMusic);
+  ErrorCode loadMusic(const char *path, const SoundLevel soundLevel,
+                      Mix_Music *&outMusic);
 
   /** @brief used to create Mix_Chunk for a given unique font location
    *                                                   on the file system
@@ -98,10 +97,10 @@ class SoundContainer {
    *  @param const SoundLevel - the input sound level
    *  @param Mix_Chunk *&     - created Mix_Chunk
    *
-   *  @returns int32_t        - error code
+   *  @returns ErrorCode      - error code
    * */
-  int32_t loadChunk(const char *path, const SoundLevel soundLevel,
-                    Mix_Chunk *&outChunk);
+  ErrorCode loadChunk(const char *path, const SoundLevel soundLevel,
+                      Mix_Chunk *&outChunk);
 
   //_musicMap holds all music sounds
   std::unordered_map<uint64_t, Mix_Music *> _musicMap;

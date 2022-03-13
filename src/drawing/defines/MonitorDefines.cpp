@@ -1,9 +1,7 @@
 //Corresponding header
 #include "sdl_utils/drawing/defines/MonitorDefines.h"
 
-//C system headers
-
-//C++ system headers
+//System headers
 
 //Other libraries headers
 #include <SDL_video.h>

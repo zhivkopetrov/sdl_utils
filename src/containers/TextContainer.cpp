@@ -1,9 +1,7 @@
 // Corresponding header
 #include "sdl_utils/containers/TextContainer.h"
 
-// C system headers
-
-// C++ system headers
+// System headers
 #include <cstring>
 
 // Other libraries headers
@@ -26,7 +24,7 @@ TextContainer::TextContainer()
       _textsSize(0) {
 }
 
-int32_t TextContainer::init(
+ErrorCode TextContainer::init(
     std::unordered_map<uint64_t, TTF_Font *> *fontsContainer,
     const int32_t maxRuntimeTexts) {
   _textsSize = maxRuntimeTexts;
@@ -34,7 +32,7 @@ int32_t TextContainer::init(
   _texts.resize(maxRuntimeTexts, nullptr);
   _textMemoryUsage.resize(maxRuntimeTexts, 0);
 
-  return SUCCESS;
+  return ErrorCode::SUCCESS;
 }
 
 void TextContainer::deinit() {
@@ -51,21 +49,23 @@ void TextContainer::deinit() {
   _textMemoryUsage.clear();
 }
 
-int32_t TextContainer::loadText(const uint64_t fontId, const char *text,
-                             const Color &color, int32_t &outUniqueId,
-                             int32_t &outTextWidth, int32_t &outTextHeight) {
+ErrorCode TextContainer::loadText(const uint64_t fontId, const char *text,
+                                  const Color &color, int32_t &outUniqueId,
+                                  int32_t &outTextWidth,
+                                  int32_t &outTextHeight) {
   auto fontIt = _fontsMapPtr->find(fontId);
   if (fontIt == _fontsMapPtr->end()) {
     LOGERR("Error, non-existent fontId: %#16lX for text: [%s]. "
         "Text will not be created", fontId, text);
-    return FAILURE;
+    return ErrorCode::FAILURE;
   }
 
-  if (SUCCESS != Texture::getTextDimensions(text, (*_fontsMapPtr)[fontId],
-                                                 outTextWidth, outTextHeight)) {
+  if (ErrorCode::SUCCESS !=
+      Texture::getTextDimensions(text, (*_fontsMapPtr)[fontId],
+                                 outTextWidth, outTextHeight)) {
     LOGERR("Error in getTextDimensions() for fontId: %#16lX", fontId);
 
-    return FAILURE;
+    return ErrorCode::FAILURE;
   }
 
   int32_t chosenIndex = INIT_INT32_VALUE;
@@ -84,7 +84,7 @@ int32_t TextContainer::loadText(const uint64_t fontId, const char *text,
            "Increase it's value from the configuration! or reduce the number of"
            " active texts. Text with content: %s will not be created in order "
            "to save the system from crashing", _textsSize, text);
-    return FAILURE;
+    return ErrorCode::FAILURE;
   }
 #endif //!NDEBUG
 
@@ -115,15 +115,16 @@ int32_t TextContainer::loadText(const uint64_t fontId, const char *text,
   _renderer->addRendererCmd_UT(RendererCmd::CREATE_TTF_TEXT, data,
                                populatedBytes);
 
-  return SUCCESS;
+  return ErrorCode::SUCCESS;
 }
 
 void TextContainer::reloadText(const uint64_t fontId, const char *text,
                                const Color &color,
                                const int32_t textUniqueId,
                                int32_t &outTextWidth, int32_t &outTextHeight) {
-  if (SUCCESS != Texture::getTextDimensions(text, (*_fontsMapPtr)[fontId],
-                                                 outTextWidth, outTextHeight)) {
+  if (ErrorCode::SUCCESS !=
+      Texture::getTextDimensions(text, (*_fontsMapPtr)[fontId],
+                                 outTextWidth, outTextHeight)) {
     LOGERR("Error in getTextDimensions() for fontId: %#16lX", fontId);
     return;
   }

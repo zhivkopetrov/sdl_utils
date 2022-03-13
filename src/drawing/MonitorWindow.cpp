@@ -1,15 +1,12 @@
 // Corresponding header
 #include "sdl_utils/drawing/MonitorWindow.h"
 
-// C system headers
-
-// C++ system headers
+// System headers
 #include <string>
 
 // Other libraries headers
 #include <SDL_video.h>
 #include <SDL_image.h>
-#include "utils/ErrorCode.h"
 #include "utils/Log.h"
 
 // Own components headers
@@ -17,11 +14,11 @@
 #include "sdl_utils/drawing/Texture.h"
 #include "sdl_utils/drawing/LoadingScreen.h"
 
-MonitorWindow::~MonitorWindow() {
+MonitorWindow::~MonitorWindow() noexcept {
   deinit();
 }
 
-int32_t MonitorWindow::init(const MonitorWindowConfig& cfg) {
+ErrorCode MonitorWindow::init(const MonitorWindowConfig& cfg) {
   _windowRect = Rectangle(cfg.pos, cfg.width, cfg.height);
 
   int32_t initWindowX = 0;
@@ -29,7 +26,7 @@ int32_t MonitorWindow::init(const MonitorWindowConfig& cfg) {
 
   const Point POS(_windowRect.x, _windowRect.y);
 
-  if (Point::UNDEFINED == POS) {
+  if (Points::UNDEFINED == POS) {
     initWindowX = SDL_WINDOWPOS_UNDEFINED;
     initWindowY = SDL_WINDOWPOS_UNDEFINED;
   } else {
@@ -44,7 +41,7 @@ int32_t MonitorWindow::init(const MonitorWindowConfig& cfg) {
 
   if (nullptr == _window) {
     LOGERR("Window could not be created! SDL Error: %s", SDL_GetError());
-    return FAILURE;
+    return ErrorCode::FAILURE;
   }
 
   // obtain real window coordinates after creation
@@ -54,13 +51,13 @@ int32_t MonitorWindow::init(const MonitorWindowConfig& cfg) {
   LoadingScreen::setMonitorRect(_windowRect);
 
   if (!cfg.iconPath.empty()) {
-    if (SUCCESS != loadWindowIcon(cfg.iconPath)) {
+    if (ErrorCode::SUCCESS != loadWindowIcon(cfg.iconPath)) {
       LOGERR("loadWindowIcon() failed!");
-      return FAILURE;
+      return ErrorCode::FAILURE;
     }
   }
 
-  return SUCCESS;
+  return ErrorCode::SUCCESS;
 }
 
 void MonitorWindow::deinit() {
@@ -70,17 +67,17 @@ void MonitorWindow::deinit() {
   }
 }
 
-int32_t MonitorWindow::loadWindowIcon(const std::string& iconPath) {
+ErrorCode MonitorWindow::loadWindowIcon(const std::string& iconPath) {
   SDL_Surface* windowIcon = IMG_Load(iconPath.c_str());
   if (nullptr == windowIcon) {
     LOGERR("Unable to create window Image from file! SDL Error: %s",
            SDL_GetError());
-    return FAILURE;
+    return ErrorCode::FAILURE;
   }
 
   SDL_SetWindowIcon(_window, windowIcon);
   SDL_FreeSurface(windowIcon);
   windowIcon = nullptr;
-  return SUCCESS;
+  return ErrorCode::SUCCESS;
 }
 

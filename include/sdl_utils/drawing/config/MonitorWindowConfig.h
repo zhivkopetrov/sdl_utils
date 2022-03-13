@@ -1,9 +1,7 @@
 #ifndef SDL_UTILS_DRAWING_CONFIG_MONITORWINDOWCONFIG_H_
 #define SDL_UTILS_DRAWING_CONFIG_MONITORWINDOWCONFIG_H_
 
-// C system headers
-
-// C++ system headers
+// System headers
 #include <cstdint>
 #include <string>
 

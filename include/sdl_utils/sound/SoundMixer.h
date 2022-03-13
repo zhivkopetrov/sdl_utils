@@ -17,12 +17,11 @@
  *                       - Chunks/Sounds are loaded into memory;
  */
 
-// C system headers
-
-// C++ system headers
+// System headers
 #include <cstdint>
 
 // Other libraries headers
+#include "utils/ErrorCode.h"
 
 // Own components headers
 
@@ -42,18 +41,19 @@ class SoundMixer {
    *
    *  @param const int32_t - the number of requested Channels
    *
-   *  @return int32_t      - error code
+   *  @return ErrorCode    - error code
    * */
-  static int32_t allocateSoundChannels(const int32_t requestedChannels);
+  static ErrorCode allocateSoundChannels(const int32_t requestedChannels);
 
   /** @brief used to set user defined callback for when a sound (music or
    *                chunk) is finished playing on it's associated channel
    *
    *  @param void (*cb)(int32_t) - user defined callback to be attached
    *
-   *  @return int32_t            - error code
+   *  @return ErrorCode          - error code
    * */
-  static int32_t setCallbackOnChannelFinish(void (*cb)(const int32_t channel));
+  static ErrorCode setCallbackOnChannelFinish(
+      void (*cb)(const int32_t channel));
 
   //==================== END Common Sound functions ======================
 
@@ -149,19 +149,19 @@ class SoundMixer {
    *  @param const uint8_t - left volume value
    *  @param const uint8_t - right volume value
    *
-   *  @return int32_t      - error code
+   *  @return ErrorCode    - error code
    * */
-  static int32_t setChannelPanning(const int32_t channel,
-                                   const uint8_t leftVolume,
-                                   const uint8_t rightVolume);
+  static ErrorCode setChannelPanning(const int32_t channel,
+                                     const uint8_t leftVolume,
+                                     const uint8_t rightVolume);
 
   /** @brief used to reset the panning of a channel.
    *
    *  @param const int32_t - specific channel Id
    *
-   *  @return int32_t      - error code
+   *  @return ErrorCode    - error code
    * */
-  static int32_t resetChannelPanning(const int32_t channel);
+  static ErrorCode resetChannelPanning(const int32_t channel);
 
   //==================== END Channel Sound functions =====================
 
@@ -172,9 +172,9 @@ class SoundMixer {
    *  @param const char * - absolute path to file
    *  @param Mix_Music *& - dynamically created Mix_Music
    *
-   *  @returns int32_t    - error code
+   *  @returns ErrorCode  - error code
    * */
-  static int32_t loadMusicFromFile(const char* path, Mix_Music*& outMusic);
+  static ErrorCode loadMusicFromFile(const char* path, Mix_Music*& outMusic);
 
   /** @brief used to free Mix_Music
    *
@@ -249,9 +249,9 @@ class SoundMixer {
    *  @param const char * - absolute path to file
    *  @param Mix_Chunk *& - dynamically created Mix_Chunk
    *
-   *  @returns int32_t    - error code
+   *  @returns ErrorCode    - error code
    * */
-  static int32_t loadChunkFromFile(const char* path, Mix_Chunk*& outChunk);
+  static ErrorCode loadChunkFromFile(const char* path, Mix_Chunk*& outChunk);
 
   /** @brief used to free Mix_Chunk
    *

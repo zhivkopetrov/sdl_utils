@@ -1,9 +1,7 @@
 #ifndef SDL_UTILS_RENDERER_H_
 #define SDL_UTILS_RENDERER_H_
 
-// C system headers
-
-// C++ system headers
+// System headers
 #include <condition_variable>
 #include <cstdint>
 #include <mutex>
@@ -11,6 +9,7 @@
 // Other libraries headers
 #include "utils/class/NonCopyable.h"
 #include "utils/class/NonMoveable.h"
+#include "utils/ErrorCode.h"
 
 // Own components headers
 #include "sdl_utils/drawing/defines/RendererDefines.h"
@@ -72,7 +71,7 @@ class Renderer : public NonCopyable, public NonMoveable {
    *   NOTE2: ::init() is executed before the secondary thread is still
    *          spawned (it is being executed on the main thread)
    * */
-  int32_t init(const RendererConfig& cfg);
+  ErrorCode init(const RendererConfig& cfg);
 
   /** @brief used to destroy renderer and window
    *
@@ -200,9 +199,9 @@ class Renderer : public NonCopyable, public NonMoveable {
    *                  default target and no drawing
    *                                          will be performed at all.
    *
-   *  @return int32_t - error code
+   *  @return ErrorCode - error code
    * */
-  int32_t unlockRenderer_UT();
+  ErrorCode unlockRenderer_UT();
 
   /** @brief used to lock the currently used renderer.
    *         When the renderer is locked - the default
@@ -211,9 +210,9 @@ class Renderer : public NonCopyable, public NonMoveable {
    *         NOTE: when this method is invoked - the currently used
    *                          renderer sets back it's default draw target.
    *
-   *  @return int32_t - error code
+   *  @return ErrorCode - error code
    * */
-  int32_t lockRenderer_UT();
+  ErrorCode lockRenderer_UT();
 
   /** @brief used to set global renderer clear color with which default
    *         renderer target is cleared once ::clearScreen() is invoked.
@@ -224,9 +223,7 @@ class Renderer : public NonCopyable, public NonMoveable {
 
   /** @brief resets absolute global renderer axis movement
    * */
-  void resetAbsoluteGlobalMovement_UT() {
-    setAbsoluteGlobalMovement_UT(0, 0);
-  }
+  void resetAbsoluteGlobalMovement_UT();
 
   /** @brief set absolute global renderer X and Y axis movement
    *         NOTE: this is applied to all stored widgets
@@ -235,26 +232,19 @@ class Renderer : public NonCopyable, public NonMoveable {
    *  @param const int32_t - X axis movement
    *  @param const int32_t - Y axis movement
    * */
-  void setAbsoluteGlobalMovement_UT(const int32_t x, const int32_t y) {
-    _rendererState[_updateStateIdx].globalOffsetX = x;
-    _rendererState[_updateStateIdx].globalOffsetY = y;
-  }
+  void setAbsoluteGlobalMovement_UT(const int32_t x, const int32_t y);
 
   /** @brief moves global renderer X coordinate
    *
    *  @param const int32_t - X axis movement
    * */
-  void moveGlobalX_UT(const int32_t x) {
-    _rendererState[_updateStateIdx].globalOffsetX += x;
-  }
+  void moveGlobalX_UT(const int32_t x);
 
   /** @brief moves global renderer Y coordinate
    *
    *  @param const int32_t - Y axis movement
    * */
-  void moveGlobalY_UT(const int32_t y) {
-    _rendererState[_updateStateIdx].globalOffsetY += y;
-  }
+  void moveGlobalY_UT(const int32_t y);
 
   // NOTE: @_UT - update thread interface
   //================== END UPDATE THREAD INTERFACE ======================

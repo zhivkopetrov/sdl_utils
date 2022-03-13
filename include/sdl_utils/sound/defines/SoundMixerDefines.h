@@ -1,6 +1,14 @@
 #ifndef SDL_UTILS_SOUNDMIXERDEFINES_H_
 #define SDL_UTILS_SOUNDMIXERDEFINES_H_
 
+// System headers
+
+// Other libraries headers
+
+// Own components headers
+
+// Forward declarations
+
 #define FREQUENCY 44100
 
 #define MONO_CHANNELS 1

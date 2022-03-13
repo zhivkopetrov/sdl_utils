@@ -1,15 +1,12 @@
 // Corresponding header
 #include "sdl_utils/containers/FboContainer.h"
 
-// C system headers
-
-// C++ system headers
+// System headers
 #include <cstring>
 
 // Other libraries headers
 #include "utils/LimitValues.h"
 #include "utils/drawing/Color.h"
-#include "utils/ErrorCode.h"
 #include "utils/Log.h"
 
 // Own components headers
@@ -25,11 +22,11 @@ FboContainer::FboContainer()
   : _renderer(nullptr), _gpuMemoryUsage(0), _sbSize(0) {
 }
 
-int32_t FboContainer::init(const int32_t maxRuntimeSpriteBuffers) {
+ErrorCode FboContainer::init(const int32_t maxRuntimeSpriteBuffers) {
   _sbSize = maxRuntimeSpriteBuffers;
   _textures.resize(maxRuntimeSpriteBuffers, nullptr);
   _fboMemoryUsage.resize(maxRuntimeSpriteBuffers, 0);
-  return SUCCESS;
+  return ErrorCode::SUCCESS;
 }
 
 void FboContainer::deinit() {

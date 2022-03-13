@@ -1,9 +1,7 @@
 // Corresponding header
 #include "sdl_utils/drawing/DrawParams.h"
 
-// C system headers
-
-// C++ system headers
+// System headers
 
 // Other libraries headers
 
@@ -24,8 +22,8 @@ DrawParams::DrawParams() :
 
 void DrawParams::reset() {
     rsrcId = 0;
-    pos = Point::ZERO;
-    rotCenter = Point::ZERO;
+    pos = Points::ZERO;
+    rotCenter = Points::ZERO;
     scaledWidth = 0;
     scaledHeight = 0;
     angle = 0.0;

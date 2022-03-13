@@ -1,12 +1,10 @@
 // Corresponding header
 #include "sdl_utils/SDLLoader.h"
 
-// C system headers
+// System headers
 #ifdef __linux__
 #include <X11/Xlib.h>
 #endif /* __linux__ */
-
-// C++ system headers
 
 // Other libraries headers
 #include <SDL.h>
@@ -14,31 +12,30 @@
 #include <SDL_mixer.h>
 #include <SDL_ttf.h>
 #include "utils/debug/FunctionTracer.h"
-#include "utils/ErrorCode.h"
 #include "utils/Log.h"
 
 // Own components headers
 #include "sdl_utils/sound/defines/SoundMixerDefines.h"
 
-int32_t SDLLoader::init() {
+ErrorCode SDLLoader::init() {
   TRACE_ENTRY_EXIT;
 
 #ifdef __linux__
   // needed for X multhithread support
   if (!XInitThreads()) {
     LOGERR("Error in XInitThreads() -> Terminating ...");
-    return FAILURE;
+    return ErrorCode::FAILURE;
   }
 #endif /* __linux__ */
 
   if (-1 == TTF_Init()) {
     LOGERR("SDL_ttf could not initialize! SDL_ttf Error: %s", TTF_GetError());
-    return FAILURE;
+    return ErrorCode::FAILURE;
   }
 
   if (0 > SDL_Init(SDL_INIT_VIDEO)) {
     LOGERR("SDL could not be initialised! SDL Error: %s", SDL_GetError());
-    return FAILURE;
+    return ErrorCode::FAILURE;
   }
 
   // Initialise PNG loading
@@ -46,13 +43,13 @@ int32_t SDLLoader::init() {
   if (!(IMG_Init(imgFlags) & imgFlags)) {
     LOGERR("SDL_image could not be initialised! SDL_image Error: %s",
         IMG_GetError());
-    return FAILURE;
+    return ErrorCode::FAILURE;
   }
 
   if (0 > SDL_Init(SDL_INIT_AUDIO)) {
     LOGERR("SDL Audio could not be initialised! SDL Error: %s",
            SDL_GetError());
-    return FAILURE;
+    return ErrorCode::FAILURE;
   }
 
   if (0 > Mix_OpenAudio(FREQUENCY,           // sound frequency
@@ -62,7 +59,7 @@ int32_t SDLLoader::init() {
   {
     LOGERR("SDL_mixer could not initialised! SDL_mixer Error: %s",
            Mix_GetError());
-    return FAILURE;
+    return ErrorCode::FAILURE;
   }
 
   // fix a bug in SDL with version lower than 2.0.10
@@ -71,11 +68,11 @@ int32_t SDLLoader::init() {
     if (0 > SDL_Init(SDL_INIT_JOYSTICK)) {
       LOGERR("SDL Joystick could not be initialised! SDL Error: %s",
              SDL_GetError());
-      return FAILURE;
+      return ErrorCode::FAILURE;
     }
   }
 
-  return SUCCESS;
+  return ErrorCode::SUCCESS;
 }
 
 void SDLLoader::deinit() {

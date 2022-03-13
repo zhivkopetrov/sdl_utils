@@ -20,9 +20,7 @@
  *         old TouchEntity.
  */
 
-// C system headers
-
-// C++ system headers
+// System headers
 
 // Other libraries headers
 

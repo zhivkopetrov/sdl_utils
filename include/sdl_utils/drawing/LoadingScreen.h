@@ -1,15 +1,14 @@
 #ifndef SDL_UTILS_LOADINGSCREEN_H_
 #define SDL_UTILS_LOADINGSCREEN_H_
 
-// C system headers
-
-// C++ system headers
+// System headers
 #include <cstdint>
 
 // Other libraries headers
 
 // Own components headers
 #include "utils/drawing/Rectangle.h"
+#include "utils/ErrorCode.h"
 
 // Forward declarations
 struct SDL_Texture;
@@ -18,17 +17,16 @@ struct LoadingScreenConfig;
 
 class LoadingScreen {
  public:
-  // forbid the default constructor and destructor
   LoadingScreen() = delete;
 
   /** @brief used to initialise background loading resources
    *
    *  @param const LoadingScreenConfig & - config for the LoadingScreen
    *
-   *  @return int32_t      - error code
+   *  @return ErrorCode      - error code
    * */
-  static int32_t init(const LoadingScreenConfig &cfg,
-                      const int32_t totalFileSize);
+  static ErrorCode init(const LoadingScreenConfig &cfg,
+                        const int32_t totalFileSize);
 
   /** @brief used to deinitialise background loading resources
    * */

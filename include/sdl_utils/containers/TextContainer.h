@@ -1,14 +1,13 @@
 #ifndef SDL_UTILS_TEXTCONTAINER_H_
 #define SDL_UTILS_TEXTCONTAINER_H_
 
-// C system headers
-
-// C++ system headers
+// System headers
 #include <cstdint>
 #include <vector>
 #include <unordered_map>
 
 // Other libraries headers
+#include "utils/ErrorCode.h"
 
 // Own components headers
 #include "sdl_utils/drawing/defines/RendererDefines.h"
@@ -30,9 +29,9 @@ class TextContainer {
    *                                                      fonts Container
    *  @param const int32_t                              - max runtime texts
    *
-   *  @return int32_t       - error code
+   *  @return ErrorCode                                 - error code
    * */
-  int32_t init(std::unordered_map<uint64_t, TTF_Font *> *fontsContainer,
+  ErrorCode init(std::unordered_map<uint64_t, TTF_Font *> *fontsContainer,
                const int32_t maxRuntimeTexts);
 
   /** @brief used to deinitialize (free memory occupied by Text container)
@@ -61,11 +60,12 @@ class TextContainer {
    *  @param int32_t &      - out width of the generated Texture/Surface
    *  @param int32_t &      - out height of the generated Texture/Surface
    *
-   *  @returns int32_t      - error code
+   *  @returns ErrorCode    - error code
    * */
-  int32_t loadText(const uint64_t fontId, const char *text, const Color &color,
-                   int32_t &outUniqueId, int32_t &outTextWidth,
-                   int32_t &outTextHeight);
+   ErrorCode loadText(
+       const uint64_t fontId, const char *text, const Color &color,
+       int32_t &outUniqueId, int32_t &outTextWidth,
+       int32_t &outTextHeight);
 
   /** @brief used to reload text resource on demand on the SAME position
    *                in the _textsVec (new Text has the same uniqueTextId).

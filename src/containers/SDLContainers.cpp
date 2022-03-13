@@ -1,15 +1,12 @@
 // Corresponding header
 #include "sdl_utils/containers/SDLContainers.h"
 
-// C system headers
-
-// C++ system headers
+// System headers
 #include <thread>
 
 // Other libraries headers
 #include "resource_utils/resource_loader/ResourceLoader.h"
 #include "utils/debug/FunctionTracer.h"
-#include "utils/ErrorCode.h"
 #include "utils/Log.h"
 
 // Own components headers
@@ -18,68 +15,71 @@
 SDLContainers::SDLContainers(const SDLContainersConfig &cfg) : _config(cfg) {
 }
 
-int32_t SDLContainers::init() {
+ErrorCode SDLContainers::init() {
   ResourceLoader rsrcLoader;
-  if (SUCCESS != rsrcLoader.init(_config.resourcesFolderLocation)) {
+  if (ErrorCode::SUCCESS != rsrcLoader.init(_config.resourcesFolderLocation)) {
     LOGERR("Error in _rsrcLoader.init() -> Terminating ...");
-    return FAILURE;
+    return ErrorCode::FAILURE;
   }
 
   EgnineBinHeadersData binHeaderData;
-  if (SUCCESS != rsrcLoader.readEngineBinHeaders(binHeaderData)) {
+  if (ErrorCode::SUCCESS != rsrcLoader.readEngineBinHeaders(binHeaderData)) {
     LOGERR("Error in readEngineBinHeaders() -> Terminating ...");
-    return FAILURE;
+    return ErrorCode::FAILURE;
   }
 
-  if (SUCCESS != SoundContainer::init(_config.resourcesFolderLocation,
-                                      binHeaderData.musicsCount,
-                                      binHeaderData.chunksCount)) {
+  if (ErrorCode::SUCCESS !=
+      SoundContainer::init(_config.resourcesFolderLocation,
+                           binHeaderData.musicsCount,
+                           binHeaderData.chunksCount)) {
     LOGERR("Error in SoundContainer::init() -> Terminating ...");
-    return FAILURE;
+    return ErrorCode::FAILURE;
   }
 
-  if (SUCCESS != FontContainer::init(_config.resourcesFolderLocation,
-                                     binHeaderData.fontsCount)) {
+  if (ErrorCode::SUCCESS !=
+      FontContainer::init(_config.resourcesFolderLocation,
+                          binHeaderData.fontsCount)) {
     LOGERR("Error in FontContainer::init() -> Terminating ...");
-    return FAILURE;
+    return ErrorCode::FAILURE;
   }
 
-  if (SUCCESS !=
+  if (ErrorCode::SUCCESS !=
       ResourceContainer::init(_config.resourcesFolderLocation,
                               binHeaderData.staticWidgetsCount,
                               binHeaderData.dynamicWidgetsCount)) {
     LOGERR("Error in ResourceContainer::init() -> Terminating ...");
-    return FAILURE;
+    return ErrorCode::FAILURE;
   }
 
-  if (SUCCESS != TextContainer::init(
+  if (ErrorCode::SUCCESS != TextContainer::init(
       FontContainer::getFontsMap(), _config.maxRuntimeTexts)) {
     LOGERR("Error in TextContainer::init() -> Terminating ...");
-    return FAILURE;
+    return ErrorCode::FAILURE;
   }
 
-  if (SUCCESS != FboContainer::init(_config.maxRuntimeSpriteBuffers)) {
+  if (ErrorCode::SUCCESS !=
+      FboContainer::init(_config.maxRuntimeSpriteBuffers)) {
     LOGERR("Error in FboContainer::init() -> Terminating ...");
-    return FAILURE;
+    return ErrorCode::FAILURE;
   }
 
   const int32_t TOTAL_FILE_SIZE = binHeaderData.widgetsFileSize +
       binHeaderData.fontsFileSize + binHeaderData.soundsFileSize;
-  if (SUCCESS !=
+  if (ErrorCode::SUCCESS !=
       LoadingScreen::init(_config.loadingScreenCfg, TOTAL_FILE_SIZE)) {
     LOGERR("Error in LoadingScreen::init() -> Terminating ...)");
-    return FAILURE;
+    return ErrorCode::FAILURE;
   }
 
-  if (SUCCESS != populateSDLContainers(rsrcLoader)) {
+  if (ErrorCode::SUCCESS != populateSDLContainers(rsrcLoader)) {
     LOGERR("Error in populateSDLContainers() -> Terminating ...");
-    return FAILURE;
+    return ErrorCode::FAILURE;
   }
 
   // deinit loading screen resources, because we no longer need them
   LoadingScreen::deinit();
 
-  return SUCCESS;
+  return ErrorCode::SUCCESS;
 }
 
 void SDLContainers::deinit() {
@@ -96,7 +96,7 @@ void SDLContainers::setRenderer(Renderer * renderer) {
   FboContainer::setRenderer(renderer);
 }
 
-int32_t SDLContainers::populateSDLContainers(ResourceLoader &rsrcLoader) {
+ErrorCode SDLContainers::populateSDLContainers(ResourceLoader &rsrcLoader) {
   TRACE_ENTRY_EXIT;
 
   //=========== START SOUND POPULATE ==============
@@ -132,5 +132,5 @@ int32_t SDLContainers::populateSDLContainers(ResourceLoader &rsrcLoader) {
   ResourceContainer::loadAllStoredResources(_config.maxResourceLoadingThreads);
   //=========== END RESOURCE POPULATE =============
 
-  return SUCCESS;
+  return ErrorCode::SUCCESS;
 }

@@ -1,9 +1,7 @@
 #ifndef SDL_UTILS_RENDERERCONFIG_H_
 #define SDL_UTILS_RENDERERCONFIG_H_
 
-// C system headers
-
-// C++ system headers
+// System headers
 #include <cstdint>
 
 // Other libraries headers

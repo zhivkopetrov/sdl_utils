@@ -1,9 +1,7 @@
 #ifndef SDL_UTILS_DRAWCONSTANTS_H_
 #define SDL_UTILS_DRAWCONSTANTS_H_
 
-// C system headers
-
-// C++ system headers
+// System headers
 #include <cstdint>
 
 // Other libraries headers
@@ -39,13 +37,13 @@ enum class RotationCenterType : uint8_t {
   SCALED_CENTER
 };
 
-constexpr inline int32_t ZERO_OPACITY = 0;
-constexpr inline int32_t FULL_OPACITY = 255;
+constexpr int32_t ZERO_OPACITY = 0;
+constexpr int32_t FULL_OPACITY = 255;
 
-constexpr inline double ZERO_ANGLE = 0.0;
-constexpr inline double FULL_ROTATION_ANGLE = 360.0;
+constexpr double ZERO_ANGLE = 0.0;
+constexpr double FULL_ROTATION_ANGLE = 360.0;
 
-constexpr inline double MIN_SCALE_FACTOR = 0.0;
-constexpr inline double MAX_SCALE_FACTOR = 1.0;
+constexpr double MIN_SCALE_FACTOR = 0.0;
+constexpr double MAX_SCALE_FACTOR = 1.0;
 
 #endif /* SDL_UTILS_DRAWCONSTANTS_H_ */

@@ -1,12 +1,11 @@
 #ifndef SDL_UTILS_MOUSEUTILS_H_
 #define SDL_UTILS_MOUSEUTILS_H_
 
-// C system headers
-
-// C++ system headers
+// System headers
 #include <cstdint>
 
 // Other libraries headers
+#include "utils/ErrorCode.h"
 
 // Own components headers
 
@@ -42,11 +41,11 @@ class MouseUtils {
    *  @param const int32_t - cursor click X
    *  @param const int32_t - cursor click Y
    *
-   *  @return int32_t      - error code
+   *  @return ErrorCode    - error code
    * */
-  static int32_t createCursorFromImg(const char *imagePath,
-                                     const int32_t cursorClickX,
-                                     const int32_t cursorClickY);
+  static ErrorCode createCursorFromImg(const char *imagePath,
+                                       const int32_t cursorClickX,
+                                       const int32_t cursorClickY);
 
   /** @brief frees memory for the allocated cursor */
   static void freeCursor();

@@ -1,16 +1,13 @@
 // Corresponding header
 #include "sdl_utils/containers/ResourceContainer.h"
 
-// C system headers
-
-// C++ system headers
+// System headers
 #include <thread>
 
 // Other libraries headers
 #include <SDL_surface.h>
 #include "resource_utils/defines/ResourceDefines.h"
 #include "utils/concurrency/ThreadSafeQueue.h"
-#include "utils/ErrorCode.h"
 #include "utils/Log.h"
 
 // Own components headers
@@ -49,11 +46,11 @@ static void loadSurfacesFromFileSystemAsync(
 
     widgetPath = resourceBinLocation;
     widgetPath.append(resData.header.path);
-    if (SUCCESS != Texture::loadSurfaceFromFile(widgetPath.c_str(), surface)) {
-      LOGERR(
-          "Warning, error in loadSurfaceFromFile() for file %s. "
-          "Terminating other resourceLoading",
-          resData.header.path.c_str());
+    if (ErrorCode::SUCCESS !=
+        Texture::loadSurfaceFromFile(widgetPath.c_str(), surface)) {
+      LOGERR("Warning, error in loadSurfaceFromFile() for file %s. "
+             "Terminating other resourceLoading",
+             resData.header.path.c_str());
 
       LOGR("Failure in loading surface from file");
       resQueue->shutdown();
@@ -75,9 +72,9 @@ ResourceContainer::ResourceContainer()
       _gpuMemoryUsage(0),
       _isMultithreadTextureLoadingEnabled(false) {}
 
-int32_t ResourceContainer::init(const std::string &resourcesFolderLocation,
-                                const uint64_t staticWidgetsCount,
-                                const uint64_t dynamicWidgetsCount) {
+ErrorCode ResourceContainer::init(const std::string &resourcesFolderLocation,
+                                  const uint64_t staticWidgetsCount,
+                                  const uint64_t dynamicWidgetsCount) {
   _resourcesFolderLocation = resourcesFolderLocation;
 
   /** IMPORTANT NOTE:
@@ -100,7 +97,7 @@ int32_t ResourceContainer::init(const std::string &resourcesFolderLocation,
 
   if (nullptr == _resDataThreadQueue) {
     LOGERR("Error, bad alloc for ThreadSafeQueue<ResourceData>");
-    return FAILURE;
+    return ErrorCode::FAILURE;
   }
 
   _loadedSurfacesThreadQueue =
@@ -108,10 +105,10 @@ int32_t ResourceContainer::init(const std::string &resourcesFolderLocation,
 
   if (nullptr == _loadedSurfacesThreadQueue) {
     LOGERR("Error, bad alloc for ThreadSafeQueue<SDL_Surface *>");
-    return FAILURE;
+    return ErrorCode::FAILURE;
   }
 
-  return SUCCESS;
+  return ErrorCode::SUCCESS;
 }
 
 void ResourceContainer::deinit() {
@@ -243,15 +240,15 @@ void ResourceContainer::loadAllStoredResources(
   loadAllStoredResourcesMultiCore(WORKER_THREAD_NUM);
 }
 
-int32_t ResourceContainer::getRsrcData(const uint64_t rsrcId,
-                                       const ResourceData *&outData) {
+ErrorCode ResourceContainer::getRsrcData(const uint64_t rsrcId,
+                                         const ResourceData *&outData) {
   auto it = _rsrcDataMap.find(rsrcId);
   // key not found
   if (it == _rsrcDataMap.end()) {
-    return FAILURE;
+    return ErrorCode::FAILURE;
   }
   outData = &it->second; // key found
-  return SUCCESS;
+  return ErrorCode::SUCCESS;
 }
 
 void ResourceContainer::loadResourceOnDemandSingle(const uint64_t rsrcId) {
@@ -475,41 +472,35 @@ void ResourceContainer::detachRsrcTexture(const uint64_t rsrcId) {
       * rsrcDataMapIt->second.imageRect.h * RGBA_BYTE_SIZE;
 }
 
-int32_t ResourceContainer::loadSurface(const uint64_t rsrcId,
-                                       SDL_Surface *&outSurface) {
+ErrorCode ResourceContainer::loadSurface(const uint64_t rsrcId,
+                                         SDL_Surface *&outSurface) {
   const ResourceData *resData = nullptr;
 
-  if (SUCCESS != getRsrcData(rsrcId, resData)) {
-    LOGERR(
-        "Error, ::getRsrcData() failed for rsrcId: %#16lX, "
-        "will not load Surface",
-        rsrcId);
-
-    return FAILURE;
+  if (ErrorCode::SUCCESS != getRsrcData(rsrcId, resData)) {
+    LOGERR("Error, ::getRsrcData() failed for rsrcId: %#16lX, "
+           "will not load Surface", rsrcId);
+    return ErrorCode::FAILURE;
   }
 
-  if (SUCCESS != loadSurfaceInternal(resData, outSurface)) {
-    LOGERR(
-        "Error, ::loadSurfaceInternal() failed for rsrcId: %#16lX, "
-        "will not load Surface",
-        rsrcId);
-
-    return FAILURE;
+  if (ErrorCode::SUCCESS != loadSurfaceInternal(resData, outSurface)) {
+    LOGERR("Error, ::loadSurfaceInternal() failed for rsrcId: %#16lX, "
+           "will not load Surface", rsrcId);
+    return ErrorCode::FAILURE;
   }
 
-  return SUCCESS;
+  return ErrorCode::SUCCESS;
 }
 
-int32_t ResourceContainer::loadSurfaceInternal(const ResourceData *rsrcData,
-                                               SDL_Surface *&outSurface) {
-  if (SUCCESS !=
+ErrorCode ResourceContainer::loadSurfaceInternal(const ResourceData *rsrcData,
+                                                 SDL_Surface *&outSurface) {
+  if (ErrorCode::SUCCESS !=
       Texture::loadSurfaceFromFile(rsrcData->header.path.c_str(), outSurface)) {
     LOGERR("Error in loadSurfaceFromFile() for rsrcId: %#16lX",
            rsrcData->header.hashValue);
-    return FAILURE;
+    return ErrorCode::FAILURE;
   }
 
-  return SUCCESS;
+  return ErrorCode::SUCCESS;
 }
 
 void ResourceContainer::loadAllStoredResourcesSingleCore() {
@@ -523,7 +514,7 @@ void ResourceContainer::loadAllStoredResourcesSingleCore() {
   while (_resDataThreadQueue->tryPop(resData)) {
     widgetPath = _resourcesFolderLocation;
     widgetPath.append(resData.header.path);
-    if (SUCCESS !=
+    if (ErrorCode::SUCCESS !=
         Texture::loadSurfaceFromFile(widgetPath.c_str(), newSurface)) {
       LOGERR(
           "Warning, error in loadSurfaceFromFile() for file %s. "
@@ -563,7 +554,7 @@ void ResourceContainer::loadAllStoredResourcesSingleCore() {
     currSurfaceWidth = currResSurface.second->w;
     currSurfaceHeight = currResSurface.second->h;
 
-    if (SUCCESS !=
+    if (ErrorCode::SUCCESS !=
         Texture::loadTextureFromSurface(currResSurface.second, newTexture)) {
       LOGERR("Error in Texture::loadTextureFromSurface() for rsrcId: %#16lX",
              currResSurface.first);
@@ -637,12 +628,10 @@ void ResourceContainer::loadAllStoredResourcesMultiCore(
     currSurfaceWidth = currResSurface.second->w;
     currSurfaceHeight = currResSurface.second->h;
 
-    if (SUCCESS !=
+    if (ErrorCode::SUCCESS !=
         Texture::loadTextureFromSurface(currResSurface.second, newTexture)) {
-      LOGERR(
-          "Error in Texture::loadTextureFromSurface() for rsrcId: "
-          "%#16lX",
-          currResSurface.first);
+      LOGERR("Error in Texture::loadTextureFromSurface() for rsrcId: "
+             "%#16lX", currResSurface.first);
 
       return;
     } else {

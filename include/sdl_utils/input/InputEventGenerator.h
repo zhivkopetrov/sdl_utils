@@ -1,12 +1,11 @@
 #ifndef SDL_UTILS_INPUTEVENTGENERATOR_H_
 #define SDL_UTILS_INPUTEVENTGENERATOR_H_
 
-// C system headers
-
-// C++ system headers
+// System headers
 #include <cstdint>
 
 // Other libraries headers
+#include "utils/ErrorCode.h"
 
 // Own components headers
 #include "sdl_utils/input/TouchEntityInterface.h"
@@ -28,9 +27,9 @@ public:
   /** @brief used to allocate memory for the OS dedicated communication
    *        mechanism and initialise SDL support for user defined events
    *
-   *  @return int32_t - error code
+   *  @return ErrorCode - error code
    *  */
-  int32_t init();
+  ErrorCode init();
 
   /** @brief deallocates memory for the OS dedicated communication mechanism
    * */

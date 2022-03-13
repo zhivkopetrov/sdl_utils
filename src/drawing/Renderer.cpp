@@ -1,9 +1,7 @@
 // Corresponding header
 #include "sdl_utils/drawing/Renderer.h"
 
-// C system headers
-
-// C++ system headers
+// System headers
 #include <algorithm>
 
 // Other libraries headers
@@ -12,7 +10,6 @@
 #include "utils/concurrency/ThreadSafeQueue.h"
 #include "utils/data_type/EnumClassUtils.h"
 #include "utils/drawing/Color.h"
-#include "utils/ErrorCode.h"
 #include "utils/Log.h"
 
 // Own components headers
@@ -58,13 +55,13 @@ Renderer::Renderer()
       _isRendererBusy(false),
       _isMultithreadTextureLoadingEnabled(false) {}
 
-int32_t Renderer::init(const RendererConfig& cfg) {
+ErrorCode Renderer::init(const RendererConfig& cfg) {
   _window = cfg.window;
 
   for (int32_t i = 0; i < SUPPORTED_BACK_BUFFERS; ++i) {
-    if (SUCCESS != _rendererState[i].init(cfg)) {
+    if (ErrorCode::SUCCESS != _rendererState[i].init(cfg)) {
       LOGERR("_rendererState[%d].init() failed", i);
-      return FAILURE;
+      return ErrorCode::FAILURE;
     }
   }
 
@@ -72,11 +69,9 @@ int32_t Renderer::init(const RendererConfig& cfg) {
    *                     (used for image scaling /pixel interpolation/ )
    * */
   if (!SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1")) {
-    LOGERR(
-        "Warning: Linear texture filtering not enabled! "
-        "SDL_SetHint() failed. SDL Error: %s",
-        SDL_GetError());
-    return FAILURE;
+    LOGERR("Warning: Linear texture filtering not enabled! "
+           "SDL_SetHint() failed. SDL Error: %s", SDL_GetError());
+    return ErrorCode::FAILURE;
   }
 
   // Create the actual hardware renderer for window
@@ -89,17 +84,17 @@ int32_t Renderer::init(const RendererConfig& cfg) {
       );
   if (nullptr == _sdlRenderer) {
     LOGERR("Renderer could not be created! SDL Error: %s", SDL_GetError());
-    return FAILURE;
+    return ErrorCode::FAILURE;
   }
 
   // Initialize renderer color
-  if (SUCCESS !=
+  if (EXIT_SUCCESS !=
       SDL_SetRenderDrawColor(_sdlRenderer, Colors::BLACK.rgba.r,
                              Colors::BLACK.rgba.g, Colors::BLACK.rgba.b,
                              Colors::BLACK.rgba.a)) {
     LOGERR("Error in, SDL_SetRenderDrawColor(), SDL Error: %s",
            SDL_GetError());
-    return FAILURE;
+    return ErrorCode::FAILURE;
   }
 
 #if ENABLE_VSYNC && DISABLE_DOUBLE_BUFFERING_SWAP_INTERVAL
@@ -114,12 +109,11 @@ int32_t Renderer::init(const RendererConfig& cfg) {
   LoadingScreen::setRenderer(_sdlRenderer);
 
   if (!SDL_RenderTargetSupported(_sdlRenderer)) {
-    LOGERR(
-        "Warning, Render Target change is not supported on this "
-        "platform. This will result in non-working FBOs.");
+    LOGERR("Warning, Render Target change is not supported on this "
+           "platform. This will result in non-working FBOs.");
   }
 
-  return SUCCESS;
+  return ErrorCode::SUCCESS;
 }
 
 void Renderer::deinit() {
@@ -265,38 +259,52 @@ void Renderer::swapBackBuffers_UT() {
   _updateCondVar.notify_one();
 }
 
-int32_t Renderer::unlockRenderer_UT() {
+ErrorCode Renderer::unlockRenderer_UT() {
   if (_rendererState[_updateStateIdx].isLocked) {
     _rendererState[_updateStateIdx].isLocked = false;
   } else {
-    LOGERR(
-        "Error, trying to unlock the main renderer, "
-        "when it's already unlocked");
-    return FAILURE;
+    LOGERR("Error, trying to unlock the main renderer, "
+          "when it's already unlocked");
+    return ErrorCode::FAILURE;
   }
 
-  return SUCCESS;
+  return ErrorCode::SUCCESS;
 }
 
-int32_t Renderer::lockRenderer_UT() {
+ErrorCode Renderer::lockRenderer_UT() {
   if (!_rendererState[_updateStateIdx].isLocked) {
     _rendererState[_updateStateIdx].isLocked = true;
-
     addRendererCmd_UT(RendererCmd::RESET_RENDERER_TARGET);
   } else {
-    LOGERR(
-        "Error, trying to lock the main renderer, "
-        "when it's already locked");
-    return FAILURE;
+    LOGERR("Error, trying to lock the main renderer, "
+           "when it's already locked");
+    return ErrorCode::FAILURE;
   }
 
-  return SUCCESS;
+  return ErrorCode::SUCCESS;
 }
 
 void Renderer::setRendererClearColor_UT(const Color &clearColor) {
   addRendererCmd_UT(RendererCmd::CHANGE_CLEAR_COLOR,
                     reinterpret_cast<const uint8_t *>(&clearColor),
                     sizeof(clearColor));
+}
+
+void Renderer::resetAbsoluteGlobalMovement_UT() {
+  setAbsoluteGlobalMovement_UT(0, 0);
+}
+
+void Renderer::setAbsoluteGlobalMovement_UT(const int32_t x, const int32_t y) {
+  _rendererState[_updateStateIdx].globalOffsetX = x;
+  _rendererState[_updateStateIdx].globalOffsetY = y;
+}
+
+void Renderer::moveGlobalX_UT(const int32_t x) {
+  _rendererState[_updateStateIdx].globalOffsetX += x;
+}
+
+void Renderer::moveGlobalY_UT(const int32_t y) {
+  _rendererState[_updateStateIdx].globalOffsetY += y;
 }
 
 void Renderer::executeRenderCommands_RT() {
@@ -442,9 +450,8 @@ void Renderer::clearScreenExecution_RT() {
 #endif /* LOCAL_DEBUG */
 
   // clear screen
-  if (SUCCESS != SDL_RenderClear(_sdlRenderer)) {
+  if (EXIT_SUCCESS != SDL_RenderClear(_sdlRenderer)) {
     LOGERR("Error in, SDL_RenderClear(), SDL Error: %s", SDL_GetError());
-
     return;
   }
 }
@@ -456,25 +463,22 @@ void Renderer::finishFrameExecution_RT() {
   _rendererState[IDX].renderData >> overrideRendererLockCheck;
 
 #if LOCAL_DEBUG
-  LOGY(
-      "Executing finishFrameExecution_RT(), overrideRendererLockCheck: %d "
-      "(with %lu bytes of data)",
-      overrideRendererLockCheck, sizeof(overrideRendererLockCheck));
+  LOGY("Executing finishFrameExecution_RT(), overrideRendererLockCheck: %d "
+       "(with %lu bytes of data)",
+       overrideRendererLockCheck, sizeof(overrideRendererLockCheck));
 #endif /* LOCAL_DEBUG */
 
   if (!overrideRendererLockCheck && !_rendererState[IDX].isLocked) {
-    LOGERR(
-        "WARNING, WARNING, WARNING, Renderer is left unlocked! Consider "
-        "locking back the renderer in the same draw cycle after you are "
-        "done with your work.");
+    LOGERR("WARNING, WARNING, WARNING, Renderer is left unlocked! Consider "
+           "locking back the renderer in the same draw cycle after you are "
+           "done with your work.");
 
-    LOGC("Developer hint: Maybe you left some SpriteBuffer unlocked?");
+    LOGC("Developer hint: Maybe you left some FBO unlocked?");
 
-    LOGR(
-        "In order for the system to recover from this logical FatalError "
-        "main System Renderer will lock itself (probably leaving the "
-        "entity that unlocked it in the first place in broken state "
-        "/usually this a SpriteBuffer/ )");
+    LOGR("In order for the system to recover from this logical FatalError "
+         "main System Renderer will lock itself (probably leaving the "
+         "entity that unlocked it in the first place in broken state "
+         "/usually this a FBO/ )");
 
     _rendererState[IDX].isLocked = true;
     resetRendererTarget_RT();
@@ -485,12 +489,10 @@ void Renderer::finishFrameExecution_RT() {
 
 #ifndef NDEBUG
   if (0 == USED_SIZE) {
-    LOGERR(
-        "Critical Error, queued widgets for drawing is 0! This usually "
-        "means that there is error internal logic of threads "
-        "synchronisation or someone might have called ::finishFrame() "
-        "with 0 draw calls made (which is not allowed)");
-
+    LOGERR("Critical Error, queued widgets for drawing is 0! This usually "
+           "means that there is error internal logic of threads "
+           "synchronisation or someone might have called ::finishFrame() "
+           "with 0 draw calls made (which is not allowed)");
     return;
   }
 #endif /* NDEBUG */
@@ -520,14 +522,12 @@ void Renderer::changeClearColor_RT() {
   _rendererState[_renderStateIdx].renderData >> clearColor;
 
 #if LOCAL_DEBUG
-  LOGY(
-      "Executing changeClearColor_RT(), clerColor32BitRGBA: %u (with %lu "
-      "bytes of data",
-      clearColor.get32BitRGBA(), sizeof(clearColor));
+  LOGY("Executing changeClearColor_RT(), clerColor32BitRGBA: %u (with %lu "
+       "bytes of data", clearColor.get32BitRGBA(), sizeof(clearColor));
 #endif /* LOCAL_DEBUG */
 
   // set renderer drawing color
-  if (SUCCESS !=
+  if (EXIT_SUCCESS !=
       SDL_SetRenderDrawColor(_sdlRenderer, clearColor.rgba.r, clearColor.rgba.g,
                              clearColor.rgba.b, clearColor.rgba.a)) {
     LOGERR("Error in, SDL_SetRenderDrawColor(), SDL Error: %s", SDL_GetError());
@@ -540,10 +540,8 @@ void Renderer::loadTextureSingle_RT() {
   _rendererState[_renderStateIdx].renderData >> rsrcId;
 
 #if LOCAL_DEBUG
-  LOGY(
-      "Executing loadTextureSingle_RT(), rsrcId: %#16lX with (%lu bytes of "
-      "data)",
-      rsrcId, sizeof(rsrcId));
+  LOGY("Executing loadTextureSingle_RT(), rsrcId: %#16lX with (%lu bytes of "
+       "data)",rsrcId, sizeof(rsrcId));
 #endif /* LOCAL_DEBUG */
 
   SDL_Surface *surface = nullptr;
@@ -596,7 +594,7 @@ void Renderer::loadTextureSingle_RT() {
     }
   } else  // single thread approach
   {
-    if (SUCCESS != _containers->loadSurface(rsrcId, surface)) {
+    if (ErrorCode::SUCCESS != _containers->loadSurface(rsrcId, surface)) {
       LOGERR("Error, gRsrcMgrBase->loadSurface() failed for rsrcId: "
              "%#16lX", rsrcId);
       return;
@@ -608,7 +606,7 @@ void Renderer::loadTextureSingle_RT() {
   const int32_t surfaceHeight = surface->h;
 
   SDL_Texture *texture = nullptr;
-  if (SUCCESS != Texture::loadTextureFromSurface(surface, texture)) {
+  if (ErrorCode::SUCCESS != Texture::loadTextureFromSurface(surface, texture)) {
     LOGERR("Error in Texture::loadTextureFromSurface() for rsrcId: %#16lX",
            rsrcId);
     return;
@@ -626,10 +624,8 @@ void Renderer::loadTextureMultiple_RT() {
   std::vector<uint64_t> rsrcIds(itemsToPop);
 
 #if LOCAL_DEBUG
-  LOGY(
-      "Executing loadTextureMultiple_RT(), itemsTopPop: %u, batchId: %d "
-      "(with %lu bytes of data)",
-      itemsToPop, batchId,
+  LOGY("Executing loadTextureMultiple_RT(), itemsTopPop: %u, batchId: %d "
+       "(with %lu bytes of data)", itemsToPop, batchId,
       (sizeof(itemsToPop) + sizeof(batchId) + (itemsToPop * sizeof(uint64_t))));
 #endif /* LOCAL_DEBUG */
 
@@ -708,12 +704,10 @@ void Renderer::loadTextureMultiple_RT() {
       currSurfaceWidth = currResSurface.second->w;
       currSurfaceHeight = currResSurface.second->h;
 
-      if (SUCCESS !=
+      if (ErrorCode::SUCCESS !=
           Texture::loadTextureFromSurface(currResSurface.second, texture)) {
-        LOGERR(
-            "Error in Texture::loadTextureFromSurface() for rsrcId: "
-            "%#16lX",
-            currResSurface.first);
+        LOGERR("Error in Texture::loadTextureFromSurface() for rsrcId: "
+               "%#16lX", currResSurface.first);
 
         return;
       }
@@ -733,24 +727,20 @@ void Renderer::loadTextureMultiple_RT() {
 
     // start uploading on the GPU on the rendering thread
     while (0 != itemsToPop) {
-      if (SUCCESS !=
+      if (ErrorCode::SUCCESS !=
           _containers->loadSurface(rsrcIds[currIndex], surface)) {
-        LOGERR(
-            "Error, gRsrcMgrBase->loadSurface() failed for rsrcId: "
-            "%#16lX",
-            rsrcIds[currIndex]);
-
+        LOGERR("Error, gRsrcMgrBase->loadSurface() failed for rsrcId: %#16lX",
+               rsrcIds[currIndex]);
         return;
       }
 
       currSurfaceWidth = surface->w;
       currSurfaceHeight = surface->h;
 
-      if (SUCCESS != Texture::loadTextureFromSurface(surface, texture)) {
-        LOGERR(
-            "Error in Texture::loadTextureFromSurface() for rsrcId: "
-            "%#16lX",
-            rsrcIds[currIndex]);
+      if (ErrorCode::SUCCESS !=
+          Texture::loadTextureFromSurface(surface, texture)) {
+        LOGERR("Error in Texture::loadTextureFromSurface() for rsrcId: %#16lX",
+               rsrcIds[currIndex]);
 
         return;
       }
@@ -777,9 +767,8 @@ void Renderer::destroyTexture_RT() {
   _rendererState[_renderStateIdx].renderData >> rsrcId;
 
 #if LOCAL_DEBUG
-  LOGY(
-      "Executing destroyTexture_RT(), rsrcId: %#16lX (with %lu bytes of "
-      "data)",
+  LOGY("Executing destroyTexture_RT(), rsrcId: %#16lX (with %lu bytes of "
+       "data)",
       rsrcId, sizeof(rsrcId));
 #endif /* LOCAL_DEBUG */
 
@@ -798,19 +787,17 @@ void Renderer::createFBO_RT() {
   _rendererState[_renderStateIdx].renderData >> width >> height >> containerId;
 
 #if LOCAL_DEBUG
-  LOGY(
-      "Executing createFBO_RT(), width: %d, height: %d, containerId: %d "
-      "(with %lu bytes of data)",
-      width, height, containerId,
-      (sizeof(width) + sizeof(height) + sizeof(containerId)));
+  LOGY("Executing createFBO_RT(), width: %d, height: %d, containerId: %d "
+       "(with %lu bytes of data)", width, height, containerId,
+       (sizeof(width) + sizeof(height) + sizeof(containerId)));
 #endif /* LOCAL_DEBUG */
 
   SDL_Texture *texture = nullptr;
 
   // allocate new empty Texture
-  if (SUCCESS != Texture::createEmptyTexture(width, height, texture)) {
+  if (ErrorCode::SUCCESS !=
+      Texture::createEmptyTexture(width, height, texture)) {
     LOGERR("Texture::createEmptyTexture() failed");
-
     return;
   }
 
@@ -840,16 +827,14 @@ void Renderer::changeRendererTarget_RT() {
   _rendererState[_renderStateIdx].renderData >> containerId;
 
 #if LOCAL_DEBUG
-  LOGY(
-      "Executing changeRendererTarget_RT(), containerId: %d (with %lu bytes "
-      "of data)",
-      containerId, sizeof(containerId));
+  LOGY("Executing changeRendererTarget_RT(), containerId: %d (with %lu bytes "
+       "of data)", containerId, sizeof(containerId));
 #endif /* LOCAL_DEBUG */
 
   _containers->getFboTexture(containerId, texture);
 
   // set SpriteBuffer texture as renderer target
-  if (SUCCESS != Texture::setRendererTarget(texture)) {
+  if (ErrorCode::SUCCESS != Texture::setRendererTarget(texture)) {
     LOGERR("Error, Texture::setRendererTarget() failed");
   }
 }
@@ -859,12 +844,10 @@ void Renderer::resetRendererTarget_RT() {
   LOGY("Executing resetRendererTarget_RT() (with 0 bytes of data)");
 #endif /* LOCAL_DEBUG */
 
-  if (SUCCESS != Texture::setRendererTarget(nullptr))
+  if (ErrorCode::SUCCESS != Texture::setRendererTarget(nullptr))
   {
-    LOGERR(
-        "Error, default renderer target could not be set. "
-        "SDL_SetRenderTarget() failed, SDL Error: %s",
-        SDL_GetError());
+    LOGERR("Error, default renderer target could not be set. "
+           "SDL_SetRenderTarget() failed, SDL Error: %s", SDL_GetError());
   }
 }
 
@@ -882,7 +865,7 @@ void Renderer::clearRendererTarget_RT() {
       clearColor.get32BitRGBA(), sizeof(clearColor));
 #endif /* LOCAL_DEBUG */
 
-  if (SUCCESS != Texture::clearCurrentRendererTarget(clearColor)) {
+  if (ErrorCode::SUCCESS != Texture::clearCurrentRendererTarget(clearColor)) {
     LOGERR("Error in Texture::clearCurrentRendererTarget()");
   }
 }
@@ -893,16 +876,13 @@ void Renderer::updateRendererTarget_RT() {
   const uint64_t DATA_TO_READ = itemsSize * sizeof(DrawParams);
 
 #if LOCAL_DEBUG
-  LOGY(
-      "Executing updateRendererTarget_RT(), itemsSize: %u (with %lu bytes of"
-      " data)",
-      itemsSize, sizeof(DATA_TO_READ) + sizeof(itemsSize));
+  LOGY("Executing updateRendererTarget_RT(), itemsSize: %u (with %lu bytes of"
+       " data)", itemsSize, sizeof(DATA_TO_READ) + sizeof(itemsSize));
 #endif /* LOCAL_DEBUG */
 
   DrawParams *storedItems = new DrawParams[itemsSize];
   if (nullptr == storedItems) {
     LOGERR("Error, bad alloc for DrawParams()");
-
     return;
   }
 
@@ -956,13 +936,12 @@ void Renderer::changeTextureBlending_RT() {
   }
 
 #if LOCAL_DEBUG
-  LOGY(
-      "Executing changeTextureBlending_RT(), widgetType: %hhu, blendmode: %hhu"
-      " (with %lu bytes of data)",
-      getEnumValue(widgetType), getEnumValue(blendmode), parsedBytes);
+  LOGY("Executing changeTextureBlending_RT(), widgetType: %hhu, blendmode: %hhu"
+       " (with %lu bytes of data)",
+       getEnumValue(widgetType), getEnumValue(blendmode), parsedBytes);
 #endif /* LOCAL_DEBUG */
 
-  if (SUCCESS != Texture::setBlendMode(texture, blendmode)) {
+  if (ErrorCode::SUCCESS != Texture::setBlendMode(texture, blendmode)) {
     LOGERR("Error in Texture::setBlendMode() for  blendMode: %hhu",
         getEnumValue(blendmode));
   }
@@ -1012,13 +991,10 @@ void Renderer::changeTextureOpacity_RT() {
     _containers->getTextTexture(containerId, texture);
   } else if (WidgetType::SPRITE_BUFFER == widgetType) {
     _containers->getFboTexture(containerId, texture);
-  } else  // WidgetType::IMAGE == widgetType
-  {
-    LOGERR(
-        "Error, changeTextureBlending_RT() on WidgetType::IMAGE invoked."
-        " Change in Alpha should only be made for WidgetType::TEXT or "
-        "WidgetType::SPRITE_BUFFER");
-
+  } else { // WidgetType::IMAGE == widgetType
+    LOGERR("Error, changeTextureBlending_RT() on WidgetType::IMAGE invoked."
+           " Change in Alpha should only be made for WidgetType::TEXT or "
+           "WidgetType::SPRITE_BUFFER");
     return;
   }
 
@@ -1074,15 +1050,13 @@ void Renderer::createTTFText_RT(const bool isTextBeingReloaded) {
   }
 
 #if LOCAL_DEBUG
-  LOGY(
-      "Executing cteateTTFText_RT(), contaierID: %d, fontId: %#16lX, "
-      "textColor.32bitRGBA: %u, textLenght: %lu, textContent: %s (with %lu "
-      "bytes of data)",
-      containerId, fontId, textColor.get32BitRGBA(), textLength, textContent,
-      parsedBytes);
+  LOGY("Executing cteateTTFText_RT(), contaierID: %d, fontId: %#16lX, "
+       "textColor.32bitRGBA: %u, textLenght: %lu, textContent: %s (with %lu "
+       "bytes of data)", containerId, fontId, textColor.get32BitRGBA(),
+       textLength, textContent, parsedBytes);
 #endif /* LOCAL_DEBUG */
 
-  if (SUCCESS !=
+  if (ErrorCode::SUCCESS !=
       Texture::loadFromText(textContent, (*_containers->getFontsMap())[fontId],
                            textColor, texture, createdWidth, createdHeight)) {
     LOGERR("Error in loadFromText() for fontId: %#16lX", fontId);
@@ -1104,10 +1078,8 @@ int32_t Renderer::destroyTTFText_RT() {
   _rendererState[_renderStateIdx].renderData >> containerId;
 
 #if LOCAL_DEBUG
-  LOGY(
-      "Executing destroyTTFText_RT(), containerId: %d (with %lu bytes of "
-      "data)",
-      containerId, sizeof(containerId));
+  LOGY("Executing destroyTTFText_RT(), containerId: %d (with %lu bytes of "
+       "data)", containerId, sizeof(containerId));
 #endif /* LOCAL_DEBUG */
 
   SDL_Texture *texture = nullptr;
@@ -1169,11 +1141,10 @@ void Renderer::enableDisableMultithreadTextureLoading_RT() {
       _isMultithreadTextureLoadingEnabled;
 
 #if LOCAL_DEBUG
-  LOGY(
-      "Executing enableDisableMultithreadTextureLoading_RT(), "
-      "_isMultithreadTextureLoadingEnabled: %d (with %lu bytes of data)",
-      _isMultithreadTextureLoadingEnabled,
-      sizeof(_isMultithreadTextureLoadingEnabled));
+  LOGY("Executing enableDisableMultithreadTextureLoading_RT(), "
+       "_isMultithreadTextureLoadingEnabled: %d (with %lu bytes of data)",
+       _isMultithreadTextureLoadingEnabled,
+       sizeof(_isMultithreadTextureLoadingEnabled));
 #endif /* LOCAL_DEBUG */
 }
 
