@@ -8,12 +8,7 @@ project(
     VERSION 1.0.0
 )
 
-list(
-    APPEND CMAKE_MODULE_PATH
-    ${CMAKE_CURRENT_SOURCE_DIR}/cmake_helpers/find_modules
-)
-include(${CMAKE_CURRENT_SOURCE_DIR}/cmake_helpers/helpers.cmake)
-
+find_package(cmake_helpers REQUIRED)
 find_package(resource_utils REQUIRED)
 find_package(SDL2 REQUIRED)
 find_package(SDL2_image REQUIRED)
