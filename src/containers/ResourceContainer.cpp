@@ -131,8 +131,15 @@ void ResourceContainer::deinit() {
 
     using namespace std::literals;
 
-    // wait for some time to be sure the queues has completed shutdown
+    // wait for the resource loading threads to acquire the lock
     std::this_thread::sleep_for(2ms);
+
+    while (!_resDataThreadQueue->isShutDowned()) {
+      std::this_thread::sleep_for(1ms);
+    }
+    while (!_loadedSurfacesThreadQueue->isShutDowned()) {
+      std::this_thread::sleep_for(1ms);
+    }
 
     // and release memory for the queues
     delete _resDataThreadQueue;
