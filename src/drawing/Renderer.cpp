@@ -53,6 +53,7 @@ Renderer::Renderer()
       _updateStateIdx(0),
       _renderStateIdx(1),
       _isRendererBusy(false),
+      _isShutdowned(false),
       _isMultithreadTextureLoadingEnabled(false) {}
 
 ErrorCode Renderer::init(const RendererConfig& cfg) {
@@ -223,15 +224,19 @@ void Renderer::swapBackBuffers_UT() {
   // acquire lock for render mutex
   std::unique_lock<std::mutex> renderLock(_renderMutex);
 
+  if (_isShutdowned) {
+    return;
+  }
+
   /** Condition variables can be subject to spurious wake-ups,
    *  so it is important to check the actual condition
    *  being waited for when the call to wait returns
    * */
   while (_isRendererBusy) {
-    _renderCondVar.wait(renderLock);
 #if LOCAL_DEBUG
     LOGC("sleeping on _renderCondVar");
 #endif /* LOCAL_DEBUG */
+    _renderCondVar.wait(renderLock);
   }
 
 #if LOCAL_DEBUG
@@ -421,6 +426,10 @@ void Renderer::executeRenderCommands_RT() {
           break;
 
         case RendererCmd::EXIT_RENDERING_LOOP:
+          _isShutdowned = true;
+          _isRendererBusy = false;
+          // wake the update thread that is sleeping on the condition variable
+          _renderCondVar.notify_one();
           return;
 
         default:

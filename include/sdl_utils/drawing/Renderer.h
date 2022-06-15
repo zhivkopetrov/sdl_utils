@@ -426,12 +426,17 @@ class Renderer : public NonCopyable, public NonMoveable {
    */
   mutable RendererState _rendererState[SUPPORTED_BACK_BUFFERS];
 
-  /** a synchronisation flag used to determine whether the renderer
+  /** a synchronization flag used to determine whether the renderer
    *  thread is busy.
    *
    *  Direction: renderer thread --> update thread
    **/
   bool _isRendererBusy;
+
+  /* used to mark the state of the renderer
+   * This is needed to prevent deadlocks from the update thread
+   * when renderer has already been shut downed*/
+  bool _isShutdowned;
 
   /** a flag to determine whether multithreading texture loading is used.
    *     > If TRUE -> other threads are responsible for loading the
