@@ -43,6 +43,8 @@ add_library(
         ${_INC_DIR}/containers/TextContainer.h
         ${_INC_DIR}/drawing/defines/DrawConstants.h
         ${_INC_DIR}/drawing/defines/MonitorDefines.h
+        ${_INC_DIR}/drawing/defines/RendererDefines.h
+        ${_INC_DIR}/drawing/defines/DrawUtilityDefines.h
         ${_INC_DIR}/drawing/config/LoadingScreenConfig.h
         ${_INC_DIR}/drawing/config/RendererConfig.h
         ${_INC_DIR}/drawing/config/MonitorWindowConfig.h

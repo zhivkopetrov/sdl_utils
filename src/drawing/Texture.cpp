@@ -6,6 +6,7 @@
 // Other libraries headers
 #include <SDL_image.h>
 #include <SDL_ttf.h>
+#include "utils/time/Time.h"
 #include "utils/drawing/Color.h"
 #include "utils/Log.h"
 
@@ -206,6 +207,8 @@ ErrorCode Texture::createEmptyTexture(const int32_t width, const int32_t height,
 ErrorCode Texture::takeScreenshot(
     const char *file, const ScreenshotContainer container,
     const int32_t quality) {
+  Time time;
+
   SDL_Surface* surface = nullptr;
   if (ErrorCode::SUCCESS !=
       createEmptySurface(_monitorRect.w, _monitorRect.h, surface)) {
@@ -241,6 +244,10 @@ ErrorCode Texture::takeScreenshot(
   SDL_UnlockSurface(surface);
 
   freeSurface(surface);
+
+  const uint64_t timeMs =
+      static_cast<uint64_t>(time.getElapsed().toMilliseconds());
+  LOG("Screenshot [%s] took [%lu ms] to capture and store", file, timeMs);
   return ErrorCode::SUCCESS;
 }
 
