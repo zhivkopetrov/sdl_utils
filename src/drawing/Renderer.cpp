@@ -3,6 +3,7 @@
 
 // System headers
 #include <algorithm>
+#include <cstring>
 
 // Other libraries headers
 #include <SDL_hints.h>
@@ -40,7 +41,8 @@ constexpr const char* RENDERER_CMD_NAMES[]{
     "CREATE_TTF_TEXT",
     "RELOAD_TTF_TEXT",
     "DESTROY_TTF_TEXT",
-    "ENABLE_DISABLE_MULTITHREAD_TEXTURE_LOADING"
+    "ENABLE_DISABLE_MULTITHREAD_TEXTURE_LOADING",
+    "TAKE_SCREENSHOT",
     "EXIT_RENDERING_LOOP",
 };
 }
@@ -202,10 +204,8 @@ void Renderer::addRendererCmd_UT(const RendererCmd rendererCmd,
 
 void Renderer::addRendererData_UT(const uint8_t *data, const uint64_t bytes) {
   if (bytes != _rendererState[_updateStateIdx].renderData.write(data, bytes)) {
-    LOGERR(
-        "Warning, Circular buffer overflow for %lu bytes"
-        "(write data size is bigger than buffer capacity)!",
-        bytes);
+    LOGERR("Warning, Circular buffer overflow for %lu bytes"
+          "(write data size is bigger than buffer capacity)!", bytes);
   }
 
 #if LOCAL_DEBUG
@@ -287,6 +287,29 @@ ErrorCode Renderer::lockRenderer_UT() {
   }
 
   return ErrorCode::SUCCESS;
+}
+
+void Renderer::takeScreenshot_UT(const char *file,
+                                 const ScreenshotContainer container,
+                                 const int32_t quality) {
+  const uint64_t fileStrLen = std::strlen(file);
+  uint8_t data[sizeof(fileStrLen) + fileStrLen + sizeof(container) +
+               sizeof(quality)];
+  uint64_t populatedBytes = 0;
+
+  memcpy(data + populatedBytes, &container, sizeof(container));
+  populatedBytes += sizeof(container);
+
+  memcpy(data + populatedBytes, &quality, sizeof(quality));
+  populatedBytes += sizeof(quality);
+
+  memcpy(data + populatedBytes, &fileStrLen, sizeof(fileStrLen));
+  populatedBytes += sizeof(fileStrLen);
+
+  memcpy(data + populatedBytes, file, fileStrLen);
+  populatedBytes += fileStrLen;
+
+  addRendererCmd_UT(RendererCmd::TAKE_SCREENSHOT, data, populatedBytes);
 }
 
 void Renderer::setRendererClearColor_UT(const Color &clearColor) {
@@ -419,6 +442,10 @@ void Renderer::executeRenderCommands_RT() {
 
         case RendererCmd::DESTROY_TTF_TEXT:
           destroyTTFText_RT();
+          break;
+
+        case RendererCmd::TAKE_SCREENSHOT:
+          takeScreenshot_RT();
           break;
 
         case RendererCmd::ENABLE_DISABLE_MULTITHREAD_TEXTURE_LOADING:
@@ -1143,6 +1170,54 @@ void Renderer::drawWidgetsToBackBuffer_RT(const DrawParams drawParamsArr[],
       Texture::draw(texture, drawParamsArr[i]);
     }
   }
+}
+
+void Renderer::takeScreenshot_RT() {
+  ScreenshotContainer screenshotContainer = ScreenshotContainer::PNG;
+  int32_t quality = 0;
+  uint64_t textLength = 0;
+
+  _rendererState[_renderStateIdx].renderData >> screenshotContainer
+                                             >> quality >> textLength;
+  [[maybe_unused]]const uint64_t parsedBytes =
+      sizeof(screenshotContainer) + sizeof(quality) + sizeof(textLength)
+      + textLength;
+
+  //+1 to leave space for manually populating the terminating null character
+  char *textContent = new char[textLength + 1];
+  if (nullptr == textContent) {
+    LOGERR("Error, bad alloc for textContent");
+    return;
+  }
+
+  textContent[textLength] = '\0';
+
+  if (textLength != _rendererState[_renderStateIdx].renderData.read(
+                        reinterpret_cast<uint8_t *>(textContent), textLength)) {
+    LOGERR("Warning, Circular buffer overflow(read data requested is "
+           "bigger than buffer capacity)!");
+    delete[] textContent;
+    textContent = nullptr;
+    return;
+  }
+
+#if LOCAL_DEBUG
+  LOGY("Executing takeScreenshot_RT(), screenshotContainer: %hhu, quality: %d, "
+       "textLenght: %lu, textContent: %s (with %lu "
+       "bytes of data)", getEnumValue(screenshotContainer), quality, textLength,
+       textContent, parsedBytes);
+#endif /* LOCAL_DEBUG */
+
+  if (ErrorCode::SUCCESS !=
+      Texture::takeScreenshot(textContent, screenshotContainer, quality)) {
+    LOGERR("Error, takeScreenshot() failed for file: [%s]", textContent);
+    delete[] textContent;
+    textContent = nullptr;
+    return;
+  }
+
+  delete[] textContent;
+  textContent = nullptr;
 }
 
 void Renderer::enableDisableMultithreadTextureLoading_RT() {

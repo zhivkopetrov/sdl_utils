@@ -8,6 +8,7 @@
 
 // Own components headers
 #include "sdl_utils/drawing/defines/RendererDefines.h"
+#include "sdl_utils/drawing/defines/DrawConstants.h"
 #include "utils/ErrorCode.h"
 
 // Forward declarations
@@ -20,11 +21,6 @@ struct SDL_Texture;
 struct SDL_Renderer;
 struct DrawParams;
 typedef struct _TTF_Font TTF_Font;
-enum class BlendMode : uint8_t;
-
-enum class ScreenshotContainer {
-  PNG, JPG
-};
 
 class Texture {
 public:
@@ -208,7 +204,7 @@ public:
    *  @param const char*               - file path
    *  @param const ScreenshotContainer - type of container [PNG, JPG, ...]
    *  @param const int32_t             - quality (applied only for JPG)
-   *                                     range: [0, 10]
+   *                                     range: [0, 100], worst(0) - best(100)
    *
    *  WARNING: this method is quite slow and should not be used in performance
    *           critical parts of the code

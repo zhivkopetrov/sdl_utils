@@ -214,6 +214,20 @@ class Renderer : public NonCopyable, public NonMoveable {
    * */
   ErrorCode lockRenderer_UT();
 
+  /** @brief takes a snapshot of current renderer pixels
+   *
+   *  @param const char*               - file path
+   *  @param const ScreenshotContainer - type of container [PNG, JPG, ...]
+   *  @param const int32_t             - quality (applied only for JPG)
+   *                                     range: [0, 100], worst(0) - best(100)
+   *
+   *  WARNING: the renderer operation that would be performed from this call
+   *           is quite slow and should not be used in performance
+   *           critical parts of the code
+   * */
+  void takeScreenshot_UT(const char *file, const ScreenshotContainer container,
+                         const int32_t quality);
+
   /** @brief used to set global renderer clear color with which default
    *         renderer target is cleared once ::clearScreen() is invoked.
    *
@@ -355,6 +369,10 @@ class Renderer : public NonCopyable, public NonMoveable {
    * */
   void drawWidgetsToBackBuffer_RT(const DrawParams drawParamsArr[],
                                   const uint32_t size);
+
+  /** @brief used to take a screenshot from the current renderer pixels
+   * */
+  void takeScreenshot_RT();
 
   /** @brief used to update the state of the multithreading texture
    *                                                     loading strategy

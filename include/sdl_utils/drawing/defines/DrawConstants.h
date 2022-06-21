@@ -37,6 +37,10 @@ enum class RotationCenterType : uint8_t {
   SCALED_CENTER
 };
 
+enum class ScreenshotContainer : uint8_t {
+  PNG, JPG
+};
+
 constexpr int32_t ZERO_OPACITY = 0;
 constexpr int32_t FULL_OPACITY = 255;
 
