@@ -523,16 +523,6 @@ void Renderer::finishFrameExecution_RT() {
   // store in a local variable for better cache performance
   const uint32_t USED_SIZE = _rendererState[IDX].currWidgetCounter;
 
-#ifndef NDEBUG
-  if (0 == USED_SIZE) {
-    LOGERR("Critical Error, queued widgets for drawing is 0! This usually "
-           "means that there is error internal logic of threads "
-           "synchronisation or someone might have called ::finishFrame() "
-           "with 0 draw calls made (which is not allowed)");
-    return;
-  }
-#endif /* NDEBUG */
-
   // apply global offset (if they are turned on)
   applyGlobalOffsets_RT(USED_SIZE);
 
