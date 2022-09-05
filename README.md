@@ -11,6 +11,12 @@ Rendeder must operate on the main thread to guarantee cross-platform behaviour.
 - OS Window magement
 - OS event handling - mouse, keyboard, touchscreen, signals, window resizing, etc ...
 - 2D Audio - music streaming and simultaneous sound chunks playback
+- Dynamic containers for assets, which act like a backbone infrasturcture for flyweight texture handles
+--Supported asset containers:
+--ResourceContainer (Images & Sprites)
+--FboContainer (run-time Frame Buffer Object container_
+--TextContainer (run-time font textures generated from TTF glyphs)
+--SoundContainer (music streams & small sound chunks)
 
 The library is optimized for fast compilation.
 
