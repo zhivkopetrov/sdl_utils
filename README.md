@@ -15,7 +15,7 @@ Rendeder must operate on the main thread to guarantee cross-platform behaviour.
 ```
 Supported asset containers:
 -ResourceContainer (Images & Sprites)
--FboContainer (run-time Frame Buffer Object container_
+-FboContainer (run-time Frame Buffer Object container)
 -TextContainer (run-time font textures generated from TTF glyphs)
 -SoundContainer (music streams & small sound chunks)
 ```
