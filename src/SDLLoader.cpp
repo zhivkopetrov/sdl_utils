@@ -17,7 +17,7 @@
 // Own components headers
 #include "sdl_utils/sound/defines/SoundMixerDefines.h"
 
-ErrorCode SDLLoader::init() {
+ErrorCode SDLLoader::initSdl2() {
   TRACE_ENTRY_EXIT;
 
 #ifdef __linux__
@@ -28,37 +28,8 @@ ErrorCode SDLLoader::init() {
   }
 #endif /* __linux__ */
 
-  if (-1 == TTF_Init()) {
-    LOGERR("SDL_ttf could not initialize! SDL_ttf Error: %s", TTF_GetError());
-    return ErrorCode::FAILURE;
-  }
-
   if (0 > SDL_Init(SDL_INIT_VIDEO)) {
     LOGERR("SDL could not be initialised! SDL Error: %s", SDL_GetError());
-    return ErrorCode::FAILURE;
-  }
-
-  // Initialise PNG loading
-  constexpr int32_t imgFlags = IMG_INIT_PNG;
-  if (!(IMG_Init(imgFlags) & imgFlags)) {
-    LOGERR("SDL_image could not be initialised! SDL_image Error: %s",
-        IMG_GetError());
-    return ErrorCode::FAILURE;
-  }
-
-  if (0 > SDL_Init(SDL_INIT_AUDIO)) {
-    LOGERR("SDL Audio could not be initialised! SDL Error: %s",
-           SDL_GetError());
-    return ErrorCode::FAILURE;
-  }
-
-  if (0 > Mix_OpenAudio(FREQUENCY,           // sound frequency
-                        MIX_DEFAULT_FORMAT,  // sample format
-                        STEREO_CHANNELS,     // stereo hardware channels
-                        SOUND_CHUNK_SIZE))   // chunk size
-  {
-    LOGERR("SDL_mixer could not initialised! SDL_mixer Error: %s",
-           Mix_GetError());
     return ErrorCode::FAILURE;
   }
 
@@ -75,12 +46,62 @@ ErrorCode SDLLoader::init() {
   return ErrorCode::SUCCESS;
 }
 
-void SDLLoader::deinit() {
+ErrorCode SDLLoader::initSdl2Image() {
+  // Initialise PNG loading
+  constexpr int32_t imgFlags = IMG_INIT_PNG;
+  if (!(IMG_Init(imgFlags) & imgFlags)) {
+    LOGERR("SDL_image could not be initialised! SDL_image Error: %s",
+        IMG_GetError());
+    return ErrorCode::FAILURE;
+  }
+
+  return ErrorCode::SUCCESS;
+}
+
+ErrorCode SDLLoader::initSdl2Ttf() {
+  if (-1 == TTF_Init()) {
+    LOGERR("SDL_ttf could not initialize! SDL_ttf Error: %s", TTF_GetError());
+    return ErrorCode::FAILURE;
+  }
+
+  return ErrorCode::SUCCESS;
+}
+
+ErrorCode SDLLoader::initSdl2Mixer() {
+  if (0 > SDL_Init(SDL_INIT_AUDIO)) {
+    LOGERR("SDL Audio could not be initialised! SDL Error: %s",
+           SDL_GetError());
+    return ErrorCode::FAILURE;
+  }
+
+  if (0 > Mix_OpenAudio(FREQUENCY,           // sound frequency
+                        MIX_DEFAULT_FORMAT,  // sample format
+                        STEREO_CHANNELS,     // stereo hardware channels
+                        SOUND_CHUNK_SIZE))   // chunk size
+  {
+    LOGERR("SDL_mixer could not initialised! SDL_mixer Error: %s",
+           Mix_GetError());
+    return ErrorCode::FAILURE;
+  }
+
+  return ErrorCode::SUCCESS;
+}
+
+void SDLLoader::deinitSdl2() {
   TRACE_ENTRY_EXIT;
 
   // Quit SDL subsystems
-  IMG_Quit();
-  TTF_Quit();
-  Mix_Quit();
   SDL_Quit();
+}
+
+void SDLLoader::deinitSdl2Image() {
+  IMG_Quit();
+}
+
+void SDLLoader::deinitSdl2Ttf() {
+  TTF_Quit();
+}
+
+void SDLLoader::deinitSdl2Mixer() {
+  Mix_Quit();
 }
