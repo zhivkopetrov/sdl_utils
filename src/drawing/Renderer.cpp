@@ -3,7 +3,10 @@
 
 // System headers
 #include <algorithm>
+#include <sstream>
+#include <iomanip>
 #include <cstring>
+#include <array>
 
 // Other libraries headers
 #include <SDL_hints.h>
@@ -17,7 +20,6 @@
 #include "sdl_utils/containers/SDLContainers.h"
 #include "sdl_utils/drawing/LoadingScreen.h"
 #include "sdl_utils/drawing/Texture.h"
-#include "sdl_utils/drawing/config/RendererConfig.h"
 
 #define LOCAL_DEBUG 0
 
@@ -49,17 +51,14 @@ constexpr const char* RENDERER_CMD_NAMES[]{
 #endif /* LOCAL_DEBUG */
 
 Renderer::Renderer()
-    : _window(nullptr),
-      _sdlRenderer(nullptr),
-      _containers(nullptr),
-      _updateStateIdx(0),
-      _renderStateIdx(1),
-      _isRendererBusy(false),
-      _isShutdowned(false),
-      _isMultithreadTextureLoadingEnabled(false) {}
+    : _window(nullptr), _sdlRenderer(nullptr), _containers(nullptr),
+      _updateStateIdx(0), _renderStateIdx(1), _isRendererBusy(false),
+      _isShutdowned(false), _isMultithreadTextureLoadingEnabled(false) {
+}
 
-ErrorCode Renderer::init(const RendererConfig& cfg) {
+ErrorCode Renderer::init(const RendererConfig &cfg) {
   _window = cfg.window;
+  _executionPolicy = cfg.executionPolicy;
 
   for (int32_t i = 0; i < SUPPORTED_BACK_BUFFERS; ++i) {
     if (ErrorCode::SUCCESS != _rendererState[i].init(cfg)) {
@@ -91,12 +90,9 @@ ErrorCode Renderer::init(const RendererConfig& cfg) {
   }
 
   // Initialize renderer color
-  if (EXIT_SUCCESS !=
-      SDL_SetRenderDrawColor(_sdlRenderer, Colors::BLACK.rgba.r,
-                             Colors::BLACK.rgba.g, Colors::BLACK.rgba.b,
-                             Colors::BLACK.rgba.a)) {
-    LOGERR("Error in, SDL_SetRenderDrawColor(), SDL Error: %s",
-           SDL_GetError());
+  if (EXIT_SUCCESS != SDL_SetRenderDrawColor(_sdlRenderer, Colors::BLACK.rgba.r,
+          Colors::BLACK.rgba.g, Colors::BLACK.rgba.b, Colors::BLACK.rgba.a)) {
+    LOGERR("Error in, SDL_SetRenderDrawColor(), SDL Error: %s", SDL_GetError());
     return ErrorCode::FAILURE;
   }
 
@@ -116,6 +112,7 @@ ErrorCode Renderer::init(const RendererConfig& cfg) {
            "platform. This will result in non-working FBOs.");
   }
 
+  printRendererInfo();
   return ErrorCode::SUCCESS;
 }
 
@@ -136,15 +133,14 @@ void Renderer::clearScreen_UT() {
 }
 
 void Renderer::finishFrame_UT(const bool overrideRendererLockCheck) {
-  addRendererCmd_UT(
-      RendererCmd::FINISH_FRAME,
-      reinterpret_cast<const uint8_t *>(&overrideRendererLockCheck),
-      sizeof(overrideRendererLockCheck));
+  addRendererCmd_UT(RendererCmd::FINISH_FRAME,
+      reinterpret_cast<const uint8_t*>(&overrideRendererLockCheck),
+      sizeof (overrideRendererLockCheck));
 
   swapBackBuffers_UT();
 }
 
-void Renderer::addDrawCmd_UT(const DrawParams& drawParams) const {
+void Renderer::addDrawCmd_UT(const DrawParams &drawParams) const {
   const int32_t IDX = _updateStateIdx;
 
 #ifndef NDEBUG
@@ -221,6 +217,23 @@ void Renderer::shutdownRenderer_UT() {
 }
 
 void Renderer::swapBackBuffers_UT() {
+  if (RendererPolicy::SINGLE_THREADED == _executionPolicy) {
+    // acquire isLocked from the update index, before the swap, because
+    // after the swap we should operate on the real isLocked variable
+    _rendererState[_renderStateIdx].isLocked =
+        _rendererState[_updateStateIdx].isLocked;
+
+    // swap containers
+    std::swap(_updateStateIdx, _renderStateIdx);
+
+    // prepare the renderer thread 'done' flag
+    _isRendererBusy = true;
+
+    //execute the stored commands
+    executeRenderCommandsInternal();
+    return;
+  }
+
   // acquire lock for render mutex
   std::unique_lock<std::mutex> renderLock(_renderMutex);
 
@@ -269,7 +282,7 @@ ErrorCode Renderer::unlockRenderer_UT() {
     _rendererState[_updateStateIdx].isLocked = false;
   } else {
     LOGERR("Error, trying to unlock the main renderer, "
-          "when it's already unlocked");
+           "when it's already unlocked");
     return ErrorCode::FAILURE;
   }
 
@@ -281,8 +294,8 @@ ErrorCode Renderer::lockRenderer_UT() {
     _rendererState[_updateStateIdx].isLocked = true;
     addRendererCmd_UT(RendererCmd::RESET_RENDERER_TARGET);
   } else {
-    LOGERR("Error, trying to lock the main renderer, "
-           "when it's already locked");
+    LOGERR(
+        "Error, trying to lock the main renderer, " "when it's already locked");
     return ErrorCode::FAILURE;
   }
 
@@ -293,18 +306,18 @@ void Renderer::takeScreenshot_UT(const char *file,
                                  const ScreenshotContainer container,
                                  const int32_t quality) {
   const uint64_t fileStrLen = std::strlen(file);
-  uint8_t data[sizeof(fileStrLen) + fileStrLen + sizeof(container) +
-               sizeof(quality)];
+  uint8_t data[sizeof (fileStrLen) + fileStrLen + sizeof (container)
+               + sizeof (quality)];
   uint64_t populatedBytes = 0;
 
-  memcpy(data + populatedBytes, &container, sizeof(container));
-  populatedBytes += sizeof(container);
+  memcpy(data + populatedBytes, &container, sizeof (container));
+  populatedBytes += sizeof (container);
 
-  memcpy(data + populatedBytes, &quality, sizeof(quality));
-  populatedBytes += sizeof(quality);
+  memcpy(data + populatedBytes, &quality, sizeof (quality));
+  populatedBytes += sizeof (quality);
 
-  memcpy(data + populatedBytes, &fileStrLen, sizeof(fileStrLen));
-  populatedBytes += sizeof(fileStrLen);
+  memcpy(data + populatedBytes, &fileStrLen, sizeof (fileStrLen));
+  populatedBytes += sizeof (fileStrLen);
 
   memcpy(data + populatedBytes, file, fileStrLen);
   populatedBytes += fileStrLen;
@@ -314,8 +327,7 @@ void Renderer::takeScreenshot_UT(const char *file,
 
 void Renderer::setRendererClearColor_UT(const Color &clearColor) {
   addRendererCmd_UT(RendererCmd::CHANGE_CLEAR_COLOR,
-                    reinterpret_cast<const uint8_t *>(&clearColor),
-                    sizeof(clearColor));
+      reinterpret_cast<const uint8_t*>(&clearColor), sizeof (clearColor));
 }
 
 void Renderer::resetAbsoluteGlobalMovement_UT() {
@@ -336,8 +348,9 @@ void Renderer::moveGlobalY_UT(const int32_t y) {
 }
 
 void Renderer::executeRenderCommands_RT() {
-  /** IMPORTANT NOTE: use directly the variable _renderStateIdx, because it
-   *                 will constantly be changed in the course of the program
+  /** IMPORTANT NOTE: use directly the variable _renderStateIdx
+   *                 (don't cache it), because it will constantly be changed
+   *                 in the course of the program
    **/
 
   // acquire lock on the update update mutex
@@ -367,117 +380,20 @@ void Renderer::executeRenderCommands_RT() {
     // several updates before this draw is finished
     renderLock.lock();
 
-    const uint32_t RENDER_OP_COUNT =
-        _rendererState[_renderStateIdx].currRendererCmdsCounter;
-
-    for (uint32_t idx = 0; idx < RENDER_OP_COUNT; ++idx) {
-#if LOCAL_DEBUG
-      LOGY_ON_SAME_LINE("command counter: %u. ", idx);
-#endif /* LOCAL_DEBUG */
-
-      switch (_rendererState[_renderStateIdx].rendererCmd[idx]) {
-        case RendererCmd::CLEAR_SCREEN:
-          clearScreenExecution_RT();
-          break;
-
-        case RendererCmd::FINISH_FRAME:
-          finishFrameExecution_RT();
-          break;
-
-        case RendererCmd::CHANGE_CLEAR_COLOR:
-          changeClearColor_RT();
-          break;
-
-        case RendererCmd::LOAD_TEXTURE_SINGLE:
-          loadTextureSingle_RT();
-          break;
-
-        case RendererCmd::LOAD_TEXTURE_MULTIPLE:
-          loadTextureMultiple_RT();
-          break;
-
-        case RendererCmd::DESTROY_TEXTURE:
-          destroyTexture_RT();
-          break;
-
-        case RendererCmd::CREATE_FBO:
-          createFBO_RT();
-          break;
-
-        case RendererCmd::DESTROY_FBO:
-          destroyFBO_RT();
-          break;
-
-        case RendererCmd::CHANGE_RENDERER_TARGET:
-          changeRendererTarget_RT();
-          break;
-
-        case RendererCmd::RESET_RENDERER_TARGET:
-          resetRendererTarget_RT();
-          break;
-
-        case RendererCmd::CLEAR_RENDERER_TARGET:
-          clearRendererTarget_RT();
-          break;
-
-        case RendererCmd::UPDATE_RENDERER_TARGET:
-          updateRendererTarget_RT();
-          break;
-
-        case RendererCmd::CHANGE_TEXTURE_BLENDMODE:
-          changeTextureBlending_RT();
-          break;
-
-        case RendererCmd::CHANGE_TEXTURE_OPACITY:
-          changeTextureOpacity_RT();
-          break;
-
-        case RendererCmd::CREATE_TTF_TEXT:
-          createTTFText_RT(false);
-          break;
-
-        case RendererCmd::RELOAD_TTF_TEXT:
-          createTTFText_RT(true);
-          break;
-
-        case RendererCmd::DESTROY_TTF_TEXT:
-          destroyTTFText_RT();
-          break;
-
-        case RendererCmd::TAKE_SCREENSHOT:
-          takeScreenshot_RT();
-          break;
-
-        case RendererCmd::ENABLE_DISABLE_MULTITHREAD_TEXTURE_LOADING:
-          enableDisableMultithreadTextureLoading_RT();
-          break;
-
-        case RendererCmd::EXIT_RENDERING_LOOP:
-          _isShutdowned = true;
-          _isRendererBusy = false;
-          // wake the update thread that is sleeping on the condition variable
-          _renderCondVar.notify_one();
-          return;
-
-        default:
-          LOGERR("Error, received unknown RendererOp: %hhu at index: %u",
-              getEnumValue(
-                  _rendererState[_renderStateIdx].rendererCmd[idx]), idx);
-          break;
-      }
+    const bool shouldExit = executeRenderCommandsInternal();
+    if (shouldExit) {
+      return;
     }
 
-    // all renderer commands were executed -> zero out the counter
-    _rendererState[_renderStateIdx].currRendererCmdsCounter = 0;
-
-    // manually unlock render mutex -> and let the update thread swap buffers
-    //(if its ready with it)
-    _isRendererBusy = false;
     renderLock.unlock();
 
     // wake the update thread that is sleeping on the condition variable
     _renderCondVar.notify_one();
   }
+}
+
+RendererPolicy Renderer::getRendererPolicy() const {
+  return _executionPolicy;
 }
 
 void Renderer::clearScreenExecution_RT() {
@@ -505,16 +421,13 @@ void Renderer::finishFrameExecution_RT() {
 #endif /* LOCAL_DEBUG */
 
   if (!overrideRendererLockCheck && !_rendererState[IDX].isLocked) {
-    LOGERR("WARNING, WARNING, WARNING, Renderer is left unlocked! Consider "
-           "locking back the renderer in the same draw cycle after you are "
-           "done with your work.");
+    LOGERR(
+        "WARNING, WARNING, WARNING, Renderer is left unlocked! Consider " "locking back the renderer in the same draw cycle after you are " "done with your work.");
 
     LOGC("Developer hint: Maybe you left some FBO unlocked?");
 
-    LOGR("In order for the system to recover from this logical FatalError "
-         "main System Renderer will lock itself (probably leaving the "
-         "entity that unlocked it in the first place in broken state "
-         "/usually this a FBO/ )");
+    LOGR(
+        "In order for the system to recover from this logical FatalError " "main System Renderer will lock itself (probably leaving the " "entity that unlocked it in the first place in broken state " "/usually this a FBO/ )");
 
     _rendererState[IDX].isLocked = true;
     resetRendererTarget_RT();
@@ -553,9 +466,8 @@ void Renderer::changeClearColor_RT() {
 #endif /* LOCAL_DEBUG */
 
   // set renderer drawing color
-  if (EXIT_SUCCESS !=
-      SDL_SetRenderDrawColor(_sdlRenderer, clearColor.rgba.r, clearColor.rgba.g,
-                             clearColor.rgba.b, clearColor.rgba.a)) {
+  if (EXIT_SUCCESS != SDL_SetRenderDrawColor(_sdlRenderer, clearColor.rgba.r,
+          clearColor.rgba.g, clearColor.rgba.b, clearColor.rgba.a)) {
     LOGERR("Error in, SDL_SetRenderDrawColor(), SDL Error: %s", SDL_GetError());
   }
 }
@@ -574,17 +486,17 @@ void Renderer::loadTextureSingle_RT() {
 
   if (_isMultithreadTextureLoadingEnabled) {
     // temporary variables used for _loadedSurfacesThreadQueue::pop operation
-    std::pair<uint64_t, SDL_Surface *> currResSurface(0, nullptr);
+    std::pair<uint64_t, SDL_Surface*> currResSurface(0, nullptr);
 
-    ThreadSafeQueue<std::pair<uint64_t, SDL_Surface *>> *surfaceQueue =
+    ThreadSafeQueue<std::pair<uint64_t, SDL_Surface*>> *surfaceQueue =
         _containers->getLoadedSurfacesQueue();
 
     while (true) {
       /** Block rendering thread and wait resources to be pushed
        * into the _loadedSurfacesThreadQueue
        * */
-      const auto [isShutdowned, hasTimedOut] =
-          surfaceQueue->waitAndPop(currResSurface);
+      const auto [isShutdowned, hasTimedOut] = surfaceQueue->waitAndPop(
+          currResSurface);
       if (isShutdowned) {
         LOG("surfaceQueue shutdowned");
         return;
@@ -621,8 +533,8 @@ void Renderer::loadTextureSingle_RT() {
   } else  // single thread approach
   {
     if (ErrorCode::SUCCESS != _containers->loadSurface(rsrcId, surface)) {
-      LOGERR("Error, gRsrcMgrBase->loadSurface() failed for rsrcId: "
-             "%#16lX", rsrcId);
+      LOGERR("Error, gRsrcMgrBase->loadSurface() failed for rsrcId: " "%#16lX",
+          rsrcId);
       return;
     }
   }
@@ -634,7 +546,7 @@ void Renderer::loadTextureSingle_RT() {
   SDL_Texture *texture = nullptr;
   if (ErrorCode::SUCCESS != Texture::loadTextureFromSurface(surface, texture)) {
     LOGERR("Error in Texture::loadTextureFromSurface() for rsrcId: %#16lX",
-           rsrcId);
+        rsrcId);
     return;
   }
 
@@ -670,9 +582,9 @@ void Renderer::loadTextureMultiple_RT() {
 
   if (_isMultithreadTextureLoadingEnabled) {
     // temporary variables used for _loadedSurfacesThreadQueue::pop operation
-    std::pair<uint64_t, SDL_Surface *> currResSurface(0, nullptr);
+    std::pair<uint64_t, SDL_Surface*> currResSurface(0, nullptr);
 
-    ThreadSafeQueue<std::pair<uint64_t, SDL_Surface *>> *surfaceQueue =
+    ThreadSafeQueue<std::pair<uint64_t, SDL_Surface*>> *surfaceQueue =
         _containers->getLoadedSurfacesQueue();
 
     // start uploading on the GPU on the rendering thread
@@ -680,8 +592,8 @@ void Renderer::loadTextureMultiple_RT() {
       /** Block rendering thread and wait resources to be pushed
        * into the _loadedSurfacesThreadQueue
        * */
-      const auto [isShutdowned, hasTimedOut] =
-          surfaceQueue->waitAndPop(currResSurface);
+      const auto [isShutdowned, hasTimedOut] = surfaceQueue->waitAndPop(
+          currResSurface);
       if (isShutdowned) {
         LOG("surfaceQueue shutdowned");
         return;
@@ -730,16 +642,17 @@ void Renderer::loadTextureMultiple_RT() {
       currSurfaceWidth = currResSurface.second->w;
       currSurfaceHeight = currResSurface.second->h;
 
-      if (ErrorCode::SUCCESS !=
-          Texture::loadTextureFromSurface(currResSurface.second, texture)) {
-        LOGERR("Error in Texture::loadTextureFromSurface() for rsrcId: "
-               "%#16lX", currResSurface.first);
+      if (ErrorCode::SUCCESS != Texture::loadTextureFromSurface(
+              currResSurface.second, texture)) {
+        LOGERR(
+            "Error in Texture::loadTextureFromSurface() for rsrcId: " "%#16lX",
+            currResSurface.first);
 
         return;
       }
 
       _containers->attachRsrcTexture(currResSurface.first, currSurfaceWidth,
-                                     currSurfaceHeight, texture);
+          currSurfaceHeight, texture);
 
       // reset the variable so it can be reused
       texture = nullptr;
@@ -1064,7 +977,7 @@ void Renderer::createTTFText_RT(const bool isTextBeingReloaded) {
   textContent[textLength] = '\0';
 
   if (textLength != _rendererState[_renderStateIdx].renderData.read(
-                        reinterpret_cast<uint8_t *>(textContent), textLength)) {
+          reinterpret_cast<uint8_t*>(textContent), textLength)) {
     LOGERR(
         "Warning, Circular buffer overflow(read data requested is "
         "bigger than buffer capacity)!");
@@ -1250,4 +1163,151 @@ void Renderer::applyGlobalOffsets_RT(const uint32_t widgetsSize) {
       }
     }
   }
+}
+
+bool Renderer::executeRenderCommandsInternal() {
+  const RendererState &state = _rendererState[_renderStateIdx];
+  const uint32_t commandCounter = state.currRendererCmdsCounter;
+
+  for (uint32_t idx = 0; idx < commandCounter; ++idx) {
+#if LOCAL_DEBUG
+    LOGY_ON_SAME_LINE("command counter: %u. ", cmdIdx);
+#endif /* LOCAL_DEBUG */
+
+    switch (state.rendererCmd[idx]) {
+    case RendererCmd::CLEAR_SCREEN:
+      clearScreenExecution_RT();
+      break;
+
+    case RendererCmd::FINISH_FRAME:
+      finishFrameExecution_RT();
+      break;
+
+    case RendererCmd::CHANGE_CLEAR_COLOR:
+      changeClearColor_RT();
+      break;
+
+    case RendererCmd::LOAD_TEXTURE_SINGLE:
+      loadTextureSingle_RT();
+      break;
+
+    case RendererCmd::LOAD_TEXTURE_MULTIPLE:
+      loadTextureMultiple_RT();
+      break;
+
+    case RendererCmd::DESTROY_TEXTURE:
+      destroyTexture_RT();
+      break;
+
+    case RendererCmd::CREATE_FBO:
+      createFBO_RT();
+      break;
+
+    case RendererCmd::DESTROY_FBO:
+      destroyFBO_RT();
+      break;
+
+    case RendererCmd::CHANGE_RENDERER_TARGET:
+      changeRendererTarget_RT();
+      break;
+
+    case RendererCmd::RESET_RENDERER_TARGET:
+      resetRendererTarget_RT();
+      break;
+
+    case RendererCmd::CLEAR_RENDERER_TARGET:
+      clearRendererTarget_RT();
+      break;
+
+    case RendererCmd::UPDATE_RENDERER_TARGET:
+      updateRendererTarget_RT();
+      break;
+
+    case RendererCmd::CHANGE_TEXTURE_BLENDMODE:
+      changeTextureBlending_RT();
+      break;
+
+    case RendererCmd::CHANGE_TEXTURE_OPACITY:
+      changeTextureOpacity_RT();
+      break;
+
+    case RendererCmd::CREATE_TTF_TEXT:
+      createTTFText_RT(false);
+      break;
+
+    case RendererCmd::RELOAD_TTF_TEXT:
+      createTTFText_RT(true);
+      break;
+
+    case RendererCmd::DESTROY_TTF_TEXT:
+      destroyTTFText_RT();
+      break;
+
+    case RendererCmd::TAKE_SCREENSHOT:
+      takeScreenshot_RT();
+      break;
+
+    case RendererCmd::ENABLE_DISABLE_MULTITHREAD_TEXTURE_LOADING:
+      enableDisableMultithreadTextureLoading_RT();
+      break;
+
+    case RendererCmd::EXIT_RENDERING_LOOP:
+      _isShutdowned = true;
+      _isRendererBusy = false;
+      // wake the update thread that is sleeping on the condition variable
+      _renderCondVar.notify_one();
+      return true;
+
+    default:
+      LOGERR("Error, received unknown RendererOp: %hhu at index: %u",
+          getEnumValue(state.rendererCmd[idx]), idx);
+      break;
+    }
+  }
+
+  // all renderer commands were executed -> zero out the counter
+  _rendererState[_renderStateIdx].currRendererCmdsCounter = 0;
+
+  // manually unlock render mutex -> and let the update thread swap buffers
+  //(if its ready with it)
+  _isRendererBusy = false;
+
+  return false;
+}
+
+void Renderer::printRendererInfo() const {
+  SDL_RendererInfo info;
+  if (EXIT_SUCCESS != SDL_GetRendererInfo(_sdlRenderer, &info)) {
+    LOGERR("Error in, SDL_GetRendererInfo(), SDL Error: %s", SDL_GetError());
+    return;
+  }
+
+  constexpr int32_t flagsSize = 4;
+  const std::array<std::pair<const char*, bool>, flagsSize> rendererFlags = {
+      std::make_pair("Software Renderer", (info.flags & SDL_RENDERER_SOFTWARE)),
+      std::make_pair("Hardware Renderer",
+          (info.flags & SDL_RENDERER_ACCELERATED)), std::make_pair(
+          "vSync enabled", (info.flags & SDL_RENDERER_PRESENTVSYNC)),
+      std::make_pair("FBO capability enabled",
+          (info.flags & SDL_RENDERER_TARGETTEXTURE)) };
+
+  std::ostringstream ostr;
+  ostr << std::boolalpha
+       << "=================================================================\n"
+       << "Printing Renderer backend info:\n" << "Chosen Backend: ["
+       << info.name << "]\n" << "Supported flags:\n";
+  for (const auto& [name, value] : rendererFlags) {
+    ostr << '\t' << name << " [" << value << "]\n";
+  }
+  ostr << "Supported texture formats:\n";
+  for (uint32_t i = 0; i < info.num_texture_formats; ++i) {
+    ostr << "\tformat[" << i << "]: "
+         << SDL_GetPixelFormatName(info.texture_formats[i]) << '\n';
+  }
+  ostr
+      << "Max Texture Width: [" << info.max_texture_width << "] px\n"
+      << "Max Texture Height: [" << info.max_texture_height << "] px\n"
+      << "=================================================================\n";
+
+  LOG("%s", ostr.str().c_str());
 }

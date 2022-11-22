@@ -12,6 +12,7 @@
 #include "utils/ErrorCode.h"
 
 // Own components headers
+#include "sdl_utils/drawing/config/RendererConfig.h"
 #include "sdl_utils/drawing/defines/RendererDefines.h"
 #include "sdl_utils/drawing/RendererState.h"
 
@@ -271,6 +272,12 @@ class Renderer : public NonCopyable, public NonMoveable {
    * */
   void executeRenderCommands_RT();
 
+  /** @brief used to acquire the current renderer policy
+   *
+   *  @returns RendererPolicy - SINGLE_THREADED or MULTI_THREADED
+   * */
+  RendererPolicy getRendererPolicy() const;
+
  private:
   /** @brief clear the window/screen with current selected clear color
    * */
@@ -386,6 +393,18 @@ class Renderer : public NonCopyable, public NonMoveable {
    * */
   void applyGlobalOffsets_RT(const uint32_t widgetsSize);
 
+  /** @brief used by either resource or update thread to execute accumulated
+   *         rendering commands
+   *
+   *         In the case of multithreaded usage - it is up to the developer
+   *         to prevent data races and deadlocks
+   *
+   *  @returns bool - should renderer exit drawing loop
+   * */
+  bool executeRenderCommandsInternal();
+
+  void printRendererInfo() const;
+
   // NOTE: @_RT - render thread interface
   //================== END RENDER THREAD INTERFACE ======================
 
@@ -443,6 +462,8 @@ class Renderer : public NonCopyable, public NonMoveable {
    * from 2 to 3.
    */
   mutable RendererState _rendererState[SUPPORTED_BACK_BUFFERS];
+
+  RendererPolicy _executionPolicy = RendererPolicy::MULTI_THREADED;
 
   /** a synchronization flag used to determine whether the renderer
    *  thread is busy.
