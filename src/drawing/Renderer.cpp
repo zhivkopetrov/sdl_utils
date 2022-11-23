@@ -3,10 +3,7 @@
 
 // System headers
 #include <algorithm>
-#include <sstream>
-#include <iomanip>
 #include <cstring>
-#include <array>
 
 // Other libraries headers
 #include <SDL_hints.h>
@@ -70,20 +67,19 @@ ErrorCode Renderer::init(const RendererConfig &cfg) {
   /** Set texture filtering to linear
    *                     (used for image scaling /pixel interpolation/ )
    * */
-  if (!SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1")) {
+  const auto scaleQualityStr = std::to_string(getEnumValue(cfg.scaleQuality));
+  if (!SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, scaleQualityStr.c_str())) {
     LOGERR("Warning: Linear texture filtering not enabled! "
            "SDL_SetHint() failed. SDL Error: %s", SDL_GetError());
     return ErrorCode::FAILURE;
   }
 
+  //use the first driver that satisfies the requested criteria
+  constexpr int32_t unspecifiedDriverId = -1;
+
   // Create the actual hardware renderer for window
   _sdlRenderer =
-      SDL_CreateRenderer(_window, -1,
-                         SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE
-#if ENABLE_VSYNC
-                             | SDL_RENDERER_PRESENTVSYNC
-#endif /* ENABLE_VSYNC */
-      );
+      SDL_CreateRenderer(_window, unspecifiedDriverId, cfg.flagsMask);
   if (nullptr == _sdlRenderer) {
     LOGERR("Renderer could not be created! SDL Error: %s", SDL_GetError());
     return ErrorCode::FAILURE;
@@ -96,13 +92,15 @@ ErrorCode Renderer::init(const RendererConfig &cfg) {
     return ErrorCode::FAILURE;
   }
 
-#if ENABLE_VSYNC && DISABLE_DOUBLE_BUFFERING_SWAP_INTERVAL
-  if (SUCCESS != SDL_GL_SetSwapInterval(0)) {
-    LOGERR("SDL_GL_SetSwapInterval(0) failed, SDL Error: %s",
-           SDL_GetError());
-    return FAILURE;
+#if DISABLE_DOUBLE_BUFFERING_SWAP_INTERVAL
+  if (isRendererFlagEnabled(cfg.flagsMask, RendererFlag::VSYNC_ENABLE)) {
+    if (EXIT_SUCCESS != SDL_GL_SetSwapInterval(0)) {
+      LOGERR("SDL_GL_SetSwapInterval(0) failed, SDL Error: %s", SDL_GetError());
+      return ErrorCode::FAILURE;
+    }
   }
-#endif /* ENABLE_VSYNC && DISABLE_DOUBLE_BUFFERING_SWAP_INTERVAL */
+
+#endif /* DISABLE_DOUBLE_BUFFERING_SWAP_INTERVAL */
 
   Texture::setRenderer(_sdlRenderer);
   LoadingScreen::setRenderer(_sdlRenderer);
@@ -112,7 +110,7 @@ ErrorCode Renderer::init(const RendererConfig &cfg) {
            "platform. This will result in non-working FBOs.");
   }
 
-  printRendererInfo();
+  printRendererInfo(_sdlRenderer);
   return ErrorCode::SUCCESS;
 }
 
@@ -1275,39 +1273,3 @@ bool Renderer::executeRenderCommandsInternal() {
   return false;
 }
 
-void Renderer::printRendererInfo() const {
-  SDL_RendererInfo info;
-  if (EXIT_SUCCESS != SDL_GetRendererInfo(_sdlRenderer, &info)) {
-    LOGERR("Error in, SDL_GetRendererInfo(), SDL Error: %s", SDL_GetError());
-    return;
-  }
-
-  constexpr int32_t flagsSize = 4;
-  const std::array<std::pair<const char*, bool>, flagsSize> rendererFlags = {
-      std::make_pair("Software Renderer", (info.flags & SDL_RENDERER_SOFTWARE)),
-      std::make_pair("Hardware Renderer",
-          (info.flags & SDL_RENDERER_ACCELERATED)), std::make_pair(
-          "vSync enabled", (info.flags & SDL_RENDERER_PRESENTVSYNC)),
-      std::make_pair("FBO capability enabled",
-          (info.flags & SDL_RENDERER_TARGETTEXTURE)) };
-
-  std::ostringstream ostr;
-  ostr << std::boolalpha
-       << "=================================================================\n"
-       << "Printing Renderer backend info:\n" << "Chosen Backend: ["
-       << info.name << "]\n" << "Supported flags:\n";
-  for (const auto& [name, value] : rendererFlags) {
-    ostr << '\t' << name << " [" << value << "]\n";
-  }
-  ostr << "Supported texture formats:\n";
-  for (uint32_t i = 0; i < info.num_texture_formats; ++i) {
-    ostr << "\tformat[" << i << "]: "
-         << SDL_GetPixelFormatName(info.texture_formats[i]) << '\n';
-  }
-  ostr
-      << "Max Texture Width: [" << info.max_texture_width << "] px\n"
-      << "Max Texture Height: [" << info.max_texture_height << "] px\n"
-      << "=================================================================\n";
-
-  LOG("%s", ostr.str().c_str());
-}

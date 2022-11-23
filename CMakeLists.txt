@@ -71,6 +71,7 @@ add_library(
         ${_SRC_DIR}/containers/SoundContainer.cpp
         ${_SRC_DIR}/containers/FboContainer.cpp
         ${_SRC_DIR}/containers/TextContainer.cpp
+        ${_SRC_DIR}/drawing/config/RendererConfig.cpp
         ${_SRC_DIR}/drawing/defines/MonitorDefines.cpp
         ${_SRC_DIR}/drawing/DrawParams.cpp
         ${_SRC_DIR}/drawing/GeometryUtils.cpp

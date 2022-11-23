@@ -403,8 +403,6 @@ class Renderer : public NonCopyable, public NonMoveable {
    * */
   bool executeRenderCommandsInternal();
 
-  void printRendererInfo() const;
-
   // NOTE: @_RT - render thread interface
   //================== END RENDER THREAD INTERFACE ======================
 

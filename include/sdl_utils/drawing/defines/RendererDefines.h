@@ -40,16 +40,30 @@
  * */
 #define DISABLE_DOUBLE_BUFFERING_SWAP_INTERVAL 0
 
-/* Values:
- * ENABLE_VSYNC 1
- * Enabled VSync, which caps the application frame rate to the maximum monitor
- * refresh rate.
- *
- * ENABLE_VSYNC 0
- * Disables VSync, which leaves the frame rate control to be handled by the
- * application.
- * */
-#define ENABLE_VSYNC 0
+enum class RendererPolicy {
+  //execute rendering commands as part of the main (update thread)
+  SINGLE_THREADED,
+
+  //will occupy (block) the current (main) thread execute rendering commands
+  //until shutdown
+  MULTI_THREADED
+};
+
+enum class RendererScaleQuality {
+  NEAREST, // Nearest pixel sampling
+  LINEAR,  // Linear filtering (supported by OpenGL and Direct3D)
+  BEST     // Currently this is the same as "linear"
+};
+
+//logical OR the flags (like bitmask) to enable them
+enum class RendererFlag : uint32_t {
+  SOFTARE_RENDERER = 1,
+  HARDWARE_RENDERER = 2,
+  VSYNC_ENABLE = 4,
+  FBO_ENABLE = 8
+};
+
+using RendererFlagsMask = uint32_t;
 
 enum class RendererCmd : uint8_t {
   CLEAR_SCREEN = 0,

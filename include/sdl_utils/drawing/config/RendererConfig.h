@@ -7,22 +7,18 @@
 // Other libraries headers
 
 // Own components headers
+#include "sdl_utils/drawing/defines/RendererDefines.h"
 
 // Forward declarations
 struct SDL_Window;
-
-enum class RendererPolicy {
-  //execute rendering commands as part of the main (update thread)
-  SINGLE_THREADED,
-
-  //will occupy (block) the current (main) thread execute rendering commands
-  //until shutdown
-  MULTI_THREADED
-};
+struct SDL_Renderer;
 
 struct RendererConfig {
-  RendererPolicy executionPolicy = RendererPolicy::MULTI_THREADED;
   SDL_Window *window = nullptr;
+  RendererPolicy executionPolicy = RendererPolicy::MULTI_THREADED;
+  RendererScaleQuality scaleQuality = RendererScaleQuality::LINEAR;
+  RendererFlagsMask flagsMask = 0;
+
   uint32_t maxRuntimeWidgets = 0;
   uint32_t maxRuntimeRendererCommands = 0;
 
@@ -31,5 +27,9 @@ struct RendererConfig {
    **/
   uint64_t maxRendererBackBufferDataSize = 0;
 };
+
+bool isRendererFlagEnabled(RendererFlagsMask mask, RendererFlag flag);
+
+void printRendererInfo(SDL_Renderer* renderer);
 
 #endif /* SDL_UTILS_RENDERERCONFIG_H_ */
