@@ -139,49 +139,49 @@ void Renderer::finishFrame_UT(const bool overrideRendererLockCheck) {
 }
 
 void Renderer::addDrawCmd_UT(const DrawParams &drawParams) const {
-  const int32_t IDX = _updateStateIdx;
+  const int32_t idx = _updateStateIdx;
 
 #ifndef NDEBUG
-  if (_rendererState[IDX].currWidgetCounter >=
-      _rendererState[IDX].maxRuntimeWidgets) {
+  if (_rendererState[idx].currWidgetCounter >=
+      _rendererState[idx].maxRuntimeWidgets) {
     LOGERR("Critical Problem: maxRunTimeWidgets value: %d is reached! "
            "Increase it's value from the configuration! or reduce the number of"
            " active widgets. Widgets will not be drawn in order to save the "
-           "system from crashing", _rendererState[IDX].maxRuntimeWidgets);
+           "system from crashing", _rendererState[idx].maxRuntimeWidgets);
     return;
   }
 #endif //!NDEBUG
 
-  _rendererState[IDX].widgets[_rendererState[IDX].currWidgetCounter] =
+  _rendererState[idx].widgets[_rendererState[idx].currWidgetCounter] =
       drawParams;
 
   // increment the total widget count for this frame
-  ++_rendererState[IDX].currWidgetCounter;
+  ++_rendererState[idx].currWidgetCounter;
 }
 
 void Renderer::addRendererCmd_UT(const RendererCmd rendererCmd,
                                  const uint8_t *data, const uint64_t bytes) {
-  const int32_t IDX = _updateStateIdx;
+  const int32_t idx = _updateStateIdx;
 
 #ifndef NDEBUG
-  if (_rendererState[IDX].currRendererCmdsCounter >=
-      _rendererState[IDX].maxRuntimeRendererCmds) {
+  if (_rendererState[idx].currRendererCmdsCounter >=
+      _rendererState[idx].maxRuntimeRendererCmds) {
     LOGERR("Critical Problem: maxRunTimeRendererCommands value: %d is reached! "
            "Increase it's value from the configuration! or reduce the number of"
            " renderer calls. Renderer command: %hhu will not be execution in "
            "order to save the system from crashing",
-           _rendererState[IDX].maxRuntimeRendererCmds,
+           _rendererState[idx].maxRuntimeRendererCmds,
            getEnumValue(rendererCmd));
     return;
   }
 #endif //NDEBUG
 
-  _rendererState[IDX].rendererCmd[_rendererState[IDX].currRendererCmdsCounter] =
+  _rendererState[idx].rendererCmd[_rendererState[idx].currRendererCmdsCounter] =
       rendererCmd;
-  ++_rendererState[IDX].currRendererCmdsCounter;
+  ++_rendererState[idx].currRendererCmdsCounter;
 
   if (bytes) {
-    if (bytes != _rendererState[IDX].renderData.write(data, bytes)) {
+    if (bytes != _rendererState[idx].renderData.write(data, bytes)) {
       LOGERR(
           "Warning, Circular buffer overflow for %lu bytes"
           "(write data size is bigger than buffer capacity)!",
@@ -192,7 +192,7 @@ void Renderer::addRendererCmd_UT(const RendererCmd rendererCmd,
 #if LOCAL_DEBUG
   LOGC("%s command pushed with %lu bytes of data, commands counter: %u",
        RENDERER_CMD_NAMES[getEnumValue(rendererCmd)], bytes,
-       _rendererState[IDX].currRendererCmdsCounter);
+       _rendererState[idx].currRendererCmdsCounter);
 #endif /* LOCAL_DEBUG */
 }
 
@@ -292,8 +292,7 @@ ErrorCode Renderer::lockRenderer_UT() {
     _rendererState[_updateStateIdx].isLocked = true;
     addRendererCmd_UT(RendererCmd::RESET_RENDERER_TARGET);
   } else {
-    LOGERR(
-        "Error, trying to lock the main renderer, " "when it's already locked");
+    LOGERR("Error, trying to lock the main renderer, when it's already locked");
     return ErrorCode::FAILURE;
   }
 
@@ -407,10 +406,10 @@ void Renderer::clearScreenExecution_RT() {
 }
 
 void Renderer::finishFrameExecution_RT() {
-  const int32_t IDX = _renderStateIdx;
+  const int32_t idx = _renderStateIdx;
 
   bool overrideRendererLockCheck = false;
-  _rendererState[IDX].renderData >> overrideRendererLockCheck;
+  _rendererState[idx].renderData >> overrideRendererLockCheck;
 
 #if LOCAL_DEBUG
   LOGY("Executing finishFrameExecution_RT(), overrideRendererLockCheck: %d "
@@ -418,37 +417,39 @@ void Renderer::finishFrameExecution_RT() {
        overrideRendererLockCheck, sizeof(overrideRendererLockCheck));
 #endif /* LOCAL_DEBUG */
 
-  if (!overrideRendererLockCheck && !_rendererState[IDX].isLocked) {
-    LOGERR(
-        "WARNING, WARNING, WARNING, Renderer is left unlocked! Consider " "locking back the renderer in the same draw cycle after you are " "done with your work.");
+  if (!overrideRendererLockCheck && !_rendererState[idx].isLocked) {
+    LOGERR("WARNING, WARNING, WARNING, Renderer is left unlocked! Consider "
+           "locking back the renderer in the same draw cycle after you are "
+           "done with your work.");
 
     LOGC("Developer hint: Maybe you left some FBO unlocked?");
+    LOGR("In order for the system to recover from this logical FatalError "
+         "main System Renderer will lock itself (probably leaving the entity "
+         "that unlocked it in the first place in broken state "
+         "/usually this a FBO/ )");
 
-    LOGR(
-        "In order for the system to recover from this logical FatalError " "main System Renderer will lock itself (probably leaving the " "entity that unlocked it in the first place in broken state " "/usually this a FBO/ )");
-
-    _rendererState[IDX].isLocked = true;
+    _rendererState[idx].isLocked = true;
     resetRendererTarget_RT();
   }
 
   // store in a local variable for better cache performance
-  const uint32_t USED_SIZE = _rendererState[IDX].currWidgetCounter;
+  const uint32_t USED_SIZE = _rendererState[idx].currWidgetCounter;
 
   // apply global offset (if they are turned on)
   applyGlobalOffsets_RT(USED_SIZE);
 
   // do the actual drawing of all stored images for THIS FRAME
-  drawWidgetsToBackBuffer_RT(_rendererState[IDX].widgets.data(), USED_SIZE);
+  drawWidgetsToBackBuffer_RT(_rendererState[idx].widgets.data(), USED_SIZE);
 
   //------------- UPDATE SCREEN----------------
   SDL_RenderPresent(_sdlRenderer);
 
   // copy the total widget counter since we are in the end of a frame
-  _rendererState[IDX].lastTotalWidgetCounter =
-      _rendererState[IDX].currWidgetCounter;
+  _rendererState[idx].lastTotalWidgetCounter =
+      _rendererState[idx].currWidgetCounter;
 
   // reset the widget count
-  _rendererState[IDX].currWidgetCounter = 0;
+  _rendererState[idx].currWidgetCounter = 0;
 }
 
 void Renderer::changeClearColor_RT() {
@@ -567,135 +568,144 @@ void Renderer::loadTextureMultiple_RT() {
 
   for (uint32_t i = 0; i < itemsToPop; ++i) {
     _rendererState[_renderStateIdx].renderData >> rsrcIds[i];
-
 #if LOCAL_DEBUG
     LOGY("Extracting rsrcIds[%u]: %#16lX", i, rsrcIds[i]);
 #endif /* LOCAL_DEBUG */
   }
 
-  int32_t currSurfaceWidth = 0;
-  int32_t currSurfaceHeight = 0;
-
-  SDL_Texture *texture = nullptr;
-
   if (_isMultithreadTextureLoadingEnabled) {
-    // temporary variables used for _loadedSurfacesThreadQueue::pop operation
-    std::pair<uint64_t, SDL_Surface*> currResSurface(0, nullptr);
-
-    ThreadSafeQueue<std::pair<uint64_t, SDL_Surface*>> *surfaceQueue =
-        _containers->getLoadedSurfacesQueue();
-
-    // start uploading on the GPU on the rendering thread
-    while (0 != itemsToPop) {
-      /** Block rendering thread and wait resources to be pushed
-       * into the _loadedSurfacesThreadQueue
-       * */
-      const auto [isShutdowned, hasTimedOut] = surfaceQueue->waitAndPop(
-          currResSurface);
-      if (isShutdowned) {
-        LOG("surfaceQueue shutdowned");
-        return;
-      }
-      if (hasTimedOut) {
-        continue;
-      }
-
-      auto it = std::find(rsrcIds.begin(), rsrcIds.end(), currResSurface.first);
-
-      if (rsrcIds.end() == it) {
-        /** The popped rsrcId does not belong to the requested 'patch'
-         * of resources -> return it back to the surfaceQueue and
-         * extract the next one.
-         *
-         * This can happen due to the multithreading nature of
-         * surfaceQueue. It is not keeping it's elements in the
-         * same order as they were inserted.
-         *
-         * For example a loadTextureMultiple_RT() can be requested
-         * with rsrcIds 1 2 3.
-         *
-         * 2 and 3 are ready at some time and are stored into the
-         * surfaceQueue, but 1 is still not.
-         *
-         * In that time another call to loadTextureMultiple_RT() with
-         * different rsrcIds - lets say 4 5.
-         *
-         * 4 and 5 are finished and are stored to the surfaceQueue.
-         * At this moment 1 is ready and is stored last
-         * in the surfaceQueue
-         *
-         * In this method it is required to process rsrcIds 1 2 and 3.
-         * We process 2 and 3, because they are first in the queue and
-         * when we pop 4 and 5 -> they are returned back to queue ...
-         * multiple times, until finally 1 arrives.
-         * */
-        surfaceQueue->push(std::move(currResSurface));
-
-        continue;
-      }
-
-      // elements successfully found -> remove it
-      rsrcIds.erase(it);
-
-      currSurfaceWidth = currResSurface.second->w;
-      currSurfaceHeight = currResSurface.second->h;
-
-      if (ErrorCode::SUCCESS != Texture::loadTextureFromSurface(
-              currResSurface.second, texture)) {
-        LOGERR(
-            "Error in Texture::loadTextureFromSurface() for rsrcId: " "%#16lX",
-            currResSurface.first);
-
-        return;
-      }
-
-      _containers->attachRsrcTexture(currResSurface.first, currSurfaceWidth,
-          currSurfaceHeight, texture);
-
-      // reset the variable so it can be reused
-      texture = nullptr;
-
-      --itemsToPop;
-    }
-  } else  // single thread approach
-  {
-    SDL_Surface *surface = nullptr;
-    int32_t currIndex = 0;
-
-    // start uploading on the GPU on the rendering thread
-    while (0 != itemsToPop) {
-      if (ErrorCode::SUCCESS !=
-          _containers->loadSurface(rsrcIds[currIndex], surface)) {
-        LOGERR("Error, gRsrcMgrBase->loadSurface() failed for rsrcId: %#16lX",
-               rsrcIds[currIndex]);
-        return;
-      }
-
-      currSurfaceWidth = surface->w;
-      currSurfaceHeight = surface->h;
-
-      if (ErrorCode::SUCCESS !=
-          Texture::loadTextureFromSurface(surface, texture)) {
-        LOGERR("Error in Texture::loadTextureFromSurface() for rsrcId: %#16lX",
-               rsrcIds[currIndex]);
-
-        return;
-      }
-
-      _containers->attachRsrcTexture(rsrcIds[currIndex], currSurfaceWidth,
-                                     currSurfaceHeight, texture);
-
-      // reset the variables so it can be reused
-      // it is important to clear both of the variables
-      surface = nullptr;
-      texture = nullptr;
-
-      --itemsToPop;
-      ++currIndex;
-    }
+    loadTextureMultipleMulltiThread_RT(rsrcIds, itemsToPop);
+  } else { // single thread approach
+    loadTextureMultipleSingleThread_RT(rsrcIds, itemsToPop);
   }
 
   _containers->onLoadTextureMultipleCompleted(batchId);
+}
+
+void Renderer::loadTextureMultipleSingleThread_RT(
+    const std::vector<uint64_t>& rsrcIds, uint32_t itemsToPop) {
+  SDL_Surface *surface = nullptr;
+  SDL_Texture *texture = nullptr;
+  int32_t currSurfaceWidth = 0;
+  int32_t currSurfaceHeight = 0;
+  int32_t currIndex = 0;
+
+  // start uploading on the GPU on the rendering thread
+  while (0 != itemsToPop) {
+    if (ErrorCode::SUCCESS !=
+        _containers->loadSurface(rsrcIds[currIndex], surface)) {
+      LOGERR("Error, gRsrcMgrBase->loadSurface() failed for rsrcId: %#16lX",
+             rsrcIds[currIndex]);
+      return;
+    }
+
+    currSurfaceWidth = surface->w;
+    currSurfaceHeight = surface->h;
+
+    if (ErrorCode::SUCCESS !=
+        Texture::loadTextureFromSurface(surface, texture)) {
+      LOGERR("Error in Texture::loadTextureFromSurface() for rsrcId: %#16lX",
+             rsrcIds[currIndex]);
+
+      return;
+    }
+
+    _containers->attachRsrcTexture(rsrcIds[currIndex], currSurfaceWidth,
+                                   currSurfaceHeight, texture);
+
+    // reset the variables so it can be reused
+    // it is important to clear both of the variables
+    surface = nullptr;
+    texture = nullptr;
+
+    --itemsToPop;
+    ++currIndex;
+  }
+}
+
+void Renderer::loadTextureMultipleMulltiThread_RT(
+    std::vector<uint64_t>& rsrcIds, uint32_t itemsToPop) {
+  // temporary variables used for _loadedSurfacesThreadQueue::pop operation
+  std::pair<uint64_t, SDL_Surface*> currResSurface(0, nullptr);
+  ThreadSafeQueue<std::pair<uint64_t, SDL_Surface*>> *surfaceQueue =
+      _containers->getLoadedSurfacesQueue();
+
+  SDL_Texture *texture = nullptr;
+  int32_t currSurfaceWidth = 0;
+  int32_t currSurfaceHeight = 0;
+
+  // start uploading on the GPU on the rendering thread
+  while (0 != itemsToPop) {
+    /** Block rendering thread and wait resources to be pushed
+     * into the _loadedSurfacesThreadQueue
+     * */
+    const auto [isShutdowned, hasTimedOut] = surfaceQueue->waitAndPop(
+        currResSurface);
+    if (isShutdowned) {
+      LOG("surfaceQueue shutdowned");
+      return;
+    }
+    if (hasTimedOut) {
+      continue;
+    }
+
+    auto it = std::find(rsrcIds.begin(), rsrcIds.end(), currResSurface.first);
+
+    if (rsrcIds.end() == it) {
+      /** The popped rsrcId does not belong to the requested 'patch'
+       * of resources -> return it back to the surfaceQueue and
+       * extract the next one.
+       *
+       * This can happen due to the multithreading nature of
+       * surfaceQueue. It is not keeping it's elements in the
+       * same order as they were inserted.
+       *
+       * For example a loadTextureMultiple_RT() can be requested
+       * with rsrcIds 1 2 3.
+       *
+       * 2 and 3 are ready at some time and are stored into the
+       * surfaceQueue, but 1 is still not.
+       *
+       * In that time another call to loadTextureMultiple_RT() with
+       * different rsrcIds - lets say 4 5.
+       *
+       * 4 and 5 are finished and are stored to the surfaceQueue.
+       * At this moment 1 is ready and is stored last
+       * in the surfaceQueue
+       *
+       * In this method it is required to process rsrcIds 1 2 and 3.
+       * We process 2 and 3, because they are first in the queue and
+       * when we pop 4 and 5 -> they are returned back to queue ...
+       * multiple times, until finally 1 arrives.
+       * */
+      surfaceQueue->push(std::move(currResSurface));
+
+      continue;
+    }
+
+    // elements successfully found -> remove it
+    rsrcIds.erase(it);
+
+    currSurfaceWidth = currResSurface.second->w;
+    currSurfaceHeight = currResSurface.second->h;
+
+    if (ErrorCode::SUCCESS != Texture::loadTextureFromSurface(
+            currResSurface.second, texture)) {
+      LOGERR(
+          "Error in Texture::loadTextureFromSurface() for rsrcId: " "%#16lX",
+          currResSurface.first);
+
+      return;
+    }
+
+    _containers->attachRsrcTexture(currResSurface.first, currSurfaceWidth,
+        currSurfaceHeight, texture);
+
+    // reset the variable so it can be reused
+    texture = nullptr;
+
+    --itemsToPop;
+  }
 }
 
 void Renderer::destroyTexture_RT() {
@@ -1134,30 +1144,30 @@ void Renderer::enableDisableMultithreadTextureLoading_RT() {
 }
 
 void Renderer::applyGlobalOffsets_RT(const uint32_t widgetsSize) {
-  const int32_t IDX = _renderStateIdx;
+  const int32_t idx = _renderStateIdx;
 
-  if (0 != _rendererState[IDX].globalOffsetX) {
+  if (0 != _rendererState[idx].globalOffsetX) {
     // copy the variable because of cache reuse
-    const int32_t OFFSET_X = _rendererState[IDX].globalOffsetX;
+    const int32_t OFFSET_X = _rendererState[idx].globalOffsetX;
 
     for (uint32_t i = 0; i < widgetsSize; ++i) {
-      if (!_rendererState[IDX].widgets[i].hasCrop) {
-        _rendererState[IDX].widgets[i].pos.x += OFFSET_X;
+      if (!_rendererState[idx].widgets[i].hasCrop) {
+        _rendererState[idx].widgets[i].pos.x += OFFSET_X;
       } else {
-        _rendererState[IDX].widgets[i].frameCropRect.x += OFFSET_X;
+        _rendererState[idx].widgets[i].frameCropRect.x += OFFSET_X;
       }
     }
   }
 
-  if (0 != _rendererState[IDX].globalOffsetY) {
+  if (0 != _rendererState[idx].globalOffsetY) {
     // copy the variable because of cache reuse
-    const int32_t OFFSET_Y = _rendererState[IDX].globalOffsetY;
+    const int32_t OFFSET_Y = _rendererState[idx].globalOffsetY;
 
     for (uint32_t i = 0; i < widgetsSize; ++i) {
-      if (!_rendererState[IDX].widgets[i].hasCrop) {
-        _rendererState[IDX].widgets[i].pos.y += OFFSET_Y;
+      if (!_rendererState[idx].widgets[i].hasCrop) {
+        _rendererState[idx].widgets[i].pos.y += OFFSET_Y;
       } else {
-        _rendererState[IDX].widgets[i].frameCropRect.y += OFFSET_Y;
+        _rendererState[idx].widgets[i].frameCropRect.y += OFFSET_Y;
       }
     }
   }

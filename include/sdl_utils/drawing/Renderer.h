@@ -306,6 +306,10 @@ class Renderer : public NonCopyable, public NonMoveable {
    *               for new Surfaces to be generated (if there are not any)
    * */
   void loadTextureMultiple_RT();
+  void loadTextureMultipleSingleThread_RT(const std::vector<uint64_t>& rsrcIds,
+                                          uint32_t itemsToPop);
+  void loadTextureMultipleMulltiThread_RT(std::vector<uint64_t>& rsrcIds,
+                                          uint32_t itemsToPop);
 
   /** @brief destroys a single texture (releases memory on the GPU)
    * */
