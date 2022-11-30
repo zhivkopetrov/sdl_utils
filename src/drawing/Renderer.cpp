@@ -55,7 +55,7 @@ Renderer::Renderer()
 
 ErrorCode Renderer::init(const RendererConfig &cfg) {
   _window = cfg.window;
-  _executionPolicy = cfg.executionPolicy;
+  _executionPolicy = valiteRendererExecutionPolicy(cfg.executionPolicy);
 
   for (int32_t i = 0; i < SUPPORTED_BACK_BUFFERS; ++i) {
     if (ErrorCode::SUCCESS != _rendererState[i].init(cfg)) {

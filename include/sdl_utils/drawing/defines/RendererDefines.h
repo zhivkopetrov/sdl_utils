@@ -3,6 +3,7 @@
 
 // System headers
 #include <cstdint>
+#include <string>
 
 // Other libraries headers
 
@@ -55,7 +56,7 @@ enum class RendererScaleQuality {
   BEST     // Currently this is the same as "linear"
 };
 
-//logical OR the flags (like bitmask) to enable them
+//logical OR the flags (bitmask) to enable them
 enum class RendererFlag : uint32_t {
   SOFTARE_RENDERER = 1,
   HARDWARE_RENDERER = 2,
@@ -89,5 +90,11 @@ enum class RendererCmd : uint8_t {
 
   UNDEFINED = 255
 };
+
+RendererFlagsMask valiteRendererFlagsMask(const RendererFlagsMask mask);
+
+RendererPolicy valiteRendererExecutionPolicy(const RendererPolicy policy);
+
+std::string getRendererPolicyName(RendererPolicy policy);
 
 #endif /* SDL_UTILS_RENDERERDEFINES_H_ */

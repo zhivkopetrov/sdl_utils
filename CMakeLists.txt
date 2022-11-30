@@ -73,6 +73,7 @@ add_library(
         ${_SRC_DIR}/containers/TextContainer.cpp
         ${_SRC_DIR}/drawing/config/RendererConfig.cpp
         ${_SRC_DIR}/drawing/defines/MonitorDefines.cpp
+        ${_SRC_DIR}/drawing/defines/RendererDefines.cpp
         ${_SRC_DIR}/drawing/DrawParams.cpp
         ${_SRC_DIR}/drawing/GeometryUtils.cpp
         ${_SRC_DIR}/drawing/LoadingScreen.cpp
