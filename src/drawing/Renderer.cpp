@@ -855,7 +855,7 @@ void Renderer::updateRendererTarget_RT() {
 void Renderer::changeTextureBlending_RT() {
   WidgetType widgetType = WidgetType::UNKNOWN;
   BlendMode blendmode = BlendMode::NONE;
-  uint64_t parsedBytes = 0;
+  [[maybe_unused]]uint64_t parsedBytes = 0;
 
   _rendererState[_renderStateIdx].renderData >> widgetType >> blendmode;
   parsedBytes += (sizeof(widgetType) + sizeof(blendmode));
@@ -960,8 +960,8 @@ void Renderer::createTTFText_RT(const bool isTextBeingReloaded) {
   Color textColor = Colors::BLACK;
   SDL_Texture *texture = nullptr;
 
-  uint64_t parsedBytes = sizeof(fontId) + sizeof(textColor) +
-                         sizeof(textLength) + textLength;
+  [[maybe_unused]]uint64_t parsedBytes = sizeof(fontId) + sizeof(textColor) +
+                                         sizeof(textLength) + textLength;
 
   if (isTextBeingReloaded) {
     // the containerId remains the same when text is reloaded
