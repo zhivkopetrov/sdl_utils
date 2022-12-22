@@ -247,7 +247,7 @@ ErrorCode Texture::takeScreenshot(
 
   const uint64_t timeMs =
       static_cast<uint64_t>(time.getElapsed().toMilliseconds());
-  LOG("Screenshot [%s] took [%lu ms] to capture and store", file, timeMs);
+  LOG("Screenshot [%s] took [%zu ms] to capture and store", file, timeMs);
   return ErrorCode::SUCCESS;
 }
 

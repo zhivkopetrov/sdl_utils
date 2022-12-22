@@ -183,14 +183,14 @@ void Renderer::addRendererCmd_UT(const RendererCmd rendererCmd,
   if (bytes) {
     if (bytes != _rendererState[idx].renderData.write(data, bytes)) {
       LOGERR(
-          "Warning, Circular buffer overflow for %lu bytes"
+          "Warning, Circular buffer overflow for %zu bytes"
           "(write data size is bigger than buffer capacity)!",
           bytes);
     }
   }
 
 #if LOCAL_DEBUG
-  LOGC("%s command pushed with %lu bytes of data, commands counter: %u",
+  LOGC("%s command pushed with %zu bytes of data, commands counter: %u",
        RENDERER_CMD_NAMES[getEnumValue(rendererCmd)], bytes,
        _rendererState[idx].currRendererCmdsCounter);
 #endif /* LOCAL_DEBUG */
@@ -198,12 +198,12 @@ void Renderer::addRendererCmd_UT(const RendererCmd rendererCmd,
 
 void Renderer::addRendererData_UT(const uint8_t *data, const uint64_t bytes) {
   if (bytes != _rendererState[_updateStateIdx].renderData.write(data, bytes)) {
-    LOGERR("Warning, Circular buffer overflow for %lu bytes"
+    LOGERR("Warning, Circular buffer overflow for %zu bytes"
           "(write data size is bigger than buffer capacity)!", bytes);
   }
 
 #if LOCAL_DEBUG
-  LOGC("%lu bytes of data is being pushed, value: %u", bytes,
+  LOGC("%zu bytes of data is being pushed, value: %u", bytes,
        *(reinterpret_cast<const uint32_t *>(data)));
 #endif /* LOCAL_DEBUG */
 }
@@ -413,7 +413,7 @@ void Renderer::finishFrameExecution_RT() {
 
 #if LOCAL_DEBUG
   LOGY("Executing finishFrameExecution_RT(), overrideRendererLockCheck: %d "
-       "(with %lu bytes of data)",
+       "(with %zu bytes of data)",
        overrideRendererLockCheck, sizeof(overrideRendererLockCheck));
 #endif /* LOCAL_DEBUG */
 
@@ -460,7 +460,7 @@ void Renderer::changeClearColor_RT() {
   _rendererState[_renderStateIdx].renderData >> clearColor;
 
 #if LOCAL_DEBUG
-  LOGY("Executing changeClearColor_RT(), clerColor32BitRGBA: %u (with %lu "
+  LOGY("Executing changeClearColor_RT(), clerColor32BitRGBA: %u (with %zu "
        "bytes of data", clearColor.get32BitRGBA(), sizeof(clearColor));
 #endif /* LOCAL_DEBUG */
 
@@ -477,7 +477,7 @@ void Renderer::loadTextureSingle_RT() {
   _rendererState[_renderStateIdx].renderData >> rsrcId;
 
 #if LOCAL_DEBUG
-  LOGY("Executing loadTextureSingle_RT(), rsrcId: %#16lX with (%lu bytes of "
+  LOGY("Executing loadTextureSingle_RT(), rsrcId: %#16lX with (%zu bytes of "
        "data)",rsrcId, sizeof(rsrcId));
 #endif /* LOCAL_DEBUG */
 
@@ -562,7 +562,7 @@ void Renderer::loadTextureMultiple_RT() {
 
 #if LOCAL_DEBUG
   LOGY("Executing loadTextureMultiple_RT(), itemsTopPop: %u, batchId: %d "
-       "(with %lu bytes of data)", itemsToPop, batchId,
+       "(with %zu bytes of data)", itemsToPop, batchId,
       (sizeof(itemsToPop) + sizeof(batchId) + (itemsToPop * sizeof(uint64_t))));
 #endif /* LOCAL_DEBUG */
 
@@ -714,7 +714,7 @@ void Renderer::destroyTexture_RT() {
   _rendererState[_renderStateIdx].renderData >> rsrcId;
 
 #if LOCAL_DEBUG
-  LOGY("Executing destroyTexture_RT(), rsrcId: %#16lX (with %lu bytes of "
+  LOGY("Executing destroyTexture_RT(), rsrcId: %#16lX (with %zu bytes of "
        "data)",
       rsrcId, sizeof(rsrcId));
 #endif /* LOCAL_DEBUG */
@@ -735,7 +735,7 @@ void Renderer::createFBO_RT() {
 
 #if LOCAL_DEBUG
   LOGY("Executing createFBO_RT(), width: %d, height: %d, containerId: %d "
-       "(with %lu bytes of data)", width, height, containerId,
+       "(with %zu bytes of data)", width, height, containerId,
        (sizeof(width) + sizeof(height) + sizeof(containerId)));
 #endif /* LOCAL_DEBUG */
 
@@ -756,7 +756,7 @@ void Renderer::destroyFBO_RT() {
   _rendererState[_renderStateIdx].renderData >> containerId;
 
 #if LOCAL_DEBUG
-  LOGY("Executing destroyFBO_RT(), containerId: %d (with %lu bytes of data)",
+  LOGY("Executing destroyFBO_RT(), containerId: %d (with %zu bytes of data)",
        containerId, sizeof(containerId));
 #endif /* LOCAL_DEBUG */
 
@@ -774,7 +774,7 @@ void Renderer::changeRendererTarget_RT() {
   _rendererState[_renderStateIdx].renderData >> containerId;
 
 #if LOCAL_DEBUG
-  LOGY("Executing changeRendererTarget_RT(), containerId: %d (with %lu bytes "
+  LOGY("Executing changeRendererTarget_RT(), containerId: %d (with %zu bytes "
        "of data)", containerId, sizeof(containerId));
 #endif /* LOCAL_DEBUG */
 
@@ -807,7 +807,7 @@ void Renderer::clearRendererTarget_RT() {
 
 #if LOCAL_DEBUG
   LOGY(
-      "Executing clearRendererTarget_RT(), clerColor32BitRGBA: %u (with %lu "
+      "Executing clearRendererTarget_RT(), clerColor32BitRGBA: %u (with %zu "
       "bytes of data",
       clearColor.get32BitRGBA(), sizeof(clearColor));
 #endif /* LOCAL_DEBUG */
@@ -823,7 +823,7 @@ void Renderer::updateRendererTarget_RT() {
   const uint64_t DATA_TO_READ = itemsSize * sizeof(DrawParams);
 
 #if LOCAL_DEBUG
-  LOGY("Executing updateRendererTarget_RT(), itemsSize: %u (with %lu bytes of"
+  LOGY("Executing updateRendererTarget_RT(), itemsSize: %u (with %zu bytes of"
        " data)", itemsSize, sizeof(DATA_TO_READ) + sizeof(itemsSize));
 #endif /* LOCAL_DEBUG */
 
@@ -884,7 +884,7 @@ void Renderer::changeTextureBlending_RT() {
 
 #if LOCAL_DEBUG
   LOGY("Executing changeTextureBlending_RT(), widgetType: %hhu, blendmode: %hhu"
-       " (with %lu bytes of data)",
+       " (with %zu bytes of data)",
        getEnumValue(widgetType), getEnumValue(blendmode), parsedBytes);
 #endif /* LOCAL_DEBUG */
 
@@ -908,7 +908,7 @@ void Renderer::changeTextureOpacity_RT() {
 
   LOGY(
       "Executing changeTextureOpacity_RT(), widgetType: %hhu, opacity: %d "
-      "(with %lu bytes of data)",
+      "(with %zu bytes of data)",
       getEnumValue(widgetType), opacity, parsedBytes);
 #endif /* LOCAL_DEBUG */
 
@@ -998,7 +998,7 @@ void Renderer::createTTFText_RT(const bool isTextBeingReloaded) {
 
 #if LOCAL_DEBUG
   LOGY("Executing cteateTTFText_RT(), contaierID: %d, fontId: %#16lX, "
-       "textColor.32bitRGBA: %u, textLenght: %lu, textContent: %s (with %lu "
+       "textColor.32bitRGBA: %u, textLenght: %zu, textContent: %s (with %zu "
        "bytes of data)", containerId, fontId, textColor.get32BitRGBA(),
        textLength, textContent, parsedBytes);
 #endif /* LOCAL_DEBUG */
@@ -1025,7 +1025,7 @@ int32_t Renderer::destroyTTFText_RT() {
   _rendererState[_renderStateIdx].renderData >> containerId;
 
 #if LOCAL_DEBUG
-  LOGY("Executing destroyTTFText_RT(), containerId: %d (with %lu bytes of "
+  LOGY("Executing destroyTTFText_RT(), containerId: %d (with %zu bytes of "
        "data)", containerId, sizeof(containerId));
 #endif /* LOCAL_DEBUG */
 
@@ -1114,7 +1114,7 @@ void Renderer::takeScreenshot_RT() {
 
 #if LOCAL_DEBUG
   LOGY("Executing takeScreenshot_RT(), screenshotContainer: %hhu, quality: %d, "
-       "textLenght: %lu, textContent: %s (with %lu "
+       "textLenght: %zu, textContent: %s (with %zu "
        "bytes of data)", getEnumValue(screenshotContainer), quality, textLength,
        textContent, parsedBytes);
 #endif /* LOCAL_DEBUG */
@@ -1137,7 +1137,7 @@ void Renderer::enableDisableMultithreadTextureLoading_RT() {
 
 #if LOCAL_DEBUG
   LOGY("Executing enableDisableMultithreadTextureLoading_RT(), "
-       "_isMultithreadTextureLoadingEnabled: %d (with %lu bytes of data)",
+       "_isMultithreadTextureLoadingEnabled: %d (with %zu bytes of data)",
        _isMultithreadTextureLoadingEnabled,
        sizeof(_isMultithreadTextureLoadingEnabled));
 #endif /* LOCAL_DEBUG */
