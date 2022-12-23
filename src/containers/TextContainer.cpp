@@ -55,7 +55,7 @@ ErrorCode TextContainer::loadText(const uint64_t fontId, const char *text,
                                   int32_t &outTextHeight) {
   auto fontIt = _fontsMapPtr->find(fontId);
   if (fontIt == _fontsMapPtr->end()) {
-    LOGERR("Error, non-existent fontId: %#16lX for text: [%s]. "
+    LOGERR("Error, non-existent fontId: %zu for text: [%s]. "
         "Text will not be created", fontId, text);
     return ErrorCode::FAILURE;
   }
@@ -63,7 +63,7 @@ ErrorCode TextContainer::loadText(const uint64_t fontId, const char *text,
   if (ErrorCode::SUCCESS !=
       Texture::getTextDimensions(text, (*_fontsMapPtr)[fontId],
                                  outTextWidth, outTextHeight)) {
-    LOGERR("Error in getTextDimensions() for fontId: %#16lX", fontId);
+    LOGERR("Error in getTextDimensions() for fontId: %zu", fontId);
 
     return ErrorCode::FAILURE;
   }
@@ -91,9 +91,14 @@ ErrorCode TextContainer::loadText(const uint64_t fontId, const char *text,
   _texts[chosenIndex] = RESERVE_SLOT_VALUE;
   outUniqueId = chosenIndex;
 
-  const uint64_t TEXT_LEN = strlen(text);
-  uint8_t data[sizeof(chosenIndex) + sizeof(fontId) + sizeof(color) +
-               sizeof(TEXT_LEN) + TEXT_LEN];
+  const uint64_t textLen = strlen(text);
+  const uint64_t dataSize = sizeof(chosenIndex) + sizeof(fontId) + sizeof(color) +
+               sizeof(textLen) + textLen;
+  uint8_t* data = new uint8_t[dataSize];
+  if (nullptr == data) {
+    LOGERR("Error, bad alloc for 'data'");
+    return ErrorCode::FAILURE;
+  }
 
   uint64_t populatedBytes = 0;
 
@@ -106,18 +111,19 @@ ErrorCode TextContainer::loadText(const uint64_t fontId, const char *text,
   memcpy(data + populatedBytes, &color, sizeof(color));
   populatedBytes += sizeof(color);
 
-  memcpy(data + populatedBytes, &TEXT_LEN, sizeof(TEXT_LEN));
-  populatedBytes += sizeof(TEXT_LEN);
+  memcpy(data + populatedBytes, &textLen, sizeof(textLen));
+  populatedBytes += sizeof(textLen);
 
-  memcpy(data + populatedBytes, text, TEXT_LEN);
-  populatedBytes += TEXT_LEN;
+  memcpy(data + populatedBytes, text, textLen);
+  populatedBytes += textLen;
 
   _renderer->addRendererCmd_UT(RendererCmd::CREATE_TTF_TEXT, data,
                                populatedBytes);
 
+  delete[] data;
   return ErrorCode::SUCCESS;
 }
-
+ 
 void TextContainer::reloadText(const uint64_t fontId, const char *text,
                                const Color &color,
                                const int32_t textUniqueId,
@@ -125,13 +131,17 @@ void TextContainer::reloadText(const uint64_t fontId, const char *text,
   if (ErrorCode::SUCCESS !=
       Texture::getTextDimensions(text, (*_fontsMapPtr)[fontId],
                                  outTextWidth, outTextHeight)) {
-    LOGERR("Error in getTextDimensions() for fontId: %#16lX", fontId);
+    LOGERR("Error in getTextDimensions() for fontId: %zu", fontId);
     return;
   }
 
-  const uint64_t TEXT_LEN = strlen(text);
-  uint8_t data[sizeof(textUniqueId) + sizeof(fontId) + sizeof(color) +
-                sizeof(TEXT_LEN) + TEXT_LEN];
+  const uint64_t textLen = strlen(text);
+  const uint64_t dataSize = sizeof(textUniqueId) + sizeof(fontId) + sizeof(color) +
+               sizeof(textLen) + textLen;
+  uint8_t* data = new uint8_t[dataSize];
+  if (nullptr == data) {
+    LOGERR("Error, bad alloc for 'data'");
+  }
 
   uint64_t populatedBytes = 0;
 
@@ -144,14 +154,15 @@ void TextContainer::reloadText(const uint64_t fontId, const char *text,
   memcpy(data + populatedBytes, &color, sizeof(color));
   populatedBytes += sizeof(color);
 
-  memcpy(data + populatedBytes, &TEXT_LEN, sizeof(TEXT_LEN));
-  populatedBytes += sizeof(TEXT_LEN);
+  memcpy(data + populatedBytes, &textLen, sizeof(textLen));
+  populatedBytes += sizeof(textLen);
 
-  memcpy(data + populatedBytes, text, TEXT_LEN);
-  populatedBytes += TEXT_LEN;
+  memcpy(data + populatedBytes, text, textLen);
+  populatedBytes += textLen;
 
   _renderer->addRendererCmd_UT(RendererCmd::RELOAD_TTF_TEXT, data,
                                populatedBytes);
+  delete[] data;
 }
 
 void TextContainer::unloadText(const int32_t textUniqueId) {

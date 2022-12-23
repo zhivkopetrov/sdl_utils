@@ -35,7 +35,7 @@ ErrorCode SDLLoader::initSdl2() {
 
   // fix a bug in SDL with version lower than 2.0.10
   // https://discourse.libsdl.org/t/sdl2-lag-with-sdl-getticks/25538/7
-  if (!SDL_VERSION_ATLEAST(2, 0, 10)) {
+  if constexpr (!SDL_VERSION_ATLEAST(2, 0, 10)) {
     if (0 > SDL_Init(SDL_INIT_JOYSTICK)) {
       LOGERR("SDL Joystick could not be initialised! SDL Error: %s",
              SDL_GetError());

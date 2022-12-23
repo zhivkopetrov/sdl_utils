@@ -40,8 +40,6 @@ RendererPolicy valiteRendererExecutionPolicy(const RendererPolicy policy) {
            "SINGLE_THREADED execution policy", getEnumValue(policy));
     return RendererPolicy::SINGLE_THREADED;
   }
-
-  return policy;
 }
 
 std::string getRendererPolicyName(RendererPolicy policy) {

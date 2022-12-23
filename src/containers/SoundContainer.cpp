@@ -56,10 +56,10 @@ void SoundContainer::loadAllStoredSounds() {
     if (SoundType::CHUNK == soundWidget.soundType) {
       if (ErrorCode::SUCCESS !=
           loadChunk(widgetPath.c_str(), soundWidget.soundLevel, newChunk)) {
-        LOGERR("Error in loadChunk() for soundId: %#16lX",
+        LOGERR("Error in loadChunk() for soundId: %" PRIu64"",
                 soundWidget.header.hashValue);
       } else {
-        // populate the chunk map
+        // populate the chunk map 
         _chunkMap[soundWidget.header.hashValue] = newChunk;
 
         // send message to loading screen for
@@ -72,7 +72,7 @@ void SoundContainer::loadAllStoredSounds() {
     } else { // SoundType::MUSIC == soundWidget.soundType
       if (ErrorCode::SUCCESS !=
           loadMusic(widgetPath.c_str(), soundWidget.soundLevel, newMusic)) {
-        LOGERR("Error in loadMusic() for soundId: %#16lX",
+        LOGERR("Error in loadMusic() for soundId: %" PRIu64"",
                soundWidget.header.hashValue);
       } else {
         // populate the _musicMap map
@@ -94,7 +94,7 @@ ErrorCode SoundContainer::getSoundData(const uint64_t soundId,
   auto it = _soundsDataMap.find(soundId);
   // key not found
   if (it == _soundsDataMap.end()) {
-    LOGERR("Error, soundData for rsrcId: %#16lX not found", soundId);
+    LOGERR("Error, soundData for rsrcId: %" PRIu64" not found", soundId);
     return ErrorCode::FAILURE;
   }
 
@@ -107,7 +107,7 @@ void SoundContainer::getMusicSound(const uint64_t rsrcId,
   auto it = _musicMap.find(rsrcId);
   // key not found
   if (it == _musicMap.end()) {
-    LOGERR("Error, Mix_Music for rsrcId: %#16lX not found", rsrcId);
+    LOGERR("Error, Mix_Music for rsrcId: %" PRIu64" not found", rsrcId);
   } else  // key found
   {
     outMusic = it->second;
@@ -119,7 +119,7 @@ void SoundContainer::getChunkSound(const uint64_t rsrcId,
   auto it = _chunkMap.find(rsrcId);
   // key not found
   if (it == _chunkMap.end()) {
-    LOGERR("Error, Mix_Chunk for rsrcId: %#16lX not found", rsrcId);
+    LOGERR("Error, Mix_Chunk for rsrcId: %" PRIu64" not found", rsrcId);
   } else  // key found
   {
     outChunk = it->second;

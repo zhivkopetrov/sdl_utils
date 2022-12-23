@@ -303,8 +303,15 @@ void Renderer::takeScreenshot_UT(const char *file,
                                  const ScreenshotContainer container,
                                  const int32_t quality) {
   const uint64_t fileStrLen = std::strlen(file);
-  uint8_t data[sizeof (fileStrLen) + fileStrLen + sizeof (container)
-               + sizeof (quality)];
+  const uint64_t dataSize = sizeof (fileStrLen) + fileStrLen + sizeof (container)
+               + sizeof (quality);
+
+  uint8_t* data = new uint8_t[dataSize];
+  if (nullptr == data) {
+    LOGERR("Error, bad alloc for 'data'");
+    return;
+  }
+  
   uint64_t populatedBytes = 0;
 
   memcpy(data + populatedBytes, &container, sizeof (container));
@@ -320,6 +327,7 @@ void Renderer::takeScreenshot_UT(const char *file,
   populatedBytes += fileStrLen;
 
   addRendererCmd_UT(RendererCmd::TAKE_SCREENSHOT, data, populatedBytes);
+  delete[] data;
 }
 
 void Renderer::setRendererClearColor_UT(const Color &clearColor) {
@@ -477,7 +485,7 @@ void Renderer::loadTextureSingle_RT() {
   _rendererState[_renderStateIdx].renderData >> rsrcId;
 
 #if LOCAL_DEBUG
-  LOGY("Executing loadTextureSingle_RT(), rsrcId: %#16lX with (%zu bytes of "
+  LOGY("Executing loadTextureSingle_RT(), rsrcId: %zu with (%zu bytes of "
        "data)",rsrcId, sizeof(rsrcId));
 #endif /* LOCAL_DEBUG */
 
@@ -532,7 +540,7 @@ void Renderer::loadTextureSingle_RT() {
   } else  // single thread approach
   {
     if (ErrorCode::SUCCESS != _containers->loadSurface(rsrcId, surface)) {
-      LOGERR("Error, gRsrcMgrBase->loadSurface() failed for rsrcId: " "%#16lX",
+      LOGERR("Error, gRsrcMgrBase->loadSurface() failed for rsrcId: " "%zu",
           rsrcId);
       return;
     }
@@ -544,7 +552,7 @@ void Renderer::loadTextureSingle_RT() {
 
   SDL_Texture *texture = nullptr;
   if (ErrorCode::SUCCESS != Texture::loadTextureFromSurface(surface, texture)) {
-    LOGERR("Error in Texture::loadTextureFromSurface() for rsrcId: %#16lX",
+    LOGERR("Error in Texture::loadTextureFromSurface() for rsrcId: %zu",
         rsrcId);
     return;
   }
@@ -569,7 +577,7 @@ void Renderer::loadTextureMultiple_RT() {
   for (uint32_t i = 0; i < itemsToPop; ++i) {
     _rendererState[_renderStateIdx].renderData >> rsrcIds[i];
 #if LOCAL_DEBUG
-    LOGY("Extracting rsrcIds[%u]: %#16lX", i, rsrcIds[i]);
+    LOGY("Extracting rsrcIds[%u]: %zu", i, rsrcIds[i]);
 #endif /* LOCAL_DEBUG */
   }
 
@@ -594,7 +602,7 @@ void Renderer::loadTextureMultipleSingleThread_RT(
   while (0 != itemsToPop) {
     if (ErrorCode::SUCCESS !=
         _containers->loadSurface(rsrcIds[currIndex], surface)) {
-      LOGERR("Error, gRsrcMgrBase->loadSurface() failed for rsrcId: %#16lX",
+      LOGERR("Error, gRsrcMgrBase->loadSurface() failed for rsrcId: %zu",
              rsrcIds[currIndex]);
       return;
     }
@@ -604,7 +612,7 @@ void Renderer::loadTextureMultipleSingleThread_RT(
 
     if (ErrorCode::SUCCESS !=
         Texture::loadTextureFromSurface(surface, texture)) {
-      LOGERR("Error in Texture::loadTextureFromSurface() for rsrcId: %#16lX",
+      LOGERR("Error in Texture::loadTextureFromSurface() for rsrcId: %zu",
              rsrcIds[currIndex]);
 
       return;
@@ -692,7 +700,7 @@ void Renderer::loadTextureMultipleMulltiThread_RT(
     if (ErrorCode::SUCCESS != Texture::loadTextureFromSurface(
             currResSurface.second, texture)) {
       LOGERR(
-          "Error in Texture::loadTextureFromSurface() for rsrcId: " "%#16lX",
+          "Error in Texture::loadTextureFromSurface() for rsrcId: " "%zu",
           currResSurface.first);
 
       return;
@@ -714,7 +722,7 @@ void Renderer::destroyTexture_RT() {
   _rendererState[_renderStateIdx].renderData >> rsrcId;
 
 #if LOCAL_DEBUG
-  LOGY("Executing destroyTexture_RT(), rsrcId: %#16lX (with %zu bytes of "
+  LOGY("Executing destroyTexture_RT(), rsrcId: %zu (with %zu bytes of "
        "data)",
       rsrcId, sizeof(rsrcId));
 #endif /* LOCAL_DEBUG */
@@ -997,7 +1005,7 @@ void Renderer::createTTFText_RT(const bool isTextBeingReloaded) {
   }
 
 #if LOCAL_DEBUG
-  LOGY("Executing cteateTTFText_RT(), contaierID: %d, fontId: %#16lX, "
+  LOGY("Executing cteateTTFText_RT(), contaierID: %d, fontId: %zu, "
        "textColor.32bitRGBA: %u, textLenght: %zu, textContent: %s (with %zu "
        "bytes of data)", containerId, fontId, textColor.get32BitRGBA(),
        textLength, textContent, parsedBytes);
@@ -1006,7 +1014,7 @@ void Renderer::createTTFText_RT(const bool isTextBeingReloaded) {
   if (ErrorCode::SUCCESS !=
       Texture::loadFromText(textContent, (*_containers->getFontsMap())[fontId],
                            textColor, texture, createdWidth, createdHeight)) {
-    LOGERR("Error in loadFromText() for fontId: %#16lX", fontId);
+    LOGERR("Error in loadFromText() for fontId: %zu", fontId);
 
     delete[] textContent;
     textContent = nullptr;
