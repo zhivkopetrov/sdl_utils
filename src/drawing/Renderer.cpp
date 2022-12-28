@@ -183,7 +183,7 @@ void Renderer::addRendererCmd_UT(const RendererCmd rendererCmd,
   if (bytes) {
     if (bytes != _rendererState[idx].renderData.write(data, bytes)) {
       LOGERR(
-          "Warning, Circular buffer overflow for %zu bytes"
+          "Warning, Circular buffer overflow for %" PRIu64" bytes"
           "(write data size is bigger than buffer capacity)!",
           bytes);
     }
@@ -198,7 +198,7 @@ void Renderer::addRendererCmd_UT(const RendererCmd rendererCmd,
 
 void Renderer::addRendererData_UT(const uint8_t *data, const uint64_t bytes) {
   if (bytes != _rendererState[_updateStateIdx].renderData.write(data, bytes)) {
-    LOGERR("Warning, Circular buffer overflow for %zu bytes"
+    LOGERR("Warning, Circular buffer overflow for %" PRIu64" bytes"
           "(write data size is bigger than buffer capacity)!", bytes);
   }
 
@@ -540,7 +540,7 @@ void Renderer::loadTextureSingle_RT() {
   } else  // single thread approach
   {
     if (ErrorCode::SUCCESS != _containers->loadSurface(rsrcId, surface)) {
-      LOGERR("Error, gRsrcMgrBase->loadSurface() failed for rsrcId: " "%zu",
+      LOGERR("Error, gRsrcMgrBase->loadSurface() failed for rsrcId: %" PRIu64,
           rsrcId);
       return;
     }
@@ -552,7 +552,7 @@ void Renderer::loadTextureSingle_RT() {
 
   SDL_Texture *texture = nullptr;
   if (ErrorCode::SUCCESS != Texture::loadTextureFromSurface(surface, texture)) {
-    LOGERR("Error in Texture::loadTextureFromSurface() for rsrcId: %zu",
+    LOGERR("Error in Texture::loadTextureFromSurface() for rsrcId: %" PRIu64,
         rsrcId);
     return;
   }
@@ -602,7 +602,7 @@ void Renderer::loadTextureMultipleSingleThread_RT(
   while (0 != itemsToPop) {
     if (ErrorCode::SUCCESS !=
         _containers->loadSurface(rsrcIds[currIndex], surface)) {
-      LOGERR("Error, gRsrcMgrBase->loadSurface() failed for rsrcId: %zu",
+      LOGERR("Error, gRsrcMgrBase->loadSurface() failed for rsrcId: %" PRIu64,
              rsrcIds[currIndex]);
       return;
     }
@@ -612,7 +612,7 @@ void Renderer::loadTextureMultipleSingleThread_RT(
 
     if (ErrorCode::SUCCESS !=
         Texture::loadTextureFromSurface(surface, texture)) {
-      LOGERR("Error in Texture::loadTextureFromSurface() for rsrcId: %zu",
+      LOGERR("Error in Texture::loadTextureFromSurface() for rsrcId: %" PRIu64,
              rsrcIds[currIndex]);
 
       return;
@@ -700,7 +700,7 @@ void Renderer::loadTextureMultipleMulltiThread_RT(
     if (ErrorCode::SUCCESS != Texture::loadTextureFromSurface(
             currResSurface.second, texture)) {
       LOGERR(
-          "Error in Texture::loadTextureFromSurface() for rsrcId: " "%zu",
+          "Error in Texture::loadTextureFromSurface() for rsrcId: %" PRIu64,
           currResSurface.first);
 
       return;
@@ -1014,7 +1014,7 @@ void Renderer::createTTFText_RT(const bool isTextBeingReloaded) {
   if (ErrorCode::SUCCESS !=
       Texture::loadFromText(textContent, (*_containers->getFontsMap())[fontId],
                            textColor, texture, createdWidth, createdHeight)) {
-    LOGERR("Error in loadFromText() for fontId: %zu", fontId);
+    LOGERR("Error in loadFromText() for fontId: %" PRIu64, fontId);
 
     delete[] textContent;
     textContent = nullptr;

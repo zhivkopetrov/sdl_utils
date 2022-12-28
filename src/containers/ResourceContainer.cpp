@@ -204,6 +204,7 @@ void ResourceContainer::loadAllStoredResources(
     LOGR("Multi Threading is not supported on this hardware. ");
     LOG("Starting Single Core resource loading ");
     loadAllStoredResourcesSingleCore();
+    return;
   }
 
   uint32_t hardwareThreadNumber = maxResourceLoadingThreads;
@@ -251,7 +252,7 @@ void ResourceContainer::loadResourceOnDemandSingle(const uint64_t rsrcId) {
   auto it = _rsrcDataMap.find(rsrcId);
   if (_rsrcDataMap.end() == it)  // key not found
   {
-    LOGERR("Error, rsrcData for rsrcId: %zu not found. "
+    LOGERR("Error, rsrcData for rsrcId: %" PRIu64" not found. "
         "will not create Image", rsrcId);
     return;
   }
@@ -260,7 +261,7 @@ void ResourceContainer::loadResourceOnDemandSingle(const uint64_t rsrcId) {
   if (ResourceDefines::TextureLoadType::ON_INIT == resWidget.textureLoadType) {
     LOGERR(
         "Warning, invoking dynamic load on a resource with ID: "
-        "%zu that has TextureLoadType::ON_INIT. "
+        "%" PRIu64" that has TextureLoadType::ON_INIT. "
         "Will not load resource!",
         rsrcId);
 
@@ -322,7 +323,7 @@ void ResourceContainer::loadResourceOnDemandMultiple(
       {
         LOGERR(
             "Warning, invoking dynamic load on a resource with ID: "
-            "%zu that has TextureLoadType::ON_INIT. "
+            "%" PRIu64" that has TextureLoadType::ON_INIT. "
             "Will not load resource!",
             rsrcIds[i]);
 
@@ -331,7 +332,7 @@ void ResourceContainer::loadResourceOnDemandMultiple(
     } else  // key not found
     {
       LOGERR(
-          "Error, rsrcData for rsrcId: %zu not found. "
+          "Error, rsrcData for rsrcId: %" PRIu64" not found. "
           "will not create Image",
           rsrcIds[i]);
 
@@ -361,13 +362,13 @@ void ResourceContainer::unloadResourceOnDemandSingle(const uint64_t rsrcId) {
   auto it = _rsrcDataMap.find(rsrcId);
   if (it == _rsrcDataMap.end()) {
     LOGERR(
-        "Error, trying to unload rsrcId: %zu which is not existing", rsrcId);
+        "Error, trying to unload rsrcId: %" PRIu64" which is not existing", rsrcId);
     return;
   }
 
   auto& resWidget = it->second;
   if (0 == resWidget.refCount) {
-    LOGERR("Error, trying to unload rsrcId: %zu that is not loaded", rsrcId);
+    LOGERR("Error, trying to unload rsrcId: %" PRIu64" that is not loaded", rsrcId);
     return;
   }
 
@@ -393,14 +394,14 @@ void ResourceContainer::unloadResourceOnDemandMultiple(
   for (uint32_t i = 0; i < SIZE; ++i) {
     auto it = _rsrcDataMap.find(rsrcIds[i]);
     if (it == _rsrcDataMap.end()) {
-      LOGERR("Error, trying to unload rsrcId: %zu which is not existing",
+      LOGERR("Error, trying to unload rsrcId: %" PRIu64" which is not existing",
           rsrcIds[i]);
       continue;
     }
 
     auto& resWidget = it->second;
     if (0 == resWidget.refCount) {
-      LOGERR("Error, trying to unload rsrcId: %zu that is not loaded",
+      LOGERR("Error, trying to unload rsrcId: %" PRIu64" that is not loaded",
              rsrcIds[i]);
 
       continue;
@@ -441,14 +442,14 @@ void ResourceContainer::getRsrcTexture(const uint64_t rsrcId,
     outTexture = it->second;
   } else  // key not found
   {
-    LOGERR("Error, rsrcTexture for rsrcId: %zu not found", rsrcId);
+    LOGERR("Error, rsrcTexture for rsrcId: %" PRIu64" not found", rsrcId);
   }
 }
 
 void ResourceContainer::detachRsrcTexture(const uint64_t rsrcId) {
   auto rsrcMapIt = _rsrcMap.find(rsrcId);
   if (rsrcMapIt == _rsrcMap.end()) {
-    LOGERR("Error, trying to detach rsrcId: %zu which is not existing",
+    LOGERR("Error, trying to detach rsrcId: %" PRIu64" which is not existing",
         rsrcId);
     return;
   }
@@ -457,7 +458,7 @@ void ResourceContainer::detachRsrcTexture(const uint64_t rsrcId) {
 
   auto rsrcDataMapIt = _rsrcDataMap.find(rsrcId);
   if (rsrcDataMapIt == _rsrcDataMap.end()) {
-    LOGERR("Error, trying to detach rsrcId: %zu which is not existing",
+    LOGERR("Error, trying to detach rsrcId: %" PRIu64" which is not existing",
         rsrcId);
     return;
   }
@@ -473,13 +474,13 @@ ErrorCode ResourceContainer::loadSurface(const uint64_t rsrcId,
   const ResourceData *resData = nullptr;
 
   if (ErrorCode::SUCCESS != getRsrcData(rsrcId, resData)) {
-    LOGERR("Error, ::getRsrcData() failed for rsrcId: %zu, "
+    LOGERR("Error, ::getRsrcData() failed for rsrcId: %" PRIu64", "
            "will not load Surface", rsrcId);
     return ErrorCode::FAILURE;
   }
 
   if (ErrorCode::SUCCESS != loadSurfaceInternal(resData, outSurface)) {
-    LOGERR("Error, ::loadSurfaceInternal() failed for rsrcId: %zu, "
+    LOGERR("Error, ::loadSurfaceInternal() failed for rsrcId: %" PRIu64", "
            "will not load Surface", rsrcId);
     return ErrorCode::FAILURE;
   }
@@ -491,7 +492,7 @@ ErrorCode ResourceContainer::loadSurfaceInternal(const ResourceData *rsrcData,
                                                  SDL_Surface *&outSurface) {
   if (ErrorCode::SUCCESS !=
       Texture::loadSurfaceFromFile(rsrcData->header.path.c_str(), outSurface)) {
-    LOGERR("Error in loadSurfaceFromFile() for rsrcId: %zu",
+    LOGERR("Error in loadSurfaceFromFile() for rsrcId: %" PRIu64,
            rsrcData->header.hashValue);
     return ErrorCode::FAILURE;
   }
@@ -552,7 +553,7 @@ void ResourceContainer::loadAllStoredResourcesSingleCore() {
 
     if (ErrorCode::SUCCESS !=
         Texture::loadTextureFromSurface(currResSurface.second, newTexture)) {
-      LOGERR("Error in Texture::loadTextureFromSurface() for rsrcId: %zu",
+      LOGERR("Error in Texture::loadTextureFromSurface() for rsrcId: %" PRIu64"",
              currResSurface.first);
       return;
     }
@@ -627,7 +628,7 @@ void ResourceContainer::loadAllStoredResourcesMultiCore(
     if (ErrorCode::SUCCESS !=
         Texture::loadTextureFromSurface(currResSurface.second, newTexture)) {
       LOGERR("Error in Texture::loadTextureFromSurface() for rsrcId: "
-             "%zu", currResSurface.first);
+             "%" PRIu64"", currResSurface.first);
 
       return;
     } else {

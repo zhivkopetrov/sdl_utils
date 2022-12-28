@@ -22,10 +22,15 @@ if(NOT DISABLE_ROS_TOOLING)
 endif()
 
 find_package(resource_utils REQUIRED)
-find_package(SDL2 REQUIRED)
-find_package(SDL2_image REQUIRED)
-find_package(SDL2_ttf REQUIRED)
-find_package(SDL2_mixer REQUIRED)
+# emscripten uses it's own SDL2* family ports
+# looking for the platform ones will yield an error
+if(NOT EMSCRIPTEN)
+    find_package(SDL2 REQUIRED)
+    find_package(SDL2_image REQUIRED)
+    find_package(SDL2_ttf REQUIRED)
+    find_package(SDL2_mixer REQUIRED)
+endif()
+
 
 set(_INC_FOLDER_NAME include)
 set(_INC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/${_INC_FOLDER_NAME}/${PROJECT_NAME})         
@@ -95,23 +100,49 @@ target_include_directories(
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/${_INC_FOLDER_NAME}>
         $<INSTALL_INTERFACE:${_INC_FOLDER_NAME}>
-    PRIVATE 
-        ${SDL2_INCLUDE_DIR}
-        ${SDL2_IMAGE_INCLUDE_DIR}
-        ${SDL2_TTF_INCLUDE_DIR}
-        ${SDL2_MIXER_INCLUDE_DIR}
 )
+
+if(EMSCRIPTEN)
+    target_include_directories(
+        ${PROJECT_NAME}
+        PRIVATE
+            # emscripten bundles all SDL2* ports includes here
+            ${SDL2_INCLUDE_DIRS}
+    )
+else()
+    target_include_directories(
+        ${PROJECT_NAME}
+        PRIVATE
+            ${SDL2_INCLUDE_DIR}
+            ${SDL2_IMAGE_INCLUDE_DIR}
+            ${SDL2_TTF_INCLUDE_DIR}
+            ${SDL2_MIXER_INCLUDE_DIR}
+    )
+endif()
 
 target_link_libraries(
     ${PROJECT_NAME}
     PUBLIC
         resource_utils::resource_utils
-    PRIVATE
-        ${SDL2_LIBRARY}       # -lSDL2 flag
-        ${SDL2_IMAGE_LIBRARY} # -lSDL2_image flag
-        ${SDL2_TTF_LIBRARY}   # -lSDL2_ttf flag
-        ${SDL2_MIXER_LIBRARY} # -lSDL2_mixer flag  
 )
+
+if(EMSCRIPTEN)
+    target_link_libraries(
+        ${PROJECT_NAME}
+        PRIVATE
+            # emscripten bundles all SDL2* ports libs here
+            ${SDL2_LIBRARIES}
+    )
+else()
+    target_link_libraries(
+        ${PROJECT_NAME}
+        PRIVATE
+            ${SDL2_LIBRARY}       # -lSDL2 flag
+            ${SDL2_IMAGE_LIBRARY} # -lSDL2_image flag
+            ${SDL2_TTF_LIBRARY}   # -lSDL2_ttf flag
+            ${SDL2_MIXER_LIBRARY} # -lSDL2_mixer flag 
+    )
+endif()
 
 if(UNIX)
     target_link_libraries(

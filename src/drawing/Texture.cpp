@@ -206,7 +206,7 @@ ErrorCode Texture::createEmptyTexture(const int32_t width, const int32_t height,
 
 ErrorCode Texture::takeScreenshot(
     const char *file, const ScreenshotContainer container,
-    const int32_t quality) {
+    [[maybe_unused]]const int32_t quality) {
   Time time;
 
   SDL_Surface* surface = nullptr;
@@ -235,10 +235,15 @@ ErrorCode Texture::takeScreenshot(
       return ErrorCode::FAILURE;
     }
   } else { //JPG
+#if defined(__EMSCRIPTEN__)
+  LOGY("IMG_SaveJPG() not supported on Emscripten. "
+       "Will not save file [%s]", file);
+#else
     if (EXIT_SUCCESS != IMG_SaveJPG(surface, file, quality)) {
       LOGERR("IMG_SaveJPG() failed: %s", SDL_GetError());
       return ErrorCode::FAILURE;
     }
+#endif
   }
 
   SDL_UnlockSurface(surface);
@@ -247,7 +252,7 @@ ErrorCode Texture::takeScreenshot(
 
   const uint64_t timeMs =
       static_cast<uint64_t>(time.getElapsed().toMilliseconds());
-  LOG("Screenshot [%s] took [%zu ms] to capture and store", file, timeMs);
+  LOG("Screenshot [%s] took [%" PRIu64" ms] to capture and store", file, timeMs);
   return ErrorCode::SUCCESS;
 }
 
@@ -383,8 +388,8 @@ void Texture::draw(SDL_Texture *texture, const DrawParams &drawParams) {
           drawParams.angle,  // rotation angles
           reinterpret_cast<const SDL_Point*>(&drawParams.rotCenter), // rotation center
           static_cast<SDL_RendererFlip>(drawParams.widgetFlipType))) { // flip mode
-    LOGERR("Error in SDL_RenderCopyEx(), SDL Error: %s from widget with rsrcId:"
-           "%zu ", SDL_GetError(), drawParams.rsrcId);
+    LOGERR("Error in SDL_RenderCopyEx(), SDL Error: %s from widget with rsrcId: %" 
+           PRIu64, SDL_GetError(), drawParams.rsrcId);
     return;
   }
 

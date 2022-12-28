@@ -55,7 +55,7 @@ ErrorCode TextContainer::loadText(const uint64_t fontId, const char *text,
                                   int32_t &outTextHeight) {
   auto fontIt = _fontsMapPtr->find(fontId);
   if (fontIt == _fontsMapPtr->end()) {
-    LOGERR("Error, non-existent fontId: %zu for text: [%s]. "
+    LOGERR("Error, non-existent fontId: %" PRIu64" for text: [%s]. "
         "Text will not be created", fontId, text);
     return ErrorCode::FAILURE;
   }
@@ -63,7 +63,7 @@ ErrorCode TextContainer::loadText(const uint64_t fontId, const char *text,
   if (ErrorCode::SUCCESS !=
       Texture::getTextDimensions(text, (*_fontsMapPtr)[fontId],
                                  outTextWidth, outTextHeight)) {
-    LOGERR("Error in getTextDimensions() for fontId: %zu", fontId);
+    LOGERR("Error in getTextDimensions() for fontId: %" PRIu64, fontId);
 
     return ErrorCode::FAILURE;
   }
@@ -131,7 +131,7 @@ void TextContainer::reloadText(const uint64_t fontId, const char *text,
   if (ErrorCode::SUCCESS !=
       Texture::getTextDimensions(text, (*_fontsMapPtr)[fontId],
                                  outTextWidth, outTextHeight)) {
-    LOGERR("Error in getTextDimensions() for fontId: %zu", fontId);
+    LOGERR("Error in getTextDimensions() for fontId: %" PRIu64, fontId);
     return;
   }
 
