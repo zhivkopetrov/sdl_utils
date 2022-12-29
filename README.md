@@ -48,6 +48,23 @@ target_link_libraries(
 - tools/resouce_builder - https://github.com/zhivkopetrov/tools
 Used to generate the asset descriptions, loaded by the sdl_utils library
 
+## Third party libs, which are not shipped with this repository
+- SDL2
+- SDL2-image
+- SDL2-ttf
+- SDL2-mixer
+
+Installing them through apt is sufficient when native builds are targeted under Linux
+
+```
+sudo apt install libsdl2-dev libsdl2-ttf-dev libsdl2-image-dev libsdl2-mixer-dev
+```
+
+For windows builds download SDL2 packages from the official repo
+https://github.com/libsdl-org/SDL/releases/latest
+
+Extract under "C:/SDL2" or alongside the project binary build with the sdl_utils static lib
+
 ## Supported Platforms
 Linux:
   - g++ 12
