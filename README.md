@@ -1,6 +1,7 @@
 # sdl_utils
 
-**A static C++ SDL2, SDL2_ttf, SDL2_mixer, SDL2_image wrapper library**
+## A static C++ SDL2, SDL2_ttf, SDL2_mixer, SDL2_image wrapper library
+The library is optimized for fast compilation.
 
 It supports:
 - Multithreaded asset loaded (GPU accelerated)
@@ -20,10 +21,7 @@ Supported asset containers:
 -SoundContainer (music streams & small sound chunks)
 ```
 
-The library is optimized for fast compilation.
-
-
-**Usage from plain CMake**
+## Usage from plain CMake
 - consume directly with find_package(sdl_utils) in a CMakeLists.txt
 - Link against your target with suitable access modifier
 ```
@@ -35,25 +33,31 @@ target_link_libraries(
 ```
 - Example usage project: https://github.com/zhivkopetrov/dev_battle.git
 
-
-**Usage as part of ROS(catkin) / ROS2(colcon) meta-build systems**
+## Usage as part of ROS1(catkin) / ROS2(colcon) meta-build systems
 - consume directly with find_package(sdl_utils) in the package CMakeLists.txt
 - Link agains your target
-- The library automatically exposes and install it's artifacts following ROS/ROS2 structure
+- The library automatically exposes and install it's artifacts following ROS1/ROS2 structure
 - Example usage project: https://github.com/zhivkopetrov/robotics_v1
 
-
-**Dependencies**
+## Dependencies
 - cmake_helpers - https://github.com/zhivkopetrov/cmake_helpers.git
-- The provided library CMakeLists.txt assumes the helpers.cmake from cmake_helpers repo have already been included
+- utils - https://github.com/zhivkopetrov/utils
 - resource_utils - https://github.com/zhivkopetrov/resource_utils
 
-
-**Non-direct dependencies**
+## Non-direct dependencies
 - tools/resouce_builder - https://github.com/zhivkopetrov/tools
-Used to genera the asset descriptions, loaded by the sdl_utils library
+Used to generate the asset descriptions, loaded by the sdl_utils library
 
+## Supported Platforms
+Linux:
+  - g++ 12
+  - clang++ 14
+  - Emscripten (em++) 3.1.28
+  - Robot Operating System 2 (ROS2)
+    - Through colcon meta-build system (CMake based)
+  - Robot Operating System 1 (ROS1)
+    - Through catkin meta-build system (CMake based)
+      - Due to soon ROS1 end-of-life catkin builds are not actively supported
 
-**Platform support**
-- Tested on Unix, Windows
-- Never tested on Mac
+Windows:
+  - MSVC++ (>= 14.20) Visual Studio 2019
