@@ -5,12 +5,12 @@
 
 // Other libraries headers
 #include <SDL_events.h>
+#include "utils/input/defines/EventDefines.h"
+#include "utils/input/TouchEntity.h"
 #include "utils/drawing/Rectangle.h"
 #include "utils/Log.h"
 
 // Own components headers
-#include "sdl_utils/input/defines/EventDefines.h"
-#include "sdl_utils/input/TouchEntity.h"
 
 ErrorCode InputEventGenerator::init() {
   _sdlEvent = new SDL_Event;
@@ -139,8 +139,8 @@ void InputEventGenerator::setEventTypeInternal(InputEvent& e) {
     break;
 
   default:
-    LOGERR("Warning, unknown SDL event type: %u -> " "expand the event list",
-        _sdlEvent->type);
+    LOGERR("Warning, unknown SDL event type: %u -> expand the event list",
+           _sdlEvent->type);
     e.systemType = SystemEvent::UNKNOWN;
     e.type = TouchEvent::UNKNOWN;
     e.key = Keyboard::KEY_UNKNOWN;
@@ -179,8 +179,7 @@ void InputEventGenerator::validateTouchEventMotion(InputEvent& e) {
    *  inside the touch entity and it may be.or may not be DRAGGED inside
    *  the touchEntityEventRect.
    * */
-  else //_hasLastClickedLeftBoundary == false
-  {
+  else { //_hasLastClickedLeftBoundary == false
     /** The user is still holding the PRESS but is still inside of
      *  the touchEntityEventRect -> this means the event type
      *  should be set to DRAG.
@@ -216,9 +215,9 @@ void InputEventGenerator::validateTouchEventRelease(InputEvent& e) {
    *  TouchEntity::touchEntityEventRect -> therefore no action
    *  should be taken.
    * */
-  if ( ( (nullptr != _lastClicked)
+  if (((nullptr != _lastClicked)
       && Rectangle::isPointInRect(e.pos, *_lastClicked->touchEntityEventRect))
-      || _sdlEvent->type == EventType::MOUSE_WHEEL_MOTION) {
+      || (_sdlEvent->type == EventType::MOUSE_WHEEL_MOTION)) {
     e.type = TouchEvent::TOUCH_RELEASE;
     e.systemType = SystemEvent::UNKNOWN;
   } else {

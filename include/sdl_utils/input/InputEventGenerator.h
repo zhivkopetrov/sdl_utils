@@ -5,11 +5,11 @@
 #include <cstdint>
 
 // Other libraries headers
+#include "utils/input/TouchEntityInterface.h"
+#include "utils/input/InputEvent.h"
 #include "utils/ErrorCode.h"
 
 // Own components headers
-#include "sdl_utils/input/TouchEntityInterface.h"
-#include "sdl_utils/input/InputEvent.h"
 
 // Forward Declarations
 class TouchEntity;

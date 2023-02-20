@@ -60,12 +60,8 @@ add_library(
         ${_INC_DIR}/drawing/Renderer.h
         ${_INC_DIR}/drawing/RendererState.h
         ${_INC_DIR}/drawing/Texture.h
-        ${_INC_DIR}/input/defines/EventDefines.h
-        ${_INC_DIR}/input/InputEvent.h
         ${_INC_DIR}/input/InputEventGenerator.h
         ${_INC_DIR}/input/MouseUtils.h
-        ${_INC_DIR}/input/TouchEntity.h
-        ${_INC_DIR}/input/TouchEntityInterface.h
         ${_INC_DIR}/sound/defines/SoundMixerDefines.h
         ${_INC_DIR}/sound/SoundMixer.h
         ${_INC_DIR}/SDLLoader.h
@@ -86,7 +82,6 @@ add_library(
         ${_SRC_DIR}/drawing/Renderer.cpp
         ${_SRC_DIR}/drawing/RendererState.cpp
         ${_SRC_DIR}/drawing/Texture.cpp
-        ${_SRC_DIR}/input/InputEvent.cpp
         ${_SRC_DIR}/input/InputEventGenerator.cpp
         ${_SRC_DIR}/input/MouseUtils.cpp
         ${_SRC_DIR}/sound/SoundMixer.cpp
