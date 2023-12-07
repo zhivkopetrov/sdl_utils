@@ -7,7 +7,7 @@
 // Other libraries headers
 #include <SDL_video.h>
 #include <SDL_image.h>
-#include "utils/Log.h"
+#include "utils/log/Log.h"
 
 // Own components headers
 #include "sdl_utils/drawing/defines/RendererDefines.h"

@@ -7,7 +7,7 @@
 // Other libraries headers
 #include "utils/LimitValues.h"
 #include "utils/drawing/Color.h"
-#include "utils/Log.h"
+#include "utils/log/Log.h"
 
 // Own components headers
 #include "sdl_utils/drawing/Renderer.h"

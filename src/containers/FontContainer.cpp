@@ -5,7 +5,7 @@
 
 // Other libraries headers
 #include <SDL_ttf.h>
-#include "utils/Log.h"
+#include "utils/log/Log.h"
 
 // Own components headers
 #include "sdl_utils/drawing/LoadingScreen.h"

@@ -8,7 +8,7 @@
 #include "utils/input/defines/EventDefines.h"
 #include "utils/input/TouchEntity.h"
 #include "utils/drawing/Rectangle.h"
-#include "utils/Log.h"
+#include "utils/log/Log.h"
 
 // Own components headers
 

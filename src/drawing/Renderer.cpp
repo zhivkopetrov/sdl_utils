@@ -11,7 +11,7 @@
 #include "utils/concurrency/ThreadSafeQueue.h"
 #include "utils/data_type/EnumClassUtils.h"
 #include "utils/drawing/Color.h"
-#include "utils/Log.h"
+#include "utils/log/Log.h"
 
 // Own components headers
 #include "sdl_utils/containers/SDLContainers.h"

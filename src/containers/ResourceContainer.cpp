@@ -8,7 +8,7 @@
 #include <SDL_surface.h>
 #include "resource_utils/defines/ResourceDefines.h"
 #include "utils/concurrency/ThreadSafeQueue.h"
-#include "utils/Log.h"
+#include "utils/log/Log.h"
 
 // Own components headers
 #include "sdl_utils/drawing/LoadingScreen.h"

@@ -7,7 +7,7 @@
 #include <SDL_mouse.h>
 #include <SDL_image.h>
 #include "utils/ErrorCode.h"
-#include "utils/Log.h"
+#include "utils/log/Log.h"
 
 // Own components headers
 

@@ -6,7 +6,7 @@
 // Other libraries headers
 #include <SDL_mixer.h>
 #include "utils/ErrorCode.h"
-#include "utils/Log.h"
+#include "utils/log/Log.h"
 
 // Own components headers
 #include "sdl_utils/sound/defines/SoundMixerDefines.h"

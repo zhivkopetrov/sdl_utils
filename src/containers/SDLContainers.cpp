@@ -7,7 +7,7 @@
 // Other libraries headers
 #include "resource_utils/resource_loader/ResourceLoader.h"
 #include "utils/debug/FunctionTracer.h"
-#include "utils/Log.h"
+#include "utils/log/Log.h"
 
 // Own components headers
 #include "sdl_utils/drawing/LoadingScreen.h"
