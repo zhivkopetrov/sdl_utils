@@ -71,6 +71,7 @@ bool InputEventGenerator::isUnusedDevelopmentEvent() const {
   case EventType::AUDIO_DEVICE_ADDED:
   case EventType::OS_TEXTEDITING:
   case EventType::OS_LANGUAGE_CHANGED:
+  case EventType::CLIPBOARD_UPDATE:
     break;
 
   case EventType::MOUSE_MOTION:
